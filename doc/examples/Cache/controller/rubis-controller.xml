@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE SEQUOIA-CONTROLLER PUBLIC "-//Continuent//DTD SEQUOIA-CONTROLLER @VERSION@//EN"  "http://sequoia.continuent.org/dtds/sequoia-controller-@VERSION@.dtd">
+<SEQUOIA-CONTROLLER>
+	<Controller port="25322">
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-noinvalidate.xml"/>
+		<!--
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-cache-column.xml"/>
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-cache-column-unique.xml"/>
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-cache-database.xml"/>
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-cache-table.xml"/>
+		<VirtualDatabase virtualDatabaseName="rubis" autoEnableBackends="true" configFile="rubis-nocache.xml"/>
+		-->
+	</Controller>
+</SEQUOIA-CONTROLLER>

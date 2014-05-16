@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE SEQUOIA-CONTROLLER PUBLIC "-//Continuent//DTD SEQUOIA-CONTROLLER 2.0-rc1//EN"  "http://sequoia.continuent.org/dtds/sequoia-controller-2.0-rc1.dtd">
+
+<SEQUOIA-CONTROLLER>
+  <Controller port="25322">
+    <Report hideSensitiveData="true" generateOnShutdown="true" generateOnFatal="true" enableFileLogging="true" />
+    <JmxSettings>
+      <RmiJmxAdaptor/>
+    </JmxSettings>
+    <VirtualDatabase configFile="Derby-CJDBC-raidb1.xml" virtualDatabaseName="xpetstore" autoEnableBackends="force"/>
+  </Controller>
+</SEQUOIA-CONTROLLER>

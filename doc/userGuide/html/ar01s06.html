@@ -1,0 +1,80 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.&nbsp;Configuring Sequoia with 3rd party software</title><meta content="DocBook XSL Stylesheets V1.65.1" name="generator"><link rel="home" href="index.html" title="Sequoia User's Guide"><link rel="up" href="index.html" title="Sequoia User's Guide"><link rel="previous" href="ar01s05.html" title="5.&nbsp;Sequoia Driver"><link rel="next" href="ar01s07.html" title="7.&nbsp;Sequoia controller"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">6.&nbsp;Configuring Sequoia with 3rd party software</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ar01s05.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ar01s07.html"><img src="images/next.gif" alt="Next"></a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="configuring-sequoia_with_3rd_party_software"></a>6.&nbsp;Configuring Sequoia with 3rd party software</h2></div></div><div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="forenotes"></a>6.1.&nbsp;Forenotes on configuring Sequoia with your application</h3></div></div><div></div></div><p>If the application you are using Sequoia with requires a mapper, the best thing to do
+      is to configure the mapping to be that of Sequoia's underlying databases. For example, if
+      you were using JBoss with PostgreSQL , then using Sequoia on top of the PostgreSQL
+      backends with JBoss would imply to still use the mapping for PostgreSQL while plugging
+      the application server to Sequoia (using Sequoia's driver and Sequoia's url). </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="configuring_sequoia_with_tomcat"></a>6.2.&nbsp;Configuring Sequoia with Jakarta Tomcat</h3></div></div><div></div></div><p>Copy the <tt class="filename">sequoia-driver.jar</tt> file to the 
+        <tt class="filename">lib</tt> directory of your web 
+        application (for example: <tt class="filename">$TOMCAT_HOME/webapps/mywebapp/WEB-INF/lib</tt>).</p><p>There are many ways to obtain connections from a Tomcat 
+        application. Just ensure that you are using 
+        <tt class="literal">org.continuent.sequoia.driver.Driver</tt> as the driver 
+        class name and that the JDBC URL is a Sequoia URL (see <a href="ar01s05.html#sequoia_jdbc_url" title="5.3.&nbsp;Sequoia JDBC URL">Section&nbsp;5.3, &ldquo;Sequoia JDBC URL&rdquo;</a>).</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="configuring_sequoia_with_jonas"></a>6.3.&nbsp;Configuring Sequoia with JOnAS</h3></div></div><div></div></div><p>The <tt class="filename">sequoia-driver.jar</tt> file must be found in 
+        the JOnAS CLASSPATH.</p><p>Here is an example of a <tt class="filename">sequoia.properties</tt> file 
+        to store in JONAS 3.x <tt class="filename">conf</tt> 
+        directory (use the <tt class="filename">config</tt> 
+        directory for JOnAS 2.x):</p><pre class="programlisting"> 
+        ###################### Sequoia DataSource configuration example # 
+        datasource.name      jdbc_1 
+        datasource.url       jdbc:sequoia://someMachine/someDatabase 
+        datasource.classname org.continuent.sequoia.driver.Driver 
+        datasource.username  your-username 
+        datasource.password  your-password 
+      </pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="configuring_sequoia_with_jboss"></a>6.4.&nbsp;Configuring Sequoia with JBoss</h3></div></div><div></div></div><p>Copy the <tt class="filename">sequoia-driver.jar</tt> file to <tt class="filename">$JBOSS_DIST/server/default/lib</tt> for JBoss 
+        3.x or to <tt class="filename">$JBOSS_DIST/jboss/lib/ext</tt> for JBoss 
+        2.x.</p><p>Here is an example of a datasource configuration file to be used 
+        with JBoss:</p><pre class="programlisting"> 
+        &lt;?xml version="1.0" encoding="UTF-8"?&gt; 
+        &lt;!-- ===================================================================== --&gt; 
+        &lt;!--                                                                       --&gt; 
+        &lt;!-- JBoss Server Configuration                                            --&gt;
+        &lt;!--                                                                       --&gt; 
+        &lt;!-- ===================================================================== --&gt; 
+
+        &lt;!-- ===================================================================== --&gt; 
+        &lt;!-- Datasource config for Sequoia                                          --&gt;
+        &lt;!-- ===================================================================== --&gt; 
+        &lt;datasources&gt; 
+          &lt;local-tx-datasource&gt; 
+            &lt;jndi-name&gt;sequoia-DS&lt;/jndi-name&gt; 
+            &lt;connection-url&gt;jdbc:sequoia://localhost:25322/lscluster&lt;/connection-url&gt; 
+            &lt;driver-class&gt;org.continuent.sequoia.driver.Driver&lt;/driver-class&gt; 
+            &lt;user-name&gt;user&lt;/user-name&gt; 
+            &lt;password&gt;tagada&lt;/password&gt; 
+          &lt;/local-tx-datasource&gt; 
+        &lt;/datasources&gt; 
+      </pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="configuring_sequoia_with_weblogic"></a>6.5.&nbsp;Configuring Sequoia with BEA Weblogic Server 7.x/8.x</h3></div></div><div></div></div><p>Place the <tt class="filename">sequoia-driver.jar</tt> file in the 
+        classpath of the Weblogic Server.</p><p>Here is an example of a connection pool configuration for use with 
+        Weblogic:</p><pre class="programlisting">
+    &lt;JDBCConnectionPool 
+        DriverName="org.continuent.sequoia.driver.Driver"
+        InitialCapacity="1"  MaxCapacity="15" 
+        Name="sequoiaPool" Properties="user=username;password=password" 
+        ShrinkingEnabled="true" SupportsLocalTransaction="true" 
+        Targets="wlservername" URL="jdbc:sequoia://192.168.0.1/vdb" 
+        XAPreparedStatementCacheSize="0"/&gt;
+      </pre><p>Next, create the required <tt class="literal">TXDataSources</tt>:</p><pre class="programlisting">
+        &lt;JDBCTxDataSource EnableTwoPhaseCommit="true" 
+          JNDIName="sequoia-DS" Name="Sequoia TX Data Source" 
+          PoolName="sequoiaPool" RowPrefetchEnabled="true" Targets="wlservername"/&gt;
+      </pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="configuring_sequoia_with_hibernate"></a>6.6.&nbsp;Configuring Sequoia with Hibernate</h3></div></div><div></div></div><p>Sequoia just has to be defined as any JDBC driver in Hibernate, 
+        leaving the syntax set to the proper database. Here is a configuration 
+        example to use Hibernate with a Sequoia cluster made of Sybase 
+        backends:</p><pre class="programlisting">
+## Sequoia
+hibernate.dialect                 net.sf.hibernate.dialect.SybaseDialect
+hibernate.connection.driver_class org.continuent.sequoia.driver.Driver
+hibernate.connection.username     user
+hibernate.connection.password     pass
+hibernate.connection.url          jdbc:sequoia://localhost:25322/test        
+      </pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="using_sequence_with_hibernate"></a>6.7.&nbsp;Using sequences with Hibernate, Sequoia and PostgreSQL</h3></div></div><div></div></div><p>Our Hibernate dialect is as follows:</p><pre class="programlisting"> 
+        import net.sf.hibernate.dialect.PostgreSQLDialect; 
+        public class SEQUOIAPostgreSQLDialect extends PostgreSQLDialect 
+        { 
+          public String getSequenceNextValString(String sequenceName) 
+          { 
+            return "{call nextval('"+sequenceName+"')}"; 
+          } 
+        } 
+      </pre><p> We simply extend the default PostgreSQL Dialect and override the 
+        getSequenceNextValString() method and tell it to use "{call ..." so 
+        that all the sequences in the cluster get incremented. </p><p> We then changed our Hibernate conf file to user to our custom 
+        dialect instead of net.sf.hibernate.dialect.PostgreSQLDialect. </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ar01s05.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="index.html"><img src="images/up.gif" alt="Up"></a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ar01s07.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td valign="top" align="left" width="40%">5.&nbsp;Sequoia Driver&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Home"></a></td><td valign="top" align="right" width="40%">&nbsp;7.&nbsp;Sequoia controller</td></tr></table></div></body></html>

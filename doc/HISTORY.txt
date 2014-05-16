@@ -1,0 +1,1521 @@
+Sequoia History File
+
+Next release
+Release date:
+CVS Tag:
+
+-------------------------------------------------
+
+Sequoia 2.10.10
+Release date: 7 May 2008
+CVS Tag: sequoia-2_10_10
+
+** Bug
+    * [SEQUOIA-690] - Clobs are not really implemented
+    * [SEQUOIA-812] - Sequoia may not store data records with semicolon
+    * [SEQUOIA-855] - Long idled persistent connections can see exceptions when sending a new request to MySQL
+    * [SEQUOIA-902] - Initialize command might fail with crashed recovery log
+    * [SEQUOIA-906] - backup with MS JDBC driver for MS SQL Server 2005
+    * [SEQUOIA-955] - Raidb1 load balancer and WaitForCompletionPolicy=first does not work
+    * [SEQUOIA-969] - Recovery log stops processing and tries to enable database if there is an unparsable statement in the recovery log
+    * [SEQUOIA-973] - DatabaseSQLMetaData.createDatabaseSchema hides exceptions that could be thrown by call to metaData.getExportedKeys(null, null, null)
+    * [SEQUOIA-974] - Recovery log does not correctly invalidate prepared statements when idle connection is timed out
+    * [SEQUOIA-981] - Cannot restart an Embedded Sequoia Controller because the PingResponder thread is not shutdown.
+    * [SEQUOIA-986] - wait for all members to join @ joinGroup is to short for Appia
+    * [SEQUOIA-992] - Enable Backend sends 2 equal JMX Notifications
+    * [SEQUOIA-998] - WARN Distributed Set savepoint did not remove itself from the total order queue is shown when a controller has no backend.
+    * [SEQUOIA-999] - Controller floods log with messages when applications connect with an older driver
+    * [SEQUOIA-1000] - Failover due to controller crash during a commit statement can issue the following warning "Transaction 4 was aborted by database"
+    * [SEQUOIA-1008] - Adding a VDB to a controller with the 'force' flag set will result in a 'Unique Constraint Violation' SQLException if VDB is already the 'last man down'.
+    * [SEQUOIA-1011] - Streaming Resultet containing database specific datatype columns may show 'Internal bug: tried to receive using the UNDEFINED deserializer' error
+    * [SEQUOIA-1012] - Some read requests do not have a valid request id. This can lead to this error message : 'Request '0' failed (A query with id 0 has already been scheduled)'
+    * [SEQUOIA-1014] - If 2 controllers are too asynchronous, then a backend may be disabled because of a request failing on one controller and not the other one
+    * [SEQUOIA-1017] - Sequoia.dtd missing attribute definition for idleConnectionTimeout
+    * [SEQUOIA-1019] - RAIDb1 callStoredProcedure and execWriteRequest methods enforce abort of transaction in case of concurrent abort, but do not log abort completion in the recovery log
+    * [SEQUOIA-1021] - Error message when a transaction is aborted due to deadlock : Unable to retrieve connection for transaction
+    * [SEQUOIA-1023] - Error when using CallableStatement with OUT and IN/OUT parameters: No value specified for parameter
+    * [SEQUOIA-1025] - AbstractScheduler.abortRemainingActiveTransactions will stop aborting transactions at the first failing abort.
+    * [SEQUOIA-1026] - Test connection statements are not properly closed
+    * [SEQUOIA-1029] - Recovery Log consistency check fails using Derby as the database
+    * [SEQUOIA-1033] - backup system throws exception because pending read request has not been processed 
+    * [SEQUOIA-1039] - PreparedStatement.Get[Parameter]MetaData leak memory
+    * [SEQUOIA-1041] - Exception when executing getExportedKeys(null, null, null) : java.sql.SQLException: Table name can not be null
+    * [SEQUOIA-1045] - alwaysGetGeneratedKeys should also work for replace statements
+    * [SEQUOIA-1048] - StringIndexOutOfBoundsException when retrieving MySQL years as dates
+    * [SEQUOIA-1049] - preparedStatementGetParameterMetaData not retried on second controller in case of no backend available
+    * [SEQUOIA-1050] - Duplicate shutdown checkpoint names with non-distributed virtual databases
+    * [SEQUOIA-1051] - Backend state not restored from recovery log with non-distributed virtual databases
+    * [SEQUOIA-1052] - Call to metadata.getExportedKeys() generates NPE in SequoiaSchemaFactory
+    * [SEQUOIA-1054] - Recovery Log : RemoveCheckpointEvent should invalidate the connection before being retried
+    * [SEQUOIA-1055] - NPE in DatabaseBackend.terminateDeadlockDetectionThread
+    * [SEQUOIA-1063] - Begin not logged in recovery log for non-distributed virtual databases
+    * [SEQUOIA-1065] - with more than one firebird backend controller throws NPE
+    * [SEQUOIA-1066] - NullPointerException when trying to transfer a dump
+    * [SEQUOIA-1086] - Non-distributed RAIDb-1 demo is broken
+    * [SEQUOIA-1087] - Transaction with multiple locks competing with a stored procedure have a wrong lock list
+
+** Improvement
+    * [SEQUOIA-830] - Add port to Backuper dumpServer specification
+    * [SEQUOIA-960] - Handle recovery log database failure
+    * [SEQUOIA-961] - PATCH: Support for controller "safe shutdown" via Runtime.getRuntime().addShutdownHook()
+    * [SEQUOIA-977] - Idle connection timeout
+    * [SEQUOIA-978] - Provide an option to avoid full schema refresh each time a create table statement is done against the cluster
+    * [SEQUOIA-1013] - SQL Console should not use query timeouts
+    * [SEQUOIA-1020] - Provide a better logging while replaying the recovery log and finding a task marked as still "Executing"
+    * [SEQUOIA-1030] - Applications with large numbers of SQL syntax errors fill up full_cluster.log with extraneous warnings and messages
+    * [SEQUOIA-1037] - Macro replacement should not occur for select requests
+    * [SEQUOIA-1038] - Upgrade to JGroups 2.4.2
+
+** New Feature
+    * [SEQUOIA-945] - Cross-schema updates should generate a hard error that stops the application
+    * [SEQUOIA-963] - Add RequestInterceptor feature to allow easy addition of logic to monitor and transform requests
+    * [SEQUOIA-970] - Implement PreparedStatement.getParameterMetaData() method
+    * [SEQUOIA-985] - Add JMX Notifications for joinMember() and failedMember()
+    * [SEQUOIA-1001] - Extend Sequoia controller to handle differences in backend driver handling of setFetchSize() hints
+    * [SEQUOIA-1002] - Add defaultFetchSize property to JDBC driver to make it easier to handle very large result sets in the controller
+    * [SEQUOIA-1022] - Implement new console command to show the activity status of a vdb.
+    * [SEQUOIA-1042] - Derby Backuper for Network Server running locally
+    * [SEQUOIA-1058] - Patch for fixed JMX-RMIServer port
+
+
+-------------------------------------------------
+
+Sequoia 2.10.9
+Release date: 30 Jul 2007
+CVS Tag: sequoia-2_10_9
+
+Description: this release fixes compatibility problem between Appia
+and Hedera which was introduced by the previous release. The 2.10.8
+release was indeed delivered with a wrong appia.jar (3.2.3). Sorry for
+the inconvenience.
+
+# Bug:
+ [SEQUOIA-958] Updating to Appia 3.3
+
+-------------------------------------------------
+
+Sequoia 2.10.8
+Release date: 25 June 2007
+CVS Tag: sequoia-2_10_8
+
+Description: this release includes many improvements and bug fixes: 
+- Better memory handling; elimination of major out-of-memory errors
+- VDB restart ordering fixed; no longer possible to clear logs accidentally
+- Certification against JDK 1.6
+  (however we still build against JDK 1.4 due to JDBC interface changes)
+- Fixes for a number of VDB race conditions, especially: 
+  Checkpoint hangs waiting for <n> open transactions
+
+# Bug
+  [SEQUOIA-919] - Transparent user management active even if switched
+  off
+  [SEQUOIA-942] - controller pinger leaks UDP file descriptors
+  [SEQUOIA-944] - Inconsistent use of controller ID when initializing
+  vdb counters
+  [SEQUOIA-946] - Some attributes pointing to synchronization objects
+  are abusively declared static
+  [SEQUOIA-951] - Inconcistency between backends of the same
+  controller may take down the 2 backends at once
+
+# New Feature
+  [SEQUOIA-895] - Add an abort transaction command to the console
+  [SEQUOIA-903] - Add a dump connections and a close connection
+  commands (persistent connections only)
+  [SEQUOIA-948] - Temporary tables should be kept as part of a
+  connection, as the schema may not contain them
+  [SEQUOIA-949] - Add "init" and "force" options to load
+  virtualdatabase CLC command
+
+# Improvement
+  [SEQUOIA-947] - Handle vdb restart order
+
+# Library updates    
+  Includes Hedera-1.6.1 jars (commons, appia, jgroups)
+  
+-------------------------------------------------
+
+Sequoia 2.10.7 (UNRELEASED)
+Release date: N/A
+CVS Tag: N/A
+
+Description: N/A
+
+# Bug
+  [SEQUOIA-233] - FetchNextResultSetRows fails when fetchsize = 1
+  after an execute() with a select query
+  [SEQUOIA-419] - "purge log" Command Does Not Remove Associated
+  Checkpoint(s)
+  [SEQUOIA-721] - restore problem on a backup made by MySQLBackuper
+  [SEQUOIA-917] - console.ini file contains a whitespace that prevents
+  the correct loading of debug commands
+  [SEQUOIA-921] - Cannot transfer backend when minPoolSize and
+  maxPoolSize are set to 0 (using VariablePoolConnectionManager)
+  [SEQUOIA-923] - Exceptions when executing DDL statements in parallel
+  [SEQUOIA-924] - Closing a persistent connection will display an
+  error message in the log when using a variable pool
+  [SEQUOIA-930] - Transaction not started when trying to execute write
+  request after failover on read request within a transaction
+  [SEQUOIA-932] - Streamed ResultSets can be leaked in the controller
+  [SEQUOIA-935] - Persistent connection should be really closed
+  instead of being released into the pool
+  [SEQUOIA-939] - Restore command of MySQLBackuper backuper may
+  restore the wrong database
+
+# Improvement
+  [SEQUOIA-929] - Keep a reference to the group communication factory
+  in case disposal failed, so that disposal can be tried again later
+  [SEQUOIA-931] - Use standard jmx urls
+  [SEQUOIA-938] - Provide a way to discard a connection after
+  executing some SQL statement
+
+-------------------------------------------------
+
+Sequoia 2.10.6
+Release date: 6 February 2007
+CVS Tag: sequoia-2_10_6
+
+Description: bug fix release.
+
+# Bug
+  [SEQUOIA-913] - MySQL Backuper does not handle autoincrement in
+  tables that have quoted name "`"
+
+-------------------------------------------------
+
+Sequoia 2.10.5
+Release date: 2 February 2007
+CVS Tag: sequoia-2_10_5
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-855] - Long idled persistent connections can see exceptions
+  when sending a new request to MySQL
+  [SEQUOIA-880] - PostgreSQL backupers should not consider text on
+  stderr as an error
+  [SEQUOIA-881] - Cluster crashes if a query fails when using
+  PostgreSQL and V2 protocol
+  [SEQUOIA-884] - Possible NPE in Result Cache when table not found
+  [SEQUOIA-886] - Improved console feedback for save configuration and
+  restore log
+  [SEQUOIA-889] - RecoveryLog.resetRecoveryLog() does not correctly
+  clear the last log ID after clearing the log contents
+  [SEQUOIA-891] - Backing up and Restoring MySQL Tables with
+  autoincrement columns
+  [SEQUOIA-894] - Transaction not aborted when rollback fails
+  [SEQUOIA-897] - java.sql.SQLException: Unable to get checkpoint from
+  the recovery log (Checkpoint does not exist in recovery log)
+  [SEQUOIA-907] - escapeProcessing is not taken into account on
+  database backend Statement / preparedStatement / CallableStatement
+
+# New Feature
+  [SEQUOIA-888] - Add support for network detection partition and
+  basic reconciliation
+  [SEQUOIA-895] - Add an abort transaction command to the console
+  [SEQUOIA-898] - Add a dump transaction command to the console
+
+# Task
+  [SEQUOIA-826] - Update hsqldb to 1.8.0.7 version
+
+# Improvement
+  [SEQUOIA-797] - Update /xml/appiaxml.dtd
+  [SEQUOIA-885] - Fetching schema is too slow on PostgreSQL when there
+  are too many tables
+  [SEQUOIA-887] - Disable JLine in non-interactive mode of the text
+  console
+  [SEQUOIA-893] - when using the console, first query seems to be slow
+  [SEQUOIA-899] - Allow dumping the recovery log from the tail
+  [SEQUOIA-904] - Improve recovery-log tolerance to connection
+  timeouts or transient db connectivity errors
+
+-------------------------------------------------
+
+Sequoia 2.10.4
+Release date: 18 January 2007
+CVS Tag: sequoia-2_10_4
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-871] - At (re)connection time, when the VDB is not found on
+  the first controller, other controllers are not tried
+  [SEQUOIA-873] - Controller list original order is not kept as-is
+  upon controller comeback
+  [SEQUOIA-875] - NPE when trying to get generated keys using
+  statement.execute
+  [SEQUOIA-876] - Compliance problem related to prepared statement and
+  generated keys
+  [SEQUOIA-877] - ResultSet opened on the database backend should be
+  closed
+  [SEQUOIA-879] - PreferredListConnectPolicy always returns preferred
+  controller when the vdb is unavailable
+
+# Task
+  [SEQUOIA-872] - Driver pinger should identify controllers by a
+  InetSocketAddress, not by their InetAddress
+
+-------------------------------------------------
+
+Sequoia 2.10.3
+Release date: 08 December 2006
+CVS Tag: sequoia-2_10_3
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-753] - The list of tables referenced in foreign keys is not
+  completely maintained when a table is created
+  [SEQUOIA-821] - mysql backuper uses unsupported option --routines
+  when mysql version is >= 5 and < 5.0.13
+  [SEQUOIA-829] - Drop table with foreign keys does not properly
+  update database backend schema
+  [SEQUOIA-832] - Using persistent connections with a single
+  controller without a recovery log causes NPE
+  [SEQUOIA-833] - SingleDB configuration with a recovery log will
+  generate spurious 'unable to update request completion status'
+  messages
+  [SEQUOIA-835] - Inability to access recovery log database can throw
+  NPE
+  [SEQUOIA-836] - VDB XML transformation fails if the backend JDBC URL
+  contains & characters
+  [SEQUOIA-840] - Controller Configuration File Parser detects valid
+  XML-cfg-File as invalid File
+  [SEQUOIA-843] - NPE when dump server host can not be resolved
+  [SEQUOIA-845] - ParsingCache fails on unknown read or write queries
+  [SEQUOIA-846] - SELECT parser can fail to parse subselects or
+  multistatement SELECTs
+  [SEQUOIA-848] - Scheduler throws NPE for suspended requests with
+  non-distributed virtual databases
+  [SEQUOIA-850] - RAIDb-1 Weighted Round Robin load balancer does not
+  work as expected
+  [SEQUOIA-854] - Sequoia used with mysql can show
+  com.mysql.jdbc.CommunicationsException errors when controllers is
+  not used for a long time
+  [SEQUOIA-855] - Long idled persistent connections can see exceptions
+  when sending a new request to MySQL
+  [SEQUOIA-856] - Query XXXXX is not in the list of currently
+  scheduled queries with SingleDB configuration
+  [SEQUOIA-858] - Vdb force shutdown does nothing after safe shutdown
+  blocked
+  [SEQUOIA-861] - J/Connector 5.0.4 bug #24721 may prevent a vdb from
+  shutting down safely
+  [SEQUOIA-863] - Transaction marked as started even if we failed to
+  start it on the backend
+
+# New Feature
+  [SEQUOIA-851] - Create script-based backuper that can interface with
+  arbitrary backup mechanisms
+
+# Improvement
+  [SEQUOIA-314] - Allow initialize command to be ran when a backend
+  has a last known checkpoint (but add confirmation step)
+  [SEQUOIA-784] - Merge console translations
+  [SEQUOIA-785] - Merge controller translations
+  [SEQUOIA-847] - Improve Sequoia RAIDb-1 demo (non-distributed) to
+  enable backends and execute queries
+  [SEQUOIA-857] - Remove useless synchronized blocks in schedulers
+  [SEQUOIA-870] - Upgrade Hedera to 1.5.5 version
+
+-------------------------------------------------
+
+Sequoia 2.10.2
+Release date: 24 October 2006
+CVS Tag: sequoia-2_10_2
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-786] - When a connection is closed by the client, if a
+  transaction with savepoints was not committed or rollbacked, this
+  transaction will remain active forever
+  [SEQUOIA-808] - recovery log and scheduler mbeans are not
+  unregistered on vdb shutdown
+  [SEQUOIA-811] - MySQL Backuper does not work with mysqldump v4.1.2
+  to 4.1.9
+  [SEQUOIA-819] - Failed to execute request within transaction after
+  killing controller: Connection lost while executing
+  statementExecuteQuery and automatic reconnect failed
+  [SEQUOIA-820] - If a client (using persistent connection) is killed
+  during its connection establishment phase, this connection can
+  remain "opened" on the cluster
+  [SEQUOIA-823] - In autocommit, read requests that are broadcasted
+  should be scheduled using a fake transaction id
+
+# Improvement
+  [SEQUOIA-803] - Add support for using preparedStatement with strings
+  containing ' and ? characters
+  [SEQUOIA-822] - Connection.releaseSavepoint(Savepoint) and
+  rollback(Savepoint) should throw SQLException if savepoint == null
+  [SEQUOIA-825] - Upgrade Appia and Hedera to 3.2.3 and 1.5.4 versions
+  
+-------------------------------------------------
+
+Sequoia 2.10.1
+Release date: 16 October 2006
+CVS Tag: sequoia-2_10_1
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-780] - An exception during a rollback to savepoint in
+  RollbackToSavepointTask.executeTask will let one pending write on
+  the cluster.
+  [SEQUOIA-782] - Connection.commit() hangs after failover on
+  controller
+  [SEQUOIA-802] - Big requests (5000 lines) may fail against Sequoia,
+  while succeeding against database backend directly
+  [SEQUOIA-807] - JDBC URL with multiple options are not properly
+  parsed
+
+-------------------------------------------------
+
+Sequoia 2.10
+Release date: 6 September 2006
+CVS Tag: sequoia-2_10
+
+Description: major release including many bug fixes.
+
+# Bug
+  [SEQUOIA-382] - Schema Refresh On Rollback After Enabling Disabled
+  Backend
+  [SEQUOIA-426] - Request cache is flushed on stored procedure
+  execution even if connection is set to read-only
+  [SEQUOIA-553] - Read Only Transaction - Inconsistent Recovery Log
+  [SEQUOIA-561] - Can't shutdown vdb after a SQLException for a
+  violation of a unique constraint OR a duplicate key constraint
+  [SEQUOIA-641] - mysqldump --add-drop-database option not supported
+  before MySQL 4.1.13
+  [SEQUOIA-654] - Opening a persistent connection when no backend is
+  available should return an error
+  [SEQUOIA-655] - Custom recovery log schema "sqlColumnName" breaks on
+  startup w/latest CVS
+  [SEQUOIA-663] - Enable backend can hang following a controller
+  failure
+  [SEQUOIA-678] - NPE in DistributedVirtualDatabase.quitMember() when
+  shutting down simultaneously multiple controllers
+  [SEQUOIA-679] - MySQLBackuper does not find version info for *-beta
+  (5.1.11-beta)
+  [SEQUOIA-685] - JDBC Connection should not immediately begin a
+  transaction when autocommit is set to false
+  [SEQUOIA-688] - Message timeout can let write queries in un-notified
+  state
+  [SEQUOIA-697] - Failover happening during a rollback of a read only
+  transaction may log twice the rollback in the recovery log
+  [SEQUOIA-698] - Controller failure in the middle of query execution
+  returns error to client
+  [SEQUOIA-700] - NPE if the database type is not supported by Octopus
+  [SEQUOIA-701] - Table locks are shared across backends for CREATE
+  statements
+  [SEQUOIA-702] - Request completion is not done if successfull
+  controllers failed afterwards (when retrieving results)
+  [SEQUOIA-704] - retrieveCommitResult / retrieveRollbackResult in
+  VirtualDatabaseWorkerThread does not check the result of the commit
+  statement
+  [SEQUOIA-709] - Reset command does not throw an exception when no
+  more controllers are available
+  [SEQUOIA-711] - Shutdown virtualdatabase can fail because suspended
+  activity is resumed too soon
+  [SEQUOIA-712] - The completion status can set incorrectly when all
+  backends on a controller are disabled
+  [SEQUOIA-713] - The console should exit when an admin command fails
+  when exitonerror is set
+  [SEQUOIA-715] - java.lang.Exception at AbstractTask.java:451: Double
+  locks entry: null and
+  [o.c.s.common.locks.TransactionLogicalLock@1c5a511]
+  [SEQUOIA-716] - Transaction abort throws NPE when using a single
+  controller without recovery log
+  [SEQUOIA-719] - The scheduler does not get cleaned up when a request
+  is timed by group communications
+  [SEQUOIA-722] - setSavepoint fails if no transaction has been
+  started
+  [SEQUOIA-723] - Loading a mildly-invalid vdb causes side effects on
+  recovery log
+  [SEQUOIA-724] - Late networks partition callbacks can cause NPE in
+  vdb handler when shutting down
+  [SEQUOIA-727] - $logDir in log4j.properties is not defined
+  [SEQUOIA-728] - Read only stored procedures can slow down or hang
+  the cluster when a controller has no backends enabled
+  [SEQUOIA-729] - java.policy path in scripts.xml
+  [SEQUOIA-730] - select requests should be broadcast when the
+  transaction isolation level is set to serializable
+  [SEQUOIA-731] - The list of table references used for locking is
+  incomplete
+  [SEQUOIA-732] - The Deadlock detection thread can loop generating
+  invalid abort requests
+  [SEQUOIA-733] - small error in hsqldb.sh
+  [SEQUOIA-735] - Inappropriate error message if connection is null
+  [SEQUOIA-736] - Persistent connections are not cleaned up when a
+  backend is shutdown abnormally
+  [SEQUOIA-740] - Race condition in vdb shutdown causes recovery
+  LoggerThread to terminate with final shutdown checkpoint in queue
+  [SEQUOIA-743] - Incorrect error messages are logged following a
+  controller start up under load
+  [SEQUOIA-745] - NPE when enabling backend during group membership
+  changes
+  [SEQUOIA-746] - Class DriverResultSet writes to System.err if there
+  are duplicate column labels in results
+  [SEQUOIA-748] - There is a race condition between open persistent
+  connection and suspend activity
+  [SEQUOIA-750] - Connection.setReadOnly(true) should not prevent
+  execution of write requests
+  [SEQUOIA-752] - When failover happens during a commit, the
+  transaction may be committed twice
+  [SEQUOIA-753] - The list of tables referenced in foreign keys is not
+  completely maintained when a table is created
+  [SEQUOIA-754] - A Runtime exception can be raised during forced
+  backend disable
+  [SEQUOIA-755] - JDBC driver failover may not succeed to reconnect
+  [SEQUOIA-756] - The fix for SEQUOIA-748 contained an error that can
+  cause runtime exceptions
+  [SEQUOIA-757] - Failover for queries returning an update count might
+  not be transparently retried after a controller failure
+  [SEQUOIA-758] - Failover does not work if driver reconnect is faster
+  than group communication failure detection
+  [SEQUOIA-759] - Potential NullPointerException on
+  backend.getDatabaseSchema().releaseLocksOnAllTables(transactionId)
+  in BackendTaskQueues.releaseLocksForTransaction
+  [SEQUOIA-761] - Process management and reliability of postgreSQL
+  backups needs to be improved
+  [SEQUOIA-762] - Console reconnection to another controller does not
+  refresh JMX connection
+  [SEQUOIA-763] - PreparedStatement parameter containing '/<%' causes
+  StringOutOfBoundException
+  [SEQUOIA-764] - Improper deserialization of statements and prepared
+  statements with comments or tag markers from recovery log
+  [SEQUOIA-768] - SetSavepoint does not set a savepoint before the
+  first write request
+  [SEQUOIA-769] - Rollback to savepoint rollbacks entire transaction
+  if savepoint does not exist
+  [SEQUOIA-770] - Failover on rollback to savepoint does not work if
+  transaction was already rollbacked
+  [SEQUOIA-771] - Failover in a multi-threaded client can fail
+  [SEQUOIA-775] - Failover on set savepoint systematically tries to
+  re-set the savepoint
+  [SEQUOIA-776] - Failed queries cleanup does not work for open
+  persistent connections
+
+# New Feature
+  [SEQUOIA-747] - Add command to set connection read only state
+
+# Improvement
+  [SEQUOIA-218] - Add support for ResultSetMetaData.getColumnLabel
+  [SEQUOIA-703] - remove the protocol command setAutoCommit(true)
+  [SEQUOIA-706] - Weight of 0 in weighted round robin load balancers
+  should only use backend when no other option is available
+  [SEQUOIA-707] - Check and force jdbc url option shutdown=true for
+  Hsqldb recovery log
+  [SEQUOIA-708] - Allow console to start even if it cannot connect to
+  a controller
+  [SEQUOIA-710] - Recovery of large batches of autocommit requests can
+  be very slow
+  [SEQUOIA-760] - Prevent virtual database shutdown when other admin
+  operations are in progress
+  [SEQUOIA-767] - Macro replacement should be more flexible
+  [SEQUOIA-773] - typos in userGuide.xml
+  [SEQUOIA-774] - Do not authorize duplicate named savepoints
+
+-------------------------------------------------
+
+Sequoia 2.9
+Release date: 11 July 2006
+CVS Tag: sequoia-2_9
+
+Description: major release including many bug fixes and new Appia
+group communication (appia.di.fc.ul.pt) - not activated by default
+yet.
+
+# Bug
+  [SEQUOIA-128] - Implement SQL Warnings
+  [SEQUOIA-295] - WaitForCompletion policy="first" no longer supported
+  [SEQUOIA-437] - Orderly shutdown of a virtual database is detected
+  as statement and controller failure
+  [SEQUOIA-481] - Commit hangs after failure on single controller
+  configuration
+  [SEQUOIA-511] - The recovery replays statements in the wrong order
+  when enforceTableLocking is enabled.
+  [SEQUOIA-513] - Recovery can hang when there are not enough
+  backendworker threads configured.
+  [SEQUOIA-515] - Read-only stored procedures logged in recovery log
+  of controller with no backends after restart
+  [SEQUOIA-539] - Postgres Sequences
+  [SEQUOIA-550] - Multithreaded Requests Block On Connection Fail Over
+  [SEQUOIA-554] - The controller can hang trying to close connections
+  following a backend failure
+  [SEQUOIA-568] - Controller fail over can cause a system hang when
+  using a large number of persistent connections
+  [SEQUOIA-579] - Task may hang forever in backend task queue without
+  load
+  [SEQUOIA-581] - Backend recovery inverts transactions between tables
+  linked by foreign key, causing constraint violation
+  [SEQUOIA-583] - Race condition on release times in
+  VariablePoolConnectionManager
+  [SEQUOIA-586] - Disable backend procedure does not properly suspend
+  persistent connections on all controllers
+  [SEQUOIA-588] - Some PostgreSQL Backupers Do Not Delete Their Dumps
+  Properly
+  [SEQUOIA-590] - Virtual database worker threads remain active after
+  shutdown
+  [SEQUOIA-591] - Sometimes, controller may not handle a new jdbc
+  connection
+  [SEQUOIA-593] - transactionId, requestId and connectionId counters
+  are not initialized properly
+  [SEQUOIA-594] - Potential deadlock when disabling backend
+  [SEQUOIA-596] - Missing checks for priority inversion when executing
+  stored procedures
+  [SEQUOIA-597] - Enable backend can hang on an active system
+  [SEQUOIA-598] - Virtual Database initialization phase generates
+  recovery log update failure warnings
+  [SEQUOIA-599] - Replaying recovery log with foreign keys shows
+  contraint violation exceptions
+  [SEQUOIA-600] - Lock information is lost when the schema is
+  refreshed
+  [SEQUOIA-601] - Failed to load vdb when auto enable backends fail
+  (eg after recovery automatic resync failure)
+  [SEQUOIA-602] - Read only stored procedures are being logged in the
+  recovery log when no backends are enabled
+  [SEQUOIA-603] - Static schema creates FATAL messages when trying to
+  perform request locking
+  [SEQUOIA-604] - Regexp too greedy in AbstractPostgreSQLBackuper
+  [SEQUOIA-605] - Recovery must use the same value for
+  enforceTableLocking as is used during normal operation
+  [SEQUOIA-606] - The controller can hang waiting for connections
+  following a backend failure
+  [SEQUOIA-607] - Select for update statements are not going through
+  the total order queue
+  [SEQUOIA-610] - CallableStatement.executeQuery() Fails With 2 Or
+  More Backends
+  [SEQUOIA-611] - Protocol corruption when executing query with no
+  activated backend using Statement.executeQuery()
+  [SEQUOIA-613] - Missing options attribute value for Backuper tag in
+  show virtualdatabase config
+  [SEQUOIA-614] - Scheduler notification on controllers without
+  backends is not properly synchronized with recovery log updates
+  [SEQUOIA-615] - disable hangs after a failed query
+  [SEQUOIA-616] - RequestManager.hasPersistentConnection() is broken
+  [SEQUOIA-620] - Select request fail when warnings are enabled
+  [SEQUOIA-621] - Request parsing at replay time can use obsolete
+  schema
+  [SEQUOIA-622] - The ControlFailureCleanupThread may not complete on
+  a busy system.
+  [SEQUOIA-623] - In certain cases the read requests are not retried
+  following a backend failure
+  [SEQUOIA-624] - A cluster using persistent connections can hang
+  following a backend failure
+  [SEQUOIA-625] - Statement.execute() in a transaction systematically
+  triggers a schema refresh
+  [SEQUOIA-626] - Deadlock detection can try to abort a transaction
+  already aborting
+  [SEQUOIA-627] - Potential deadlock when terminating vdb worker
+  threads
+  [SEQUOIA-628] - Checkpoint names are not cluster-wide unique
+  [SEQUOIA-629] - Request completion is not updated in case of
+  broadcasted read requests
+  [SEQUOIA-630] - Recovery of multi-threaded requests hangs
+  [SEQUOIA-631] - In non-distributed environment, update[withKeys]
+  queries throw SQLExceptions
+  [SEQUOIA-632] - JDBC clients do not always reconnect following a
+  controller failure
+  [SEQUOIA-633] - Potential deadlock when a transaction is being
+  aborted and a task completes its execution simultaneously
+  [SEQUOIA-635] - disabling backend: java.lang.ClassCastException:
+  org.continuent.sequoia.common.jmx.management.BackendInfo
+  [SEQUOIA-636] - Cleaning up persistent connections following a
+  controller failure generates errors in the total order queue
+  [SEQUOIA-637] - Enable backend can hang on an active system, because
+  a log entry's status remains executing
+  [SEQUOIA-638] - Warning "No transaction medatada found for
+  transaction ... releasing locks manually." when replaying the
+  recovery log
+  [SEQUOIA-639] - At load VDB time, Error "Transaction ... has not
+  completed. Inserting a rollback in the recovery log" when fully
+  restarting the cluster
+  [SEQUOIA-640] - Failed to restore log: Detected inconsistency in
+  restore log operation, logs differ by x entries
+  [SEQUOIA-642] - AbstractTask object should store a separate lock
+  list per backend
+  [SEQUOIA-643] - Exception in thread "TokenTransmitter"
+  java.lang.IllegalArgumentException: timeout value is negative
+  [SEQUOIA-644] - Begin transactions are not reliably recorded
+  following a client failover
+  [SEQUOIA-645] - The system will hang sometimes while enabling a back
+  while persistent connections are active
+  [SEQUOIA-646] - Backend activation hangs when enabling backend
+  without load and replaying transactional requests (stored procedures
+  only)
+  [SEQUOIA-647] - Sometimes locks are not being released when an
+  autocommit request completes.
+  [SEQUOIA-648] - The user specified schema name is ignored while
+  loading stored procedure information
+  [SEQUOIA-649] - DDL requests can fail during recovery
+  [SEQUOIA-652] - Request completion is not always updated in case of
+  abort
+  [SEQUOIA-653] - Transaction locks are shared between backends
+  [SEQUOIA-654] - Opening a persistent connection when no backend is
+  available should return an error
+  [SEQUOIA-657] - Autocommit requests can generate duplicate
+  transaction ids
+  [SEQUOIA-658] - Exception on malformed insert queries
+  [SEQUOIA-660] - Scheduler does not properly suspend transactions
+  (race condition)
+  [SEQUOIA-662] - Cannot restore a mysql backend to consistent state
+  after failure: "Error thrown in operation copyLogFromCheckpoint"
+  [SEQUOIA-664] - The system will hang when enabling a backend under a
+  heavy load
+  [SEQUOIA-665] - Null pointer exception in DatabaseBackend with
+  SingleDB configuration
+  [SEQUOIA-666] - The recover thread gets an NPE when replaying a
+  rollback request
+  [SEQUOIA-667] - Calling getWarnings() on a closed ResultSet does not
+  throw SQLException
+  [SEQUOIA-668] - Calling getWarnings() on a closed non persistent
+  connection does not throw SQLException
+  [SEQUOIA-669] - Calling getWarnings() on a closed Statement does not
+  throw SQLException
+  [SEQUOIA-671] - Schema refresh should happen in transactional or
+  persistent connection context to prevent deadlock
+  [SEQUOIA-672] - Pb with transaction scheduling with deadlock with
+  two stored procedures scenario
+  [SEQUOIA-674] - Statement.execute("SELECT * FROM x ; SELECT * FROM
+  y") causes ClassCastException
+  [SEQUOIA-675] - The completion status for commits fo read-only
+  transaction does not get updated when the local backend fails
+  [SEQUOIA-676] - Controller hangs after 'restore log' failure
+  [SEQUOIA-677] - Shutdown can forget to disable some backends
+  [SEQUOIA-678] - NPE in DistributedVirtualDatabase.quitMember() when
+  shutting down simultaneously multiple controllers
+  [SEQUOIA-680] - java.lang.IndexOutOfBoundsException in
+  VirtualDatabaseShutdownThread.terminateVirtualDatabaseWorkerThreads()
+  (line 189)
+  [SEQUOIA-684] - There is a race condition in
+  AbstractScheduler.begin() that can cause failures when activity is
+  suspended
+  [SEQUOIA-686] - RequestManager is causing spurious error messages
+  under certain circumstances
+  [SEQUOIA-687] - shutdown vdb can hang when the other controller died
+  during commit of a transaction
+  [SEQUOIA-691] - Controller complains request not being the head of
+  total order (Removing even if it not the head)
+  [SEQUOIA-692] - Failover on commit fails with non-persistent
+  connections
+  [SEQUOIA-693] - "rollback to savepoint" SQL statement not properly
+  mapped to JDBC rollback to savepoint
+  [SEQUOIA-694] - NPE in DIstributedVirtualDatabase when no recovery
+  log is configured
+  [SEQUOIA-695] - Failover happening during a commit may let the
+  VirtualdatabaseWorkerThread in a bad state
+  [SEQUOIA-696] - Virtual database shutdown is slow
+
+# New Feature
+  [SEQUOIA-656] - Add post-restore option to PostgreSQL backupers
+
+# Improvement
+  [SEQUOIA-535] - Show checkpoints command should display log id
+  [SEQUOIA-545] - Changed locking design to allow asynchronous backend
+  execution and deterministic recovery log replay
+  [SEQUOIA-577] - fix erratic history behavior for the text console
+  [SEQUOIA-580] - Recovery log pagination is very slow
+  [SEQUOIA-592] - Disallow self-dump-transfer
+  [SEQUOIA-595] - Perform automatic recovery log sanity checks after
+  complete cluster outage
+  [SEQUOIA-650] - Upgrade to JGroups 2.3 and switch to SEQUENCER for
+  total ordering
+  [SEQUOIA-681] - Externalize DOCTYPE in controller constant
+  properties
+
+-------------------------------------------------
+
+Sequoia 2.8.2
+Release date: 7 June 2006
+CVS Tag: sequoia-2_8_2
+
+Description: bug fix release.
+
+# Bug
+  [SEQUOIA-496] - Unable to shutdown controller after backend failure
+  and recovery
+  [SEQUOIA-528] - Field constructor can generate NullPointerException
+  [SEQUOIA-529] - MySQL backuper does not dump stored procedures
+  [SEQUOIA-530] - The sequoia-user-guide-2.8.1.pdf file does not
+  appear to be present for download
+  [SEQUOIA-532] - The connection pool should restore the transaction
+  isolation level to its default value before returning a connection
+  to the client
+  [SEQUOIA-533] - The controller must make sure the transaction
+  isolation level on the backend connection matches the client setting
+  [SEQUOIA-534] - Change the STORED_PROCEDURE_PATTERN_STRING regexp in
+  the StoredProcedure class to match "{?=call nextval(?)}"
+  [SEQUOIA-536] - Recovery log automatic resync does not clear invalid
+  checkpoints
+  [SEQUOIA-537] - Shutdown checkpoint is set before disabling backends
+  which invalidates backend on automatic recovery
+  [SEQUOIA-538] - Fragmented recovery log resynchronization fails with
+  error 'Cannot find expected log entry ...'
+  [SEQUOIA-540] - Schema not updated whithin transaction executing DDL
+  [SEQUOIA-543] - Wrong remapping of setObject() to setInt() for
+  TINYINT and SMALLINT types
+  [SEQUOIA-544] - "Invalid null login in log entry" on log rollback
+  [SEQUOIA-546] - Useless warning about missing default controller
+  configuration file
+  [SEQUOIA-547] - show virtualdatabase config does not write out the
+  WaitForCompletion enforceTableLocking attribute
+  [SEQUOIA-548] - The controller can hang following a backend failure
+  [SEQUOIA-549] - Failed to rollback read-only transaction after
+  backend failure
+  [SEQUOIA-552] - Examples of virtual database's configuration files
+  contain few mistakes for sequoia
+  [SEQUOIA-553] - Read Only Transaction - Inconsistent Recovery Log
+  [SEQUOIA-555] - Error On Force Enable Of Backend
+  [SEQUOIA-557] - RecoveryLog definition out of sync in user
+  documentation
+  [SEQUOIA-559] - DVD#handleRemoteDisableBackendNotification not
+  thread-safe
+  [SEQUOIA-560] - Failed to restore backend after backend failover on
+  Connection.rollback()
+  [SEQUOIA-562] - Locks are not released when a controller has no more
+  backends
+  [SEQUOIA-563] - Begin statement may be logged twice in recovery log.
+  [SEQUOIA-566] - Statement.execute() and PreparedStatement.execute()
+  do not fail over correctly
+  [SEQUOIA-569] - Execution time recorded in recovery log is not
+  correct (negative values)
+  [SEQUOIA-570] - Disabling backend has been assigned a select request
+  but it cannot start a new transaction for it
+  [SEQUOIA-571] - Error when closing persistent connections on a
+  disabling backend
+  [SEQUOIA-574] - Transactions are not always cleaned up following a
+  controller failure when clients do not reconnect
+  [SEQUOIA-575] - DatabaseSchema.removeTable does not remove the table
+  [SEQUOIA-578] - Missed close persistent connection command while
+  enabling backend
+  [SEQUOIA-579] - Task may hang forever in backend task queue without
+  load
+  [SEQUOIA-584] - Resyncing recovery log under load may drop entries.
+
+# New Feature
+  [SEQUOIA-551] - MS SQL Server backuper
+
+# Improvement
+  [SEQUOIA-558] - Support for mysql 3 dump operation
+
+-------------------------------------------------
+
+Sequoia 2.8.1
+Release date: 5 May 2006
+CVS Tag: sequoia-2_8_1
+
+Description: major release.
+
+# Bug
+  [SEQUOIA-258] - Missing Package.html in generated Sequoia API
+  [SEQUOIA-319] - Auto Recovery Log Sync On Controller Restart Can
+  Cause Foreign Key Violation
+  [SEQUOIA-344] -
+  DatabaseBackend.getConnectionForTransactionAndLazyBeginIfNeeded()
+  can cause a system hang
+  [SEQUOIA-380] - Prepared statements with no parameters are wrongly
+  proxied as Statement instead of PreparedStatement
+  [SEQUOIA-384] - Slow Performance of CallableStatement.executeQuery()
+  in Distributed Environment
+  [SEQUOIA-388] - Failover Of CallableStatement.executeQuery() In
+  Multithreaded Requests Causes Thread To Hang
+  [SEQUOIA-389] - Out parameters with scale : exceptions "Backend c2b1
+  failed (null)" when executing a callable statement
+  [SEQUOIA-391] - Support for inout parameters in CallableStatement
+  [SEQUOIA-393] - Threads waiting to get a backend database connection
+  can be left hanging when the backend fails
+  [SEQUOIA-394] - Threads can deadlock trying to disable a backend
+  following a failure
+  [SEQUOIA-395] - Distributed execution of update with keys does not
+  properly notify the scheduler
+  [SEQUOIA-396] - Recovery fails to replay SELECT requests that
+  requires a cursor name to be set
+  [SEQUOIA-397] - Failed backend can notify twice the failure of its
+  aborted tasks
+  [SEQUOIA-398] - Are connections are some times returned to
+  releaseConnectionInAutoCommit with autocommit set to false
+  [SEQUOIA-399] - The system can hang following recovery from a
+  backend failure while executing stored procedures
+  [SEQUOIA-400] - ResultSet.getAsciiStream may fail with SQL Exception
+  in getBytes()
+  [SEQUOIA-401] - Streams opened by getBinaryStream, getAsciiStream,
+  ... are not closed
+  [SEQUOIA-403] - Distributed tasks can be delayed for 10 seconds
+  [SEQUOIA-404] - RequestResultFailoverCache does not properly store
+  and cleanup entries for transactions on persistent connections
+  [SEQUOIA-405] - RequestResultFailoverCache entry timeout does not
+  match configurable client failover timeout
+  [SEQUOIA-407] - RequestResultFailoverCache thread is never
+  terminated
+  [SEQUOIA-413] - Warning messages generated for readonly stored
+  procedures when a backend is disabled
+  [SEQUOIA-414] - Readonly stored procedures are not being retried
+  when a backend fails
+  [SEQUOIA-415] - CallableStatement.executeQuery() Fails On All
+  Controllers
+  [SEQUOIA-420] -
+  VirtualDatabase.getDatabaseSchemaFromActiveBackends() can leave the
+  controller hung
+  [SEQUOIA-421] - Update operations executed only on a local
+  controller are failing
+  [SEQUOIA-422] - Exception missing when trying to execute unsupported
+  features
+  [SEQUOIA-423] - Stored procedure semantic information is not updated
+  dynamically
+  [SEQUOIA-425] - Failure of Statement.executeUpdate (with or without
+  keys) notifies twice the scheduler
+  [SEQUOIA-426] - Request cache is flushed on stored procedure
+  execution even if connection is set to read-only
+  [SEQUOIA-427] - "Message of cause: null" when
+  Statement.executeUpdateWithKeys()
+  [SEQUOIA-428] - "Transaction 562949953421360 is not active,
+  rejecting the commit." when executing Statement.executeQuery()
+  [SEQUOIA-430] - Named out parameters are not properly decoded
+  [SEQUOIA-431] - transaction issue -
+  "writeExecutedInTransaction"-Error when a connection is used twice
+  and the isolation level is set up for 2.nd time on same connection
+  [SEQUOIA-433] - CallableStatement batches are transformed into
+  PreparedStatements
+  [SEQUOIA-434] - Readonly stored procedures are sometimes being
+  recorded in the recovery log
+  [SEQUOIA-435] - The query for selecting dynamic semantic information
+  does not use ANSI syntx for column aliases
+  [SEQUOIA-436] - CLI Console does not accept 'connect controller'
+  command after you shutdown the controller you are connected to
+  [SEQUOIA-438] - statement .execute() takes a new connection when
+  executing in a persistent connection
+  [SEQUOIA-439] - Connection properties not properly handled by driver
+  URL cache
+  [SEQUOIA-445] - Recovery sometimes executes DDL and DML out of order
+  [SEQUOIA-446] - getExportedKeys is not thread safe
+  [SEQUOIA-447] - Unable to shutdown controller after failover on
+  Statement.execute()
+  [SEQUOIA-449] - can create multiple dump entries with same name
+  (single file)
+  [SEQUOIA-453] - A debugging statement was left in the code
+  [SEQUOIA-461] - java.io.OptionalDataException when unmarshalling
+  message containing a stored procedure result
+  [SEQUOIA-462] - Wrong read request (select in non existing table)
+  may fail when having only one controller with wrong error message
+  [SEQUOIA-463] - Failed to commit transaction after backend failure
+  [SEQUOIA-464] - No exception thrown on client side when commiting
+  transaction with no enabled backend (after backend failure)
+  [SEQUOIA-465] - Calling commit when autocommit is enabled should be allowed
+  [SEQUOIA-466] - Unable to shutdown controller after failover
+  [SEQUOIA-467] - PreparedStatement.executeQuery() failed after
+  backend failure
+  [SEQUOIA-470] - Enable backend hangs
+  [SEQUOIA-472] - Unable to access to DatabaseMetaData.getProcedure()
+  after backend failure
+  [SEQUOIA-473] - Unable to access to DatabaseMetaData.getTables()
+  after backend failure
+  [SEQUOIA-474] - NPE when replaying recovery log when enabling a
+  backend
+  [SEQUOIA-475] - Unable to shutdown controller after controller
+  failure and recovery
+  [SEQUOIA-478] - Unable to enable backend after backend failure and
+  recovery
+  [SEQUOIA-479] - Statement.executeQuery() fails after backend failure
+  ("Disabling backend because connections failed inside a
+  transaction")
+  [SEQUOIA-480] - Transfer backend does not work
+  [SEQUOIA-482] - Restore log command does not work
+  [SEQUOIA-483] - Continuous warnings about 'request ....did not
+  remove itself from the total order queue' after backend disabled
+  [SEQUOIA-496] - Unable to shutdown controller after backend failure
+  and recovery
+  [SEQUOIA-497] - Scheduler not notified in case of "Select statements
+  that perform writes" failure
+  [SEQUOIA-498] - Remapping of CallableStatement.executeXXX to
+  statement.executeXXX causes protocol corruption
+  [SEQUOIA-499] - Begins are not recorded in the recvoery log in
+  certain cases
+  [SEQUOIA-500] - Got wrong DatabaseMetaData after backend failure
+  [SEQUOIA-501] - Failed to execute Statement.executeQuery() in
+  transactional mode after backend failure ("Transaction is not
+  started")
+  [SEQUOIA-503] - Controller can hang when a backend error occurs
+  [SEQUOIA-505] - Failed to execute CallableStatement.executeQuery()
+  of a read only stored procedure after backend failure
+  [SEQUOIA-507] - Transfer dump operation does not handle existing
+  dump on remote controller
+  [SEQUOIA-508] - Misleading debug message in code that fetches
+  semantic information
+  [SEQUOIA-509] - "transfer backend" command does not report error and
+  may leave backend in inconsistent state
+  [SEQUOIA-512] - The recovery thread should not sleep when an all the
+  statements in the pending tacks list belong to open transactions
+  [SEQUOIA-514] - DatabaseBackend.isJDBCConnected() leaks connections
+  [SEQUOIA-516] - restore log command can be issued on local
+  controller
+  [SEQUOIA-517] - When enforceTableLocking is enabled autocommit
+  transactions can hang
+  [SEQUOIA-520] - Controller failure between begin and first write
+  request does not restore writeExecutedInTransaction properly on
+  failover
+  [SEQUOIA-521] - Transaction rollback removes entries from recovery
+  log even if transaction updates sequences
+  [SEQUOIA-522] - Restore connection state does not properly handle
+  failure after commit/rollback
+  [SEQUOIA-523] - Duplicate controller entries in the URL can cause a
+  hang in the client
+  [SEQUOIA-524] - Stored procedure without semantic information are
+  replayed out of order by recovery log
+  [SEQUOIA-526] - Improper unlog of rollback/abort on controllers
+  without enabled backends when last node of cluster fails
+
+# New Feature
+  [SEQUOIA-408] - Add database schema dump feature
+  [SEQUOIA-409] - Add on-demand SQL string parsing feature in the CLI
+  console
+  [SEQUOIA-410] - Add request dump feature
+  [SEQUOIA-411] - Add scheduler queue dump feature
+  [SEQUOIA-412] - Add parsing cache dump feature
+  [SEQUOIA-417] - Integrate PostgreSQLSplitPlainTextBackuper allowing
+  to split dump
+  [SEQUOIA-418] - Integrate init.d script for SuSE
+  [SEQUOIA-451] - CallableStatement.wasNull not implemented
+  [SEQUOIA-476] - JDBC 3 Connection.preparedStatement/prepareCall with
+  ResultSet holdability or columns of auto-generated keys
+  [SEQUOIA-477] - Support for JDBC3 ResultSet holdability
+  [SEQUOIA-525] - Block undeterministic SQL statements to prevent
+  cluster inconsistencies
+
+# Task
+  [SEQUOIA-257] - User guide update.
+  [SEQUOIA-337] - Add feature to dump request queues (for
+  debug/diagnosis)
+  [SEQUOIA-347] - add feature to dump recovery log (for
+  debug/diagnosis)
+  [SEQUOIA-392] - Scheduler must keep track of exact list of queries
+  executing in the controller
+  [SEQUOIA-406] - Make exception messages consistent with function
+  names in driver.Connection
+
+# Improvement
+  [SEQUOIA-105] - properties list overrides URL properties
+  [SEQUOIA-340] - add a debug mode to the admin console
+  [SEQUOIA-351] - Paginate dump of recovery log
+  [SEQUOIA-440] - Invalid properties in driver connect can cause
+  ClassCastException errors
+  [SEQUOIA-448] - Make CLI console messages more readable
+  [SEQUOIA-452] - Allow sub classing of the Sequoia Connection class
+  [SEQUOIA-454] - Invalidated dump records must be removed when
+  restarting a virtualdatabase after a controller crash
+  [SEQUOIA-504] - Restore log is VERY SLOW
+
+-------------------------------------------------
+
+Sequoia 2.7
+Release date: 24 Mar 2006
+CVS Tag: sequoia-2_7
+
+Description: major release including new Sequoia Administrator's
+Guide, experimental support of CallableStatement out parameters and
+many bug fixes.
+
+# Bug
+  [SEQUOIA-265] - Sequoia 2.5 restore command fails: no file found in
+  /var/backups/var/backups/
+  [SEQUOIA-280] - We need fix Octopus' restore bug
+  [SEQUOIA-282] - Shutdown Virtualdatabase Command Blocks During
+  Multi-Threaded Requests
+  [SEQUOIA-310] - Distributed demo is not working in Sequoia 2.6
+  [SEQUOIA-313] - Controller hangs in transaction
+  [SEQUOIA-315] - java.io.FileNotFoundException when trying to restore
+  backend from Octopus dump
+  [SEQUOIA-324] - setNull broken by setBytes(null) SEQUOIA-322 fix
+  [SEQUOIA-325] - Schema Refresh On Disable After Rollback
+  [SEQUOIA-326] - Virtual DB config DTD requires
+  DatabaseBackend-element, prevents startup of "empty" controller.
+  [SEQUOIA-327] - Schema not properly refreshed on rollback of a
+  transaction with stored procedures executing DDL
+  [SEQUOIA-336] - MySQL backuper does not support JDBC URL options
+  [SEQUOIA-342] - Incorrect JDBC port default value in
+  ControllerConstants
+  [SEQUOIA-343] - Persistent connection not cleaned up when using
+  driver transparent connection pooling
+  [SEQUOIA-344] -
+  DatabaseBackend.getConnectionForTransactionAndLazyBeginIfNeeded()
+  can cause a system hang
+  [SEQUOIA-345] - SELECT ... FOR UPDATE posted twice in total order
+  queue
+  [SEQUOIA-346] - DELETE only transaction do not log the commit
+  [SEQUOIA-350] - incorrect NULL value specification
+  [SEQUOIA-352] - Race condition in commit and rollback failover
+  implementation
+  [SEQUOIA-354] - "INSERT INTO " query assumption 
+  [SEQUOIA-355] - SELECT query recognition failure for ordered unions
+  [SEQUOIA-356] - SELECT ... FOR UPDATE not properly locked by
+  scheduler
+  [SEQUOIA-358] - Wrong query cache invalidation on DELETE requests
+  [SEQUOIA-359] - RaidDb1.disableBackend() does not always release its
+  write lock
+  [SEQUOIA-360] - Persistent connections should not attempt to retry
+  after connection failures
+  [SEQUOIA-361] - NPE when trying to use closed PreparedStatement
+  [SEQUOIA-362] - Statements starting with "(select" are wrongly
+  mapped to executeUpdate
+  [SEQUOIA-363] - Recovery can run out database connections when
+  recovering operations done through persistent connections
+  [SEQUOIA-364] - Recovery can fail when a persistent connection last
+  over the period where a backend is disabled and re-enabled.
+  [SEQUOIA-365] - Savepoints are not set on all controllers
+  [SEQUOIA-367] - Persistent connection closing not properly
+  broadcasted to remote controllers
+  [SEQUOIA-368] - SetAutoCommit(true) fails after transparent failover
+  on commit or rollback
+  [SEQUOIA-369] - Request ID counter not properly initialized
+  [SEQUOIA-370] - Transaction ID counter not properly initialized
+  [SEQUOIA-371] - Starting a transaction on a persistent connection
+  creates new connections
+  [SEQUOIA-373] - Recovery log does not store persitent connection id
+  on transaction begin
+  [SEQUOIA-374] - Sequoia demo does not add hsqldb.jar to the
+  classpath to allow Octopus to backup/restore databases
+  [SEQUOIA-378] - CallableStatement.executeQuery() Fails - Column
+  Index Out Of Range
+  [SEQUOIA-379] - Persistent connections are not closed by recovery in
+  all cases
+  [SEQUOIA-381] - Wrong value returned by Statement.getUpdateCount()
+  when returning generated keys
+  [SEQUOIA-385] - RecoveryLog parsing error
+  [SEQUOIA-386] - Failure to abort deadlocking transaction causes
+  infinite loop in deadlock detection thread
+  [SEQUOIA-387] - Recovery fails on prepared statements without
+  parameters
+  [SEQUOIA-390] - Opening and closing persistent connections generates
+  stack traces when a backend is disabled
+
+# New Feature
+  [SEQUOIA-210] - Support for named parameters in CallableStatements
+  [SEQUOIA-211] - Support for out parameters in CallableStatement
+
+# Improvement
+  [SEQUOIA-256] - Transparent recovery of results for failover during
+  execution of write queries
+  [SEQUOIA-332] - setAutocommit should provide automatic transparent
+  failover
+  [SEQUOIA-372] - Distributed Sequoia demo does not include a recovery
+  log in config files
+  [SEQUOIA-375] - Make Octopus output redirection optional
+  [SEQUOIA-376] - Sequoia distributed demo must use standard cluster
+  initialization procedure
+  [SEQUOIA-377] - Show backend command should display number of open
+  persistent connections
+
+-------------------------------------------------
+
+Sequoia 2.6.1
+Release date: 21 Feb 2006
+CVS Tag: sequoia-2_6_1
+
+Description: bug fixes release.
+
+# Bug
+  [SEQUOIA-279] - DatabaseMetaData getUDTs shows an
+  ArrayIndexOutOfBoundsException
+  [SEQUOIA-292] - VirtualDatabaseWorkerThread does not have an
+  accurate accounting of savepoints
+  [SEQUOIA-293] - An unavailable controller prevents applications from
+  stopping
+  [SEQUOIA-297] - can not load valid raidb0 vdb.xml file
+  [SEQUOIA-302] - Staring Sequoia Console: "Can't find bundle for base
+  name"
+  [SEQUOIA-303] - Rollback commands does not support request delimiter
+  [SEQUOIA-307] - On Restart Of Controller Virtual Database Fails To
+  Load
+  [SEQUOIA-309] - Bad virtual database name stored in Recovery Log
+  when initializing backend
+  [SEQUOIA-320] - tgz and zip distrib demos don't work out of the box
+  [SEQUOIA-321] - Commit not logged after
+  CallableStatement.executeQuery()
+  [SEQUOIA-322] - getBytes() returns non-null after setBytes(null)
+  [SEQUOIA-323] - Wrong encoding declaration (UTF8 instead of UTF-8)
+
+# Improvement
+  [SEQUOIA-274] - MySQL backuper should be JDK 1.4 compliant
+  [SEQUOIA-298] - Improved error detection/handling in the
+  PostgreSQL-backuper's
+  [SEQUOIA-301] - Use Properties instead of ResourceBundle in
+  ControllerConstants.java
+  [SEQUOIA-317] - Remove obsolete Shutdown element from controller DTD
+
+-------------------------------------------------
+
+Sequoia 2.6
+Release date: 30 Jan 2006
+CVS Tag: sequoia-2_6
+
+Description: major release including many bug fixes.
+
+# Bug
+  [SEQUOIA-204] - Unresponsive recovery DB could lead to infinite loop
+  blocking the controller
+  [SEQUOIA-224] - Recovery hang
+  [SEQUOIA-243] - Potential out of order logging in recovery log
+  [SEQUOIA-251] - Transactions and persistent connections cleanup when
+  both controller and client die
+  [SEQUOIA-260] - Disabling Backend With Pending Requests Causes
+  Controllers To Lock
+  [SEQUOIA-263] - Automatic failover of client connections does not
+  work
+  [SEQUOIA-264] - recovery process does not handle grant
+  [SEQUOIA-268] - "transfer backend" commands throws a
+  NoSuchElementException if wrong number of parameters
+  [SEQUOIA-270] - Controller Failover During Transaction Causes
+  Request To Fail
+  [SEQUOIA-281] - Restoring Log On New Controller During Requests
+  Caues Recovery Logs To Be Out of Sync
+  [SEQUOIA-287] - Controllers without enabled backends log queries out
+  of order
+  [SEQUOIA-289] - Commit()/commit() and rollbakc()/rollback() fail
+  with "No transactionMarkerMetaData found"
+  [SEQUOIA-291] - Disable Backends During Multi-threaded Requests
+  Cause All Backends To Disable
+# New Feature
+  [SEQUOIA-254] - Persistent connection context in autocommit mode
+  [SEQUOIA-266] - Integrate MySQL backuper contributed by Mykola
+  Paliyenko
+  [SEQUOIA-272] - Add support for foreign keys
+# Improvement
+  [SEQUOIA-191] - Horizontal cluster consistency check on controller
+  startup for distributed virtual database
+  [SEQUOIA-252] - Transparent user login management
+  [SEQUOIA-255] - Automatically disable backends on inconsistent write
+  request execution without failures
+  [SEQUOIA-259] - Externalized environnement variables in
+  controller.sh
+  [SEQUOIA-267] - Use loaded vdb.xml doctype and root in saved conf
+  files
+  [SEQUOIA-269] - Better message when no backend for "show backend"
+  command
+  [SEQUOIA-273] - Implement transparent failover for database metadata
+  gathering
+  [SEQUOIA-284] - Upgrade to hedera-commons to v1.4
+
+-------------------------------------------------
+
+Sequoia 2.5
+Release date: 5 Jan 2006
+CVS Tag: sequoia-2_5
+
+Description: major release (parallelized recovery log replay, upgraded
+external jars including JGroups, improved PreparedStatement
+serialization, ...).
+
+Warning: new field has been added in recovery log so old recovery log
+is now incompatible with new controller. Also as protocol has changed,
+new driver is also be used.
+
+# Upgraded Jaxen to 1.1-beta-8 version.
+# Upgraded Dom4j to 1.6.1 version.
+# Fixed bugs:
+  [SEQUOIA-154] - Installed .bat files not working under win XP
+  [SEQUOIA-179] - In BackendTaskQueues.getNextEntryToExecute() the while
+  condition is always true
+  [SEQUOIA-213] - Queries ResultSet parameters no more taken into
+  account
+  [SEQUOIA-220] - Stored Procedure Names Missing, Causing
+  CallableStatement.execute() To Fail
+  [SEQUOIA-230] - "Conflict detected on column name (label )" with
+  demo-raidb1.sh
+  [SEQUOIA-232] - getGeneratedKeys failed for MySQL 4.1.x
+  [SEQUOIA-233] - FetchNextResultSetRows fails when fetchsize = 1 after
+  an execute() with a select query
+  [SEQUOIA-236] - statementExecute with non-select request causes
+  protocol exception
+  [SEQUOIA-237] - Some queries require strict table locking to prevent
+  cluster inconsistencies
+  [SEQUOIA-238] - Parsing metadata cache breaks request scheduling
+  [SEQUOIA-239] - Macro replacement does not work in PreparedStatement
+  parameters
+  [SEQUOIA-242] - Recovery During Enable Backend Throws Runtime
+  Exception
+  [SEQUOIA-244] - Error while parsing SQL in sequoia
+  [SEQUOIA-245] - Change AbstractPostgreSQLBackuper To Be Less Strict on
+  Database Names
+  [SEQUOIA-246] - Read-only transactions started on controller without
+  backends are not properly commited/rollbacked
+  [SEQUOIA-247] - Request Did Not Remove Itself From The Total Order
+  Queue with No Recovery Log
+  [SEQUOIA-248] - Recovery Fails, Requests Seem To Be Replayed Out Of
+  Order
+  [SEQUOIA-253] - GeneratedKeysResult is not serializable
+# New Feature:
+  [SEQUOIA-62] - Incomplete implementation of
+  PreparedStatement.getMetaData() method
+  [SEQUOIA-240] - Support for "IF EXISTS" in "DROP TABLE" statements
+# Improvements:
+  [SEQUOIA-92] - Some commands need to flush the connection pool
+  [SEQUOIA-133] - Move serialization from modified UTF-8 to standard UTF-8
+  [SEQUOIA-202] - Support inlined batch requests
+  [SEQUOIA-207] - Store dump dates as timestamp instead of string
+  [SEQUOIA-234] - DerbyEmbeddedBackuper does not support dump transfer
+  [SEQUOIA-235] - Upgrade to JGroups 2.2.9
+  [SEQUOIA-241] - Support schema names
+  [SEQUOIA-250] - Implement binary serialization for BigDecimal / BigInteger
+ 
+-------------------------------------------------
+
+Sequoia 2.4
+Release date: 9 Dec 2005
+CVS Tag: sequoia-2_4
+
+Description: maintenance release - see below for details.
+
+# Integrated Hedera 1.1.
+# Fixed bugs:
+  SEQUOIA-131: shell scripts of the demo not executable (tgz and zip
+  distribution)
+  SEQUOIA-148: Database backends should have different logical names
+  even across different controllers
+  SEQUOIA-153: Incorrect backend content after disable+enable under
+  write load
+  SEQUOIA-173: Distributed Raid and Inserts when no more backends are
+  available
+  SEQUOIA-177: Statement#execUpdate(..., RETURN_GENERATED_KEYS) always
+  returns "1".
+  SEQUOIA-178: Log to store checkpoint in the RecoveryLog is not
+  consistent with other log events
+  SEQUOIA-180: removeCheckpoint() Call Throws SQLException
+  SEQUOIA-182: CREATE SEQUENCE and DROP SEQUENCE not supported
+  SEQUOIA-183: Potential closed connections can be retrieved from
+  connection manager
+  SEQUOIA-184: Request hangs when disabling a backend
+  SEQUOIA-185: Lazy transaction start inserts wrong transaction id
+  SEQUOIA-186: REVOKE and GRANT don't appear to be supported
+  SEQUOIA-187: java.lang.Float -> Numeric breaks
+  SEQUOIA-194: ReportManager generates NPE when controller terminates
+  with fatal error
+  SEQUOIA-195: Invalid number of worker threads causes a NPE
+  SEQUOIA-200: Backup After Transaction Throws Error
+  SEQUOIA-206: Begin Statements Not Logged In Recovery Log
+  SEQUOIA-208: Distinguish clearly use of BackendInfo from
+  DatabaseBackend objects
+  SEQUOIA-215: Wrong import
+  org.continuent.sequoia.controller.authentication.PasswordAuthenticator
+  in doc\examples\jmx\ demo files
+  SEQUOIA-216: There is no disableBackendWithCheckpoint(String
+  databaseBackendName, String dataString checkpoint)
+  SEQUOIA-217: Distributed CallableStatement.executeUpdate always
+  throws a NoMoreBackendException
+  SEQUOIA-221: MetadataCache not working with queries returning
+  multiple ResultSets with different metadata
+  SEQUOIA-223:
+  AbstractLoadBalancer.executeCallableStatementExecuteOnBackend()
+  Throws NPE
+  SEQUOIA-225: InsertRequest Does Not Support "insert into tablename
+  (params)values(vals)"
+# New Feature:
+  SEQUOIA-227: Add support for Statement.getMoreResult(int)
+# Task Done:
+  SEQUOIA-156: Rewrite PostgreSQL URL parsing for backuper using
+  regular expression
+  SEQUOIA-190: Deprecate unsupported schedulers
+  SEQUOIA-197: Remove "parsing" from JDBC driver
+  SEQUOIA-199: Implement Statement.execute()
+# Improvements:
+  SEQUOIA-160: Line separator should be set at connection
+  establishment time
+  SEQUOIA-176: Optimize AbstractScheduler.activeTransactions and fix
+  concurrency bug
+  SEQUOIA-212: Implement better driver/controller synchronization
+  SEQUOIA-214: Allow for the kind of init method and/or xml config tag
+  for allowing to mark stored procedure Read-only
+  SEQUOIA-218: Add support for ResultSetMetaData.getColumnLabel
+  SEQUOIA-226: Change default driver load balancing policy to
+  round-robin
+
+-------------------------------------------------
+
+Sequoia 2.3
+Release date: 9 Nov 2005
+CVS Tag: sequoia-2_3
+
+Description: maintenance release - see below for details.
+
+# Added Windows Service contribution from Bernard.McGourty@aspect.com.
+# Fixed bugs:
+  SEQUOIA-149: Exception with JBoss 3.2.x and MySQL 4.0.x
+  SEQUOIA-150: getGeneratedKeys failed for MySQL 4.0.x
+  SEQUOIA-151: Unable to execute "SELECT @@identity"
+  SEQUOIA-152: Incorrect error message when transaction is aborted
+  SEQUOIA-155: when quitting the sql client module, I can't open it
+  anymore
+  SEQUOIA-157: Controller Shutdown Does Not Kill Process After
+  Initializing
+  SEQUOIA-158: Stored Procedure Call in Auto Commit Mode Hangs When
+  Exectuing Transactions
+  SEQUOIA-162: Postgresql backends not consistent when using
+  sub-select in update queries
+  SEQUOIA-163: incorrect initialization of fIsReadOnly in
+  org.continuent.sequoia.common.protocol.Field#copyResultSetMetaData
+  SEQUOIA-164: IllegalThreadStateException when enabling a disabled
+  backend on JDK 1.5.0_03
+  SEQUOIA-165: IndexOutOfBoundsException when using Distribution and
+  JMX is not enabled
+  SEQUOIA-167: Table names including a schema prefix are sometimes
+  rejected.
+  SEQUOIA-168: NPE if WaitForCompletion is not specified
+  SEQUOIA-169: NPE when not using a recovery log
+  SEQUOIA-170: Don't hide nested exceptions when
+  DistributedVirtualDatabase startup fails
+  SEQUOIA-172: Incorrect removal from a list in RequestManager
+# Tasks done: 
+  SEQUOIA-145: activation.jar/mail.jar Missing From lib Directory
+# Improvement done:
+  SEQUOIA-146: 2 Common INFO Messages Marked As DEBUG?
+  SEQUOIA-171: Register JVM MBeans on Java 5
+
+-------------------------------------------------
+
+Sequoia 2.2
+Release date: 14 Oct 2005
+CVS Tag: sequoia-2_2
+
+Description: maintenance release - see below for details.
+
+# Fixed SEQUOIA-144 (controller failure not properly handled by
+  distributed virtual database).
+# Fixed SEQUOIA-142 (large files in .java/ directory could cause
+  java.lang.OutOfMemoryError when administrating virtual database).
+# Fixed stored procedure unlog that was throwing a class cast exception.
+# Removed driverProcessed URL option in driver. Now proxying mode 
+  (driverProcessed=false) automatically happens on PreparedStatements. This 
+  also obsoletes the booleanTrue and booleanFalse options that have been
+  removed. PreparedStatement code becomes much more readable and setBytes
+  method should work in all cases.
+# Removed none Blob filter as it does not properly convert data and cannot be
+  fixed. Base64 is now the default and Base64Zip has been added (check the DTD
+  for changes).
+# Added ControllerFactory to centralize factories on controller side.
+# Fixed transaction aborting that would only cancel the in-flight statement
+  execution but not properly rollback the transaction.
+# Fixed SEQUOIA-111 where stored procedure would hang in transaction scheduler.
+# Fixed request timeouts in distributed RAIDb-1 and RAIDb-2 that where passed
+  as milliseconds to the group communication instead of seconds.
+# Real login and passwords in connection manager definition are now implied and
+  default to the virtual login and password values.
+# Connection manager pool default values are now defined in the DTD.
+
+-------------------------------------------------
+
+Sequoia 2.1
+Release date: 21 Sep 2005
+CVS Tag: sequoia-2_1
+
+Description: Initial release based on C-JDBC 2.0.
+
+# BackupManager now only allows one backuper per dump format. Added some extra
+  sanity checks at backuper load time.
+# Fixed SEQUOIA-87 : schema udpates are now properly tracked as well as 
+  modifications made by each transaction. Transaction rollback now invalidates
+  only necessary structures (caches or schemas) according to what was executed
+  in the transaction that rollbacks.
+# Added support for database specific types that are now serialized 
+  transparently (but requires the classes to be present in the client 
+  application classpath).
+# Fixed bug SEQUOIA-6 where macros where not always correctly replaced. The
+  new replacement is based on JDK 1.4 regular expressions.
+# Added support for multithreaded write and logical locking transaction 
+  scheduling with priority inversion.
+# Fixed RandomWaitPoolConnectionManager synchronization that was broken in 
+  C-JDBC 2.0.1. Problem reported by Michael Plezbert.
+# Fixed bug SEQUOIA-88: at the end of restore, delete the octopusDir instead
+  of path.
+# Fixed driver streaming to send SQL template (skeleton) even in driver 
+  processed mode if controller requires it.
+# Fixed SEQUOIA-86 : stored procedures should now be properly merged even if 
+  they have the same name but different signatures.
+# Fixed bugs #SEQUOIA-64, #SEQUOIA-65, #SEQUOIA-67
+  It was not a deadlock. it was a wait on a object which could never be 
+  possibly notified: RAIDB1 load balancer was waiting for the backend worker 
+  thread to be notified on the of the end of the kill thread task but is was 
+  never notified because the backend worker thread does not exist if the 
+  backend is read-enabled.
+# Changed condition of DatabaseBackend.isWriteEnabled(): the method will now 
+  return false if the backend is in the disabling state to fix bugs 64? 65, 67
+# Refactored code to take into account separately 
+  DatabaseBackend.isWriteEnabled() and isDisabling()
+# Fixed virtual database shutdown in distributed mode where backends were not
+  disabled on the last remaining controller in the cluster.
+# Fixed controller shutdown problem in SAFE and FORCE modes that would fallback
+  to WAIT mode and terminate the recovery log before disabling the backends.
+# Fixed synchronization problem in VariablePoolConnectionManager that would
+  prevent its correct termination. Also fixed release time inconsistencies
+  reported by Ray Matthes.
+# Fixed OutOfBoundException in RAIDb-1 and RAIDb-2 rollback in case a backend 
+  was late to execute previous queries in the rollbacked transaction. Bug
+  reported by Christophe Taton.
+# Changed connection pools to use data structures with less synchronization 
+  overhead.
+# Fixed recovery log cleaning to use the proper SQL column name if it has been
+  overridden in the configuration file.
+# Fixed bug in VariablePoolConnectionManager that did not properly update pool
+  size on bad connection replacement. Bug reported by Ray Matthes.
+# Removed all configuration samples (*.xml except jg-magic-map.xml) contained in
+  the original jgroups jar file to allow Hedera to load the right configuration
+  file (SEQUOIA_HOME/config/total-token.xml)
+# Fixed bug in type REAL, FLOAT, DOUBLE, DECIMAL, NUMERIC conversion and
+  implemented scale setting for DECIMAL and NUMERIC.
+# Minor improvements in build process (generated Javadoc with links to source and
+  J2SE Sun javadoc, replaced IzPack tar.gz by needed jar, improved SplitXmlTask,
+  added missing examples in binary distribution, ...).
+# Added binary (pg_dump --format=c) PostgreSQL backuper (merged Dylan Hansen
+  contribution on C-JDBC code base). Provided PostgreSQL backupers are now
+  PostgreSQLPlainTextBackuper and PostgreSQLBinaryBackuper.
+# Updated Ant to 1.6.5.
+# Externalized SQL interpretation in regular expressions defined in 
+  DriverRegExp class. Statement class now uses these regular expressions and 
+  accepts a wider range of ANSI SQL compliant requests.
+# Mapped BEGIN/COMMIT/RELEASE SAVEPOINT/ROLLBACK/ROLLBACK TO SAVEPOINT/SET
+  TRANSACTION READ ONLY/SET TRANSACTION ISOLATION/SAVEPOINT SQL statements to
+  their corresponding JDBC method calls.
+# Added support of the following jdbc urls for PostgreSQL backuper:
+  jdbc:postgresql://host/dbname?param1=foo,param2=bar
+  jdbc:postgresql:dbname?param1=foo,param2=bar
+# Added new bindir option allowing to set directory of the postgresql binaries.
+# Added -e (--exitonerror) console option allowing to exit on error in non
+  interactive mode.
+# Fixed cleanup of total order queue on aborts (usually happens when a 
+  connection is closed while it is in a transaction but has not played any
+  query in that transaction). This would block further query execution.
+# Fixed DriverSQLException(SerializableException) bug introduced
+  (unfortunately) just before 2.0rc1. Controller stack trace was lost in
+  the driver due to bad constructor chaining.
+# Integrated fix from Ray Matthes on wrong instanceof in execute write request 
+  with keys in distributed mode.
+# Fixed [SEQUOIA-2] to display the virtual database configuration file name in
+  debug mode.
+# Upgraded install file for IzPack 3.7.2.
+# Upgraded libs to commons logging 1.0.4, crimson 1.1.3, log4j 1.2.11, 
+  mx4j 3.0.1, Octopus 3.4.1, IzPack 3.7.2.
+# Removed unused libraries.
+# Completed Hedera integration.
+# Refactored IzPack install to make each package self-contained and installable
+  separately.
+# Controller no more has sequoia-driver nor hsqldb in its classpath. They 
+  belong to the console and the demo, respectively. They are added when needed
+  in the drivers/ directory.
+# Changed packaging for jars to make it more modular.
+# Removed all references to DriverResultSet from controller which should only
+  use ControllerResultSet. Moved serialization part of ResultSet in 
+  ControllerResultSet, DriverResultSet only holds the deserialization part.
+# Moved driver.Field to common.protocol to prevent ControllerResultSet from 
+  having dependencies with driver package classes.
+# Moved backupers in controller.backup.backupers
+# Moved common.monitoring to common.jmx.monitoring
+# Moved common.shared to common.jmx.management
+# Moved driver.protocol to common.protocol
+# Removed unused BackupListener.
+# Removed doccheck target and jar file.
+# Scheduler schema is no more Serializable.
+# Updated examples to comply to new DTD.
+# Added proper support for macro handling in distributed mode. The macro clock
+  attribute of the Distribution element has been removed from the DTD and now
+  all macro replacement take place before broadcast (in distributed mode).
+# Customized timeouts for all group messages. Distributed requests timeout can
+  override the group communication timeout. Added MessageTimeouts element in
+  the DTD to override manually timeouts for all controller-controller messages.
+# Updated JGroups to 2.2.8 version.
+# Dropped graphical console, wizard, test suite and request player.

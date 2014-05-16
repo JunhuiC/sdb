@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE SEQUOIA PUBLIC "-//Continuent//DTD SEQUOIA 2.8.1//EN" "http://sequoia.continuent.org/dtds/sequoia-2.8.1.dtd">
+
+<SEQUOIA>
+
+  <VirtualDatabase name="MSSQLExampleDB">
+
+    <Monitoring>
+      <SQLMonitoring defaultMonitoring="off">
+         <SQLMonitoringRule queryPattern="^select" caseSensitive="false" applyToSkeleton ="false" monitoring="on"/>
+      </SQLMonitoring>
+    </Monitoring>
+
+    <Backup>
+      <Backuper backuperName="MSSQLServer"
+        className="org.continuent.sequoia.controller.backup.backupers.MSSQLBackuper"
+        options=""/>
+    </Backup>
+    
+    <AuthenticationManager>
+      <Admin>
+       	<User username="example" password="example"/>
+      </Admin> 
+      <VirtualUsers>
+        <VirtualLogin vLogin="example" vPassword="example"/>
+      </VirtualUsers>
+    </AuthenticationManager>
+
+    <DatabaseBackend name="mssqlbackened01" 
+	   driver="net.sourceforge.jtds.jdbc.Driver"
+	   url="jdbc:jtds:sqlserver://exampledbserver01:1433/MSSQLExampleDB01" 
+      connectionTestStatement="select type from master.dbo.syscharsets">
+      <ConnectionManager vLogin="example" rLogin="example" rPassword="example">
+        <VariablePoolConnectionManager initPoolSize="10" minPoolSize="5"
+          maxPoolSize="50" idleTimeout="30" waitTimeout="10"/>
+      </ConnectionManager>
+    </DatabaseBackend>
+
+    <DatabaseBackend name="mssqlbackened02" 
+	   driver="net.sourceforge.jtds.jdbc.Driver"
+	   url="jdbc:jtds:sqlserver://exampledbserver02:1433/MSSQLExampleDB02" 
+      connectionTestStatement="select type from master.dbo.syscharsets">
+      <ConnectionManager vLogin="example" rLogin="example" rPassword="example">
+        <VariablePoolConnectionManager initPoolSize="10" minPoolSize="5"
+          maxPoolSize="50" idleTimeout="30" waitTimeout="10"/>
+      </ConnectionManager>
+    </DatabaseBackend>
+
+    <RequestManager>
+      <RequestScheduler>
+         <RAIDb-1Scheduler level="passThrough"/>
+      </RequestScheduler>
+
+      <RequestCache>
+         <MetadataCache/>
+         <ParsingCache/>		 
+<!--       <ResultCache granularity="table"/> -->
+      </RequestCache>
+
+      <LoadBalancer>
+         <RAIDb-1>
+            <WaitForCompletion policy="first"/>
+            <RAIDb-1-LeastPendingRequestsFirst/>
+         </RAIDb-1>
+      </LoadBalancer>
+
+      <RecoveryLog 
+	   driver="net.sourceforge.jtds.jdbc.Driver"
+	   url="jdbc:jtds:sqlserver://exampledbserver03:1433/MSSQLExampleDBRecoveryDB" 
+           login="example" password="example">
+
+      <RecoveryLogTable tableName="RECOVERY"
+          logIdColumnType="BIGINT NOT NULL"
+          vloginColumnType="VARCHAR(20) NOT NULL"
+          sqlColumnType="TEXT NOT NULL"
+          extraStatementDefinition=",PRIMARY KEY (log_id)"/>
+        <CheckpointTable tableName="CHECK_POINT"
+          checkpointNameColumnType="VARCHAR(127) NOT NULL"/>
+        <BackendTable tableName="BACKEND"
+          databaseNameColumnType="VARCHAR(50) NOT NULL"
+          backendNameColumnType="VARCHAR(50) NOT NULL"
+          checkpointNameColumnType="VARCHAR(127) NOT NULL"/>
+        <DumpTable tableName="SEQUOIA_DUMP" 
+	  dumpNameColumnType="TEXT NOT NULL"
+          dumpDateColumnType="DATETIME"
+          dumpPathColumnType="TEXT NOT NULL"
+          dumpFormatColumnType="TEXT NOT NULL"
+          checkpointNameColumnType="TEXT NOT NULL"
+          backendNameColumnType="TEXT NOT NULL"
+          tablesColumnType="TEXT NOT NULL"/>
+
+
+
+	</RecoveryLog>
+    </RequestManager>
+
+  </VirtualDatabase>
+
+</SEQUOIA>

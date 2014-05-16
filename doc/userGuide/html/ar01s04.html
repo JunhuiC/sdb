@@ -1,0 +1,58 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.&nbsp;Migrating from C-JDBC to Sequoia</title><meta content="DocBook XSL Stylesheets V1.65.1" name="generator"><link rel="home" href="index.html" title="Sequoia User's Guide"><link rel="up" href="index.html" title="Sequoia User's Guide"><link rel="previous" href="ar01s03.html" title="3.&nbsp;Installation"><link rel="next" href="ar01s05.html" title="5.&nbsp;Sequoia Driver"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">4.&nbsp;Migrating from C-JDBC to Sequoia</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ar01s03.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ar01s05.html"><img src="images/next.gif" alt="Next"></a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="cjdbc_sequoia_migration"></a>4.&nbsp;Migrating from C-JDBC to Sequoia</h2></div></div><div></div></div><p> The C-JDBC name had to be changed due to Sun?s trademark of JDBC. Therefore, C-JDBC
+      now becomes Sequoia. Sequoia is the continuation of C-JDBC and builds upon the same code
+      base, so the migration should be straightforward for current users.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="what_is_new_with_sequoia"></a>4.1.&nbsp;What is new with Sequoia?</h3></div></div><div></div></div><p>Sequoia is now backed by a team of 8 full-time engineers working on improving the
+        technology and supporting the community. Our mission is to build industrial quality
+        open source technology. Among the new major open source additions you will find a C++
+        API and an ODBC driver for non-Java clients as well as a powerful Eclipse plug-in for
+        the management console. The core C-JDBC technology is also greatly improved with a
+        complete redesign of transaction scheduling for a better write parallelism, along
+        with an upcoming, completely rewritten documentation. </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N102B2"></a>4.1.1.&nbsp;Licensing</h4></div></div><div></div></div><p>C-JDBC is distributed under an LGPL open source license. While we like the
+          spirit of the license and we think that an open source community can only grow if we
+          contribute modifications back to the community, the LGPL is hard to enforce in
+          practice and it is not always well understood by users who confuse it with the GPL.
+          Therefore, the contributors and INRIA ,who is the main copyright holder, have
+          agreed to re-license the code under an Apache version 2 license. This will ease code
+          re-use and facilitate contributions for everybody in the community. </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N102B7"></a>4.1.2.&nbsp;<a href="http://continuent.org" target="_top">Continuent.org</a></h4></div></div><div></div></div><p>You might wonder why we have setup a new portal? The reason is mainly to offer a
+          better support infrastructure to the community. Continuent.org projects uses a
+          newer version of GForge and integrates JIRA for issue tracking. With JIRA, a more
+          comfortable and flexible system, you can watch the progress of issues, vote on
+          their resolution, see the project roadmap and so on. On Continuent.org, it is also
+          much more flexible to start or host new projects related to the C-JDBC/Sequoia
+          technology. We can easily host more external contributions or projects related to
+          the technology. Don't hesitate to send your contributions! The current projects
+          on Continuent.org are (we are very much in the tree names for Continuent
+          projects!): </p><div class="itemizedlist"><ul type="disc"><li><p><tt class="literal"><a href="http://sequoia.continuent.org" target="_top">
+              Sequoia</a></tt>: the continuation of the C-JDBC project
+              including the JDBC driver, core controller, text management console,
+              documentation, ...</p></li><li><p><tt class="literal"><a href="http://hedera.continuent.org" target="_top">
+              Hedera</a></tt>: a replacement for Tribe that provides a more
+              modular wrapping of group communications so that you have more choices than
+              just JGroups. Other group communication libraries such as Appia are already
+              available with Hedera.</p></li><li><p><tt class="literal"><a href="http://carob.continuent.org" target="_top">Carob</a>
+              </tt>: a C++ client library and API that implements the C-JDBC/Sequoia
+              protocol with the controller and an ODBC driver for Sequoia</p></li><li><p><tt class="literal"><a href="http://oak.continuent.org" target="_top">Oak</a>
+              </tt>: the Eclipse plug-in that replaces the obsolete C-JDBC Swing
+              management console</p></li><li><p><tt class="literal"><a href="http://appia.continuent.org" target="_top">
+              Appia</a></tt>: Appia is a layered communication framework 
+              implemented by the University of Lisbon and providing extended configuration 
+              and programming possibilities. Appia is composed by (1) a core that is used to 
+              compose protocols and (2) a set of protocols that provide group communication, 
+              ordering guarantees, atomic broadcast, among other properties.</p></li></ul></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N102E9"></a>4.1.2.1.&nbsp;C-JDBC and Sequoia</h5></div></div><div></div></div><p>So what will happen with C-JDBC? We are committed to support the technology
+            and we will continue to support the community either through
+            c-jdbc@objectweb.org or sequoia@continuent.org. The C-JDBC LGPL code will
+            remain on ObjectWeb and the Sequoia APLv2 code will be on Continuent. Bugs
+            reported on either side will be backported in best effort mode as we always did.
+            </p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="migrating_cjdbc_config_to_sequoia"></a>4.2.&nbsp;Migrating your C-JDBC configuration to Sequoia</h3></div></div><div></div></div><p>Here are the steps to migrate your configuration from C-JDBC 2.0.2 to Sequoia
+        2.2:</p><div class="orderedlist"><ol type="1"><li><p>Copy your <tt class="filename">controller.xml</tt> file from the C-JDBC
+              <tt class="filename">config/controller</tt> directory to
+            Sequoia <tt class="filename">config/controller</tt>
+            directory </p></li><li><p>Rename all instances of "C-JDBC" to "SEQUOIA". Be sure to update
+            DOCTYPE</p></li><li><p>Copy all virtual database configuration files from the C-JDBC <tt class="filename">config/virtualdatabase</tt> directory to
+            Sequoia <tt class="filename">config/virtualdatabase</tt>
+            directory</p></li><li><p>Rename all instances of "C-JDBC" to "SEQUOIA". Be sure to update
+            DOCTYPE</p></li><li><p>Update the path of the backupers from
+            org.objectweb.cjdbc.controller.backup.OctopusBackuper to
+            org.continuent.sequoia.controller.backup.backupers.OctopusBackuper
+            </p></li><li><p>If using Distribution, add
+            &lt;MessageTimeouts/&gt;</p></li><li><p>Copy contents of drivers directory (except c-jdbc-driver.jar)</p></li><li><p>Any manual changes to jgroups.xml should now be made to
+            total-token.xml</p></li></ol></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ar01s03.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="index.html"><img src="images/up.gif" alt="Up"></a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ar01s05.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td valign="top" align="left" width="40%">3.&nbsp;Installation&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Home"></a></td><td valign="top" align="right" width="40%">&nbsp;5.&nbsp;Sequoia Driver</td></tr></table></div></body></html>

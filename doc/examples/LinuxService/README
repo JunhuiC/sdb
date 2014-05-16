@@ -1,0 +1,32 @@
+# Contribution from Lou Kamenov (kamenovl@gmail.com)
+
+Sequoia meets daemontools.
+
+(From http://cr.yp.to/daemontools.html)
+
+Daemontools is a collection of tools for managing UNIX services.
+Supervise monitors a service. It starts the service and restarts the service if
+it dies. Setting up a new service is easy: all supervise needs is a directory 
+with a run script that runs the service.
+
+Multilog saves error messages to one or more logs. It optionally timestamps 
+each line and, for each log, includes or excludes lines matching specified 
+patterns. It automatically rotates logs to limit the amount of disk space used.
+If the disk fills up, it pauses and tries again, without losing any data. 
+
+For more information on how the Sequoia daemontools scripts work see:
+http://cr.yp.to/daemontools/faq/create.html#runlog
+
+This dir contains few files:
+
+sequoia.ctrl - a sample script to start Sequoia.
+sequoia/run - run script for Sequoia. (see above)
+sequoia/log/run - run script for multilog. 
+				(see http://cr.yp.to/daemontools/multilog.html) 
+sequoia/env:
+	o	SEQUOIA_HOME - contains Sequoia home directory - /opt/sequoia
+	o 	JAVA_HOME    - contains java home directory - /opt/java
+	o	ctrlcfg      - Sequoia controller config file - SEQUOIA_HOME/config/ctrl.cfg
+	o	uid          - restrict Sequoia to run under specific UID - sequoia.
+
+Good luck!

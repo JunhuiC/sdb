@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE SEQUOIA PUBLIC "-//Continuent//DTD SEQUOIA 1.0//EN" "http://www.objectweb.org/c-jdbc/dtds/c-jdbc-@VERSION@.dtd">
+
+<SEQUOIA>
+  
+  <VirtualDatabase name="recovery">
+    <AuthenticationManager>
+      <Admin>
+      	<User username="admin" password="c-jdbc"/>
+      </Admin> 
+      <VirtualUsers>
+        <VirtualLogin vLogin="user" vPassword="c-jdbc"/>
+      </VirtualUsers>
+    </AuthenticationManager>
+
+    <DatabaseBackend name="recovery" driver="org.gjt.mm.mysql.Driver" url="jdbc:mysql://localhost/recovery" connectionTestStatement="select 1">
+      <ConnectionManager vLogin="cecchet" rLogin="user" rPassword="">
+	<VariablePoolConnectionManager initPoolSize="5"/>
+      </ConnectionManager>
+    </DatabaseBackend>
+
+    <RequestManager caseSensitiveParsing="false">
+      <RequestScheduler>
+         <SingleDBScheduler level="passThrough"/>
+      </RequestScheduler>
+
+      <LoadBalancer>
+         <SingleDB/>
+      </LoadBalancer>
+    </RequestManager>
+  </VirtualDatabase>
+
+</SEQUOIA>

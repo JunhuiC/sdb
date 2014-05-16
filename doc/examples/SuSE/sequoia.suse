@@ -1,0 +1,250 @@
+#! /bin/sh
+#
+# Author: Olle Östlund, Compound Systems AB
+# Written for/tested under Suse Enterprise-9
+# Please send feedback to olle@compound.se
+#
+#  /etc/init.d/sequoia
+# 
+# This script controls the Sequoia controller. In other words, it controls
+# a virtual database, made up by Sequoia cluster of real databasese.
+# The script assumes the Sequoia recovery-log is stored in a local Postgres
+# database, and Postgres is checked to be running before Sequoia is started.
+# The Sequoia software installation is assumed to be owned bt a user "sequoia"
+# and also running under "sequoia" process ownership.
+
+SEQUOIA_DIST="/local/sequoia/dist/"
+
+VIRTUALDATABASE="virtualdb-name"
+ADMINNAME="virtualdb-admin-name"
+ADMINPASSWORD="virtualdb-admin-password"
+
+CONTROLLER_BIN="${SEQUOIA_DIST}bin/controller.sh"
+CONSOLE_BIN="${SEQUOIA_DIST}bin/console.sh"
+
+### BEGIN INIT INFO
+# Provides:          sequoia
+# Required-Start:    $network postgresql
+# Should-Start:	     sendmail
+# Required-Stop:     $network postgresql
+# Should-Stop:       sendmail
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Sequoia daemon providing database serviceses
+# Description:       Start Sequoia to allow clients to use the
+#	Sequoia SQL-database. Also checks that Postgres is
+#	running.
+### END INIT INFO
+# 
+# Note on runlevels:
+# 0 - halt/poweroff 			6 - reboot
+# 1 - single user			2 - multiuser without network exported
+# 3 - multiuser w/ network (text mode)  5 - multiuser w/ network and X11 (xdm)
+# 
+# Note on script names:
+# http://www.linuxbase.org/spec/refspecs/LSB_1.3.0/gLSB/gLSB/scrptnames.html
+# A registry has been set up to manage the init script namespace.
+# http://www.lanana.org/
+# Please use the names already registered or register one or use a
+# vendor prefix.
+
+# Check for missing binaries (stale symlinks should not happen)
+# Note: Special treatment of stop for LSB conformance
+
+test -x $CONTROLLER_BIN || { echo "$CONTROLLER_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+test -x $CONSOLE_BIN || { echo "$CONSOLE_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+# Shell functions sourced from /etc/rc.status:
+#      rc_check         check and set local and overall rc status
+#      rc_status        check and set local and overall rc status
+#      rc_status -v     be verbose in local rc status and clear it afterwards
+#      rc_status -v -r  ditto and clear both the local and overall rc status
+#      rc_status -s     display "skipped" and exit with status 3
+#      rc_status -u     display "unused" and exit with status 3
+#      rc_failed        set local and overall rc status to failed
+#      rc_failed <num>  set local and overall rc status to <num>
+#      rc_reset         clear both the local and overall rc status
+#      rc_exit          exit appropriate to overall rc status
+#      rc_active        checks whether a service is activated by symlinks
+#      rc_splash arg    sets the boot splash screen to arg (if active)
+. /etc/rc.status
+
+# Reset status of this service
+rc_reset
+
+# Return values acc. to LSB for all commands but status:
+# 0	  - success
+# 1       - generic or unspecified error
+# 2       - invalid or excess argument(s)
+# 3       - unimplemented feature (e.g. "reload")
+# 4       - user had insufficient privileges
+# 5       - program is not installed
+# 6       - program is not configured
+# 7       - program is not running
+# 8--199  - reserved (8--99 LSB, 100--149 distrib, 150--199 appl)
+# 
+# Note that starting an already running service, stopping
+# or restarting a not-running service as well as the restart
+# with force-reload (in case signaling is not supported) are
+# considered a success.
+
+case "$1" in
+    start)
+        ## Make sure Postgres is running. This is a check that the Sequoia
+	## recovery-log database will be operational when Sequoia starts.
+        checkproc /usr/bin/postmaster
+
+	case $? in
+	0)	# Up and running
+		;;
+	1|2|3)	# Not running
+		/etc/init.d/postgresql start
+		;;
+	*)	# Status unknown
+		;;
+	esac
+
+	echo -n "Starting Sequoia"
+	## Start daemon with startproc(8). If this fails
+	## the return value is set appropriately by startproc.
+	startproc -u sequoia -s -l /var/log/sequoia-controller.log $CONTROLLER_BIN
+
+	# Remember status and be verbose
+	rc_status -v
+	;;
+
+    stop)
+	echo -n "Shutting down Sequoia"
+	## Shut down the controller via the console in text mode.
+	## Use expect to simulate an interactive command dialogue.
+	##
+	## Exchange the two line below into the script for a verbose
+	## output of the expect dialogue taking place.
+	#expect <<-EOEXPECT
+	#spawn /bin/sh $CONSOLE_BIN -t
+	expect <<-EOEXPECT > /dev/null
+	spawn -noecho /bin/sh $CONSOLE_BIN -t
+	expect  {
+	        " > "   { }
+	         "Cannot connect to the JMX server"     { exit 7 }
+	        timeout	{ exit 1 }
+	}
+	send "shutdown virtualdatabase $VIRTUALDATABASE 2\r"
+	expect {
+		"ogin > "	{}
+		timeout		{ exit 1 }
+	}
+	send "${ADMINNAME}\r"
+	expect {
+		"assword > "	{}
+		timeout		{ exit 1 }
+	}
+	send "${ADMINPASSWORD}\r"
+	expect {
+		"was successfully shutdown"	{}
+		timeout		{ exit 1 }
+	}
+	send "shutdown\r"
+	expect {
+	        "Shutdown was complete" {}
+	        timeout		{ exit 1 }
+	}
+	expect {
+		" > "	{}
+		timeout		{ exp_continue }
+	}
+	send "quit\r"
+	expect {
+	        default    { exit 0 }
+	}
+	EOEXPECT
+
+	RC=$?
+
+	if test $RC -eq 0
+	then
+		## Check that the controller really stopped
+
+		sleep 5
+		checkproc $CONTROLLER_BIN
+
+		if test $? -eq 0
+		then
+			# It has shut down but the processes won't die. Kill it!
+			killproc $CONTROLLER_BIN
+
+			sleep 5
+			checkproc $CONTROLLER_BIN
+
+			if test $? -eq 0
+			then
+				## The controller is still running!
+				RC=1
+			fi
+		fi
+	fi
+
+	# This is just a way to set $?
+	( exit $RC )
+
+	# Remember status and be verbose
+	rc_status -v
+	;;
+
+    try-restart|condrestart)
+	## Do a restart only if the service was active before.
+	## Note: try-restart is now part of LSB (as of 1.9).
+	## RH has a similar command named condrestart.
+	if test "$1" = "condrestart"; then
+		echo "${attn} Use try-restart ${done}(LSB)${attn} rather than condrestart ${warn}(RH)${norm}"
+	fi
+	$0 status
+	if test $? = 0; then
+		$0 restart
+	else
+		rc_reset	# Not running is not a failure.
+	fi
+	# Remember status and be quiet
+	rc_status
+	;;
+
+    restart)
+	## Stop the service and regardless of whether it was
+	## running or not, start it again.
+	$0 stop
+	$0 start
+
+	# Remember status and be quiet
+	rc_status
+	;;
+
+    status)
+	echo -n "Checking for service Sequoia"
+	## Check status with checkproc(8), if process is running
+	## checkproc will return with exit status 0.
+
+	# Return value is slightly different for the status command:
+	# 0 - service up and running
+	# 1 - service dead, but /var/run/  pid  file exists
+	# 2 - service dead, but /var/lock/ lock file exists
+	# 3 - service not running (unused)
+	# 4 - service status unknown :-(
+	# 5--199 reserved (5--99 LSB, 100--149 distro, 150--199 appl.)
+	
+	# NOTE: checkproc returns LSB compliant status values.
+	checkproc $CONTROLLER_BIN
+	# NOTE: rc_status knows that we called this init script with
+	# "status" option and adapts its messages accordingly.
+	rc_status -v
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status|try-restart|restart}"
+	exit 1
+	;;
+esac
+rc_exit

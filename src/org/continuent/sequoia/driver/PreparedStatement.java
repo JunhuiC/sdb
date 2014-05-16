@@ -1,0 +1,1597 @@
+/**
+ * Sequoia: Database clustering technology.
+ * Copyright (C) 2002-2004 French National Institute For Research In Computer
+ * Science And Control (INRIA).
+ * Copyright (C) 2005 AmicoSoft, Inc. dba Emic Networks
+ * Copyright (C) 2005-2007 Continuent, Inc.
+ * Contact: sequoia@continuent.org
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ *
+ * Initial developer(s): Emmanuel Cecchet.
+ * Contributor(s): Nicolas Modrzyk, Jaco Swart.
+ */
+
+package org.continuent.sequoia.driver;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.Reader;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.BatchUpdateException;
+import java.sql.Blob;
+import java.sql.Date;
+import java.sql.NClob;
+import java.sql.ParameterMetaData;
+import java.sql.Ref;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLXML;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.LinkedList;
+import java.util.Vector;
+
+import org.continuent.sequoia.common.protocol.PreparedStatementSerialization;
+import org.continuent.sequoia.common.sql.filters.AbstractBlobFilter;
+import org.continuent.sequoia.common.util.Strings;
+
+/**
+ * A SQL Statement is pre-compiled and stored in a
+ * <code>PreparedStatement</code> object. This object can then be used to
+ * efficiently execute this statement multiple times.
+ * <p>
+ * <b>Note: </b> The setXXX methods for setting IN parameter values must specify
+ * types that are compatible with the defined SQL type of the input parameter.
+ * For instance, if the IN parameter has SQL type Integer, then setInt should be
+ * used.
+ * <p>
+ * If arbitrary parameter type conversions are required, then the setObject
+ * method should be used with a target SQL type.
+ * <p>
+ * In the old days, this was just a dirty copy/paste from the PostgreSQL driver.
+ * Some irrelevant comments are left-over here and there.
+ * <p>
+ * This class could maybe be splitted into DriverProcessedPreparedStatement and
+ * ProxyModeProcessedStatement
+ * 
+ * @see DriverResultSet
+ * @see java.sql.PreparedStatement
+ * @author <a href="mailto:Emmanuel.Cecchet@inria.fr">Emmanuel Cecchet </a>
+ * @author <a href="mailto:Nicolas.Modrzyk@inrialpes.fr">Nicolas Modrzyk </a>
+ * @author <a href="mailto:marc.wick@monte-bre.ch">Marc Wick </a>
+ * @author <a reef="mailto:jaco.swart@iblocks.co.uk">Jaco Swart </a>
+ * @version 1.0
+ */
+public class PreparedStatement extends Statement
+    implements
+      java.sql.PreparedStatement
+{
+  /** Original, untouched request (only trimmed) */
+  protected String       sql;
+  /** IN parameters, ready to be inlined in the request */
+  private String[]       inStrings;
+
+  // Some performance caches
+  protected StringBuffer sbuf = new StringBuffer();
+
+  /**
+   * Constructor. Counts the number of question mark placeholders to size the
+   * parameters array.
+   * 
+   * @param connection the instantiating connection
+   * @param sqlStatement the SQL statement with ? for IN markers
+   * @param driver the Driver used to create connections
+   */
+  PreparedStatement(Connection connection, String sqlStatement, Driver driver)
+  {
+    super(connection, driver);
+
+    // The following two boolean switches are used to make sure we're not
+    // counting "?" in either strings or metadata strings. For instance the
+    // following query:
+    // select '?' "A ? value" from dual
+    // doesn't have any parameters.
+
+    boolean inString = false;
+    boolean inMetaString = false;
+    int nbParam = 0;
+
+    this.sql = sqlStatement.trim();
+    this.connection = connection;
+
+    // Count how many parameters have to be set
+    for (int i = 0; i < sql.length(); ++i)
+    {
+      if (sql.charAt(i) == '\'')
+        if (i > 0 && sql.charAt(i - 1) != '\\')
+          inString = !inString;
+      if (sql.charAt(i) == '"')
+        if (i > 0 && sql.charAt(i - 1) != '\\')
+          inMetaString = !inMetaString;
+      if ((sql.charAt(i) == '?') && (!(inString || inMetaString)))
+        nbParam++;
+    }
+
+    inStrings = new String[nbParam];
+
+    if (connection.isAlwaysGettingGeneratedKeys())
+      generatedKeysFlag = RETURN_GENERATED_KEYS;
+  }
+
+  /**
+   * @see PreparedStatement#PreparedStatement(Connection, String, Driver)
+   */
+  PreparedStatement(Connection connection, String sqlStatement, Driver driver,
+      int autoGeneratedKeysArg)
+  {
+    this(connection, sqlStatement, driver);
+    if (!connection.isAlwaysGettingGeneratedKeys())
+      generatedKeysFlag = autoGeneratedKeysArg;
+  }
+
+  /**
+   * Release objects for garbage collection and call Statement.close().
+   * 
+   * @throws SQLException if an error occurs
+   */
+  public void close() throws SQLException
+  {
+    sql = null;
+    inStrings = null;
+
+    super.close();
+  }
+
+  /**
+   * A Prepared SQL query is executed and its <code>ResultSet</code> is
+   * returned.
+   * 
+   * @return a <code>ResultSet</code> that contains the data produced by the *
+   *         query - never <code>null</code>.
+   * @exception SQLException if a database access error occurs
+   */
+  public java.sql.ResultSet executeQuery() throws SQLException
+  {
+    // in Statement class
+    return super.executeQuery(sql, compileParameters(false));
+  }
+
+  /**
+   * Execute a SQL INSERT, UPDATE or DELETE statement. In addition, SQL
+   * statements that return nothing such as SQL DDL statements can be executed.
+   * 
+   * @return either the row count for <code>INSERT</code>,
+   *         <code>UPDATE</code> or <code>DELETE</code>; or 0 for SQL
+   *         statements that return nothing.
+   * @exception SQLException if a database access error occurs
+   */
+  public int executeUpdate() throws SQLException
+  {
+    // in Statement class
+    return super.executeUpdateWithSkeleton(sql, compileParameters(false));
+  }
+
+  /**
+   * Sets the length of the temporary buffer to zero and returns a trimmed
+   * version of the buffer's content. This ensures that we are not leaking
+   * memory and that we manipulate Strings which have the minimal possible
+   * memory footprint. Useful when handling BLOBs. Please refer to bug #4546734
+   * is Sun's bug database.
+   * 
+   * @return a String object containing a trimmed version of the StringBuffer's
+   *         content
+   */
+  protected String trimStringBuffer()
+  {
+    String trimmedBuf = new String(sbuf.toString());
+    sbuf.setLength(0);
+    return trimmedBuf;
+  }
+
+  /**
+   * Helper - this compiles the SQL query, inlining the parameters in the
+   * request String. This is identical to <code>this.toString()</code> except
+   * it throws an exception if a parameter was not set.
+   * 
+   * @param fillEmptyParametersWithCSParamTag true if called from a
+   *          CallableStatement
+   * @return the compiled query
+   * @throws SQLException if an error occurs
+   */
+  protected synchronized String compileParameters(
+      boolean fillEmptyParametersWithCSParamTag) throws SQLException
+  {
+    if (inStrings.length == 0)
+    {
+      return "";
+    }
+
+    sbuf.setLength(0);
+    for (int i = 0; i < inStrings.length; ++i)
+    {
+      if (inStrings[i] == null)
+      {
+        if (!fillEmptyParametersWithCSParamTag)
+          throw new SQLException("Parameter " + (i + 1) + " is not set");
+        setParameterWithTag(i + 1, PreparedStatementSerialization.CS_PARAM_TAG,
+            "");
+      }
+      sbuf.append(inStrings[i]);
+    }
+    return trimStringBuffer();
+  }
+
+  /**
+   * Escape the input string. <br>
+   * <char>' </char> is replaced by <char>\' </char> <br>
+   * <char>\ </char> is replaced by <char>\\ </char> <br>
+   * if connection.escapeProcessing is set to true, surround the new string with
+   * <char>\' </char>
+   * 
+   * @param x the string to process
+   * @return escaped string
+   */
+  protected String doEscapeProcessing(String x)
+  {
+    // use the shared buffer object. Should never clash but this
+    // makes us thread safe!
+    synchronized (sbuf)
+    {
+      sbuf.setLength(0);
+      int i;
+      sbuf.append(connection.getEscapeChar());
+      for (i = 0; i < x.length(); ++i)
+      {
+        char c = x.charAt(i);
+        if ((c == '\'' && connection.isEscapeSingleQuote())
+            || (c == '\\' && connection.isEscapeBackslash()))
+          sbuf.append(c);
+        sbuf.append(c);
+      }
+      sbuf.append(connection.getEscapeChar());
+    }
+    return trimStringBuffer();
+  }
+
+  /**
+   * Sets a parameter to SQL NULL.
+   * 
+   * @param parameterIndex the first parameter is 1, etc...
+   * @param sqlType the SQL type code defined in java.sql.Types
+   * @exception SQLException if a database access error occurs
+   */
+  public void setNull(int parameterIndex, int sqlType) throws SQLException
+  {
+    // NULL_VALUE is (confusingly) also used as the "NULL_TAG" to proxy
+    // the setNull() call
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.NULL_VALUE, String.valueOf(sqlType));
+  }
+
+  /**
+   * Sets a parameter to a Java boolean value. The driver converts this to a SQL
+   * BIT value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setBoolean(int parameterIndex, boolean x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.BOOLEAN_TAG, String.valueOf(x));
+  }
+
+  /**
+   * Sets a parameter to a Java byte value.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setByte(int parameterIndex, byte x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.BYTE_TAG, Integer.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a Java short value. The driver converts this to a SQL
+   * SMALLINT value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setShort(int parameterIndex, short x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.SHORT_TAG, Integer.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a Java int value. The driver converts this to a SQL
+   * INTEGER value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setInt(int parameterIndex, int x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.INTEGER_TAG, Integer.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a Java long value. The driver converts this to a SQL
+   * BIGINT value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setLong(int parameterIndex, long x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.LONG_TAG, Long.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a Java float value. The driver converts this to a SQL
+   * FLOAT value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setFloat(int parameterIndex, float x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.FLOAT_TAG, Float.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a Java double value. The driver converts this to a SQL
+   * DOUBLE value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setDouble(int parameterIndex, double x) throws SQLException
+  {
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.DOUBLE_TAG, Double.toString(x));
+  }
+
+  /**
+   * Sets a parameter to a java.lang.BigDecimal value. The driver converts this
+   * to a SQL NUMERIC value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setBigDecimal(int parameterIndex, BigDecimal x)
+      throws SQLException
+  {
+    String serializedParam = (x == null ? null : x.toString());
+
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.BIG_DECIMAL_TAG, serializedParam);
+  }
+
+  /**
+   * Sets a parameter to a Java String value. The driver converts this to a SQL
+   * VARCHAR or LONGVARCHAR value (depending on the arguments size relative to
+   * the driver's limits on VARCHARs) when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setString(int parameterIndex, String x) throws SQLException
+  {
+    if (PreparedStatementSerialization.NULL_VALUE.equals(x))
+      // Someone is trying to set a String that matches our NULL tag, a real
+      // bad luck, use our special type NULL_STRING_TAG!
+      setParameterWithTag(parameterIndex,
+          PreparedStatementSerialization.NULL_STRING_TAG, x);
+    else
+      setParameterWithTag(parameterIndex,
+          PreparedStatementSerialization.STRING_TAG, x);
+  }
+
+  /**
+   * Sets a parameter to a Java array of bytes.
+   * <p>
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setBytes(int parameterIndex, byte[] x) throws SQLException
+  {
+    try
+    {
+      /**
+       * Encoded only for request inlining. Decoded right away by the controller
+       * at static
+       * {@link #setPreparedStatement(String, java.sql.PreparedStatement)}
+       */
+      String encodedString = AbstractBlobFilter.getDefaultBlobFilter()
+          .encode(x);
+      setParameterWithTag(parameterIndex,
+          PreparedStatementSerialization.BYTES_TAG, encodedString);
+    }
+    catch (OutOfMemoryError oome)
+    {
+      System.gc();
+      throw new SQLException("Out of memory while encoding bytes");
+    }
+  }
+
+  /**
+   * Sets a parameter to a java.sql.Date value. The driver converts this to a
+   * SQL DATE value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setDate(int parameterIndex, java.sql.Date x) throws SQLException
+  {
+    String serializedParam = (x == null ? null : new java.sql.Date(x.getTime())
+        .toString());
+
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.DATE_TAG, serializedParam);
+  }
+
+  /**
+   * Sets a parameter to a <code>java.sql.Time</code> value. The driver
+   * converts this to a SQL TIME value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...));
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setTime(int parameterIndex, Time x) throws SQLException
+  {
+    String serializedParam = (x == null ? null : x.toString());
+
+    setParameterWithTag(parameterIndex,
+        PreparedStatementSerialization.TIME_TAG, serializedParam);
+  }
+
+  /**
+   * Sets a parameter to a <code>java.sql.Timestamp</code> value. The driver
+   * converts this to a SQL TIMESTAMP value when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @exception SQLException if a database access error occurs
+   */
+  public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException
+  {
+    if (x == null)
+      setParameterWithTag(parameterIndex,
+          PreparedStatementSerialization.TIMESTAMP_TAG, null);
+    else
+    {
+      if (x.getClass().equals(Timestamp.class))
+        setParameterWithTag(parameterIndex,
+            PreparedStatementSerialization.TIMESTAMP_TAG, x.toString());
+      else
+        setParameterWithTag(parameterIndex,
+            PreparedStatementSerialization.TIMESTAMP_TAG, new Timestamp(x
+                .getTime()).toString());
+    }
+  }
+
+  /**
+   * When a very large ASCII value is input to a LONGVARCHAR parameter, it may
+   * be more practical to send it via a java.io.InputStream. JDBC will read the
+   * data from the stream as needed, until it reaches end-of-file. The JDBC
+   * driver will do any necessary conversion from ASCII to the database char
+   * format.
+   * <p>
+   * <b>Note: </b> this stream object can either be a standard Java stream
+   * object or your own subclass that implements the standard interface.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @param length the number of bytes in the stream
+   * @exception SQLException if a database access error occurs
+   */
+  public void setAsciiStream(int parameterIndex, InputStream x, int length)
+      throws SQLException
+  {
+    setBinaryStream(parameterIndex, x, length);
+  }
+
+  /**
+   * When a very large Unicode value is input to a LONGVARCHAR parameter, it may
+   * be more practical to send it via a java.io.InputStream. JDBC will read the
+   * data from the stream as needed, until it reaches end-of-file. The JDBC
+   * driver will do any necessary conversion from UNICODE to the database char
+   * format.
+   * <p>** DEPRECIATED IN JDBC 2 **
+   * <p>
+   * <b>Note: </b> this stream object can either be a standard Java stream
+   * object or your own subclass that implements the standard interface.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the parameter value
+   * @param length the parameter length
+   * @exception SQLException if a database access error occurs
+   * @deprecated
+   */
+  public void setUnicodeStream(int parameterIndex, InputStream x, int length)
+      throws SQLException
+  {
+    setBinaryStream(parameterIndex, x, length);
+  }
+
+  /**
+   * Stores a binary stream into parameters array, using an intermediate byte[].
+   * When a very large binary value is input to a LONGVARBINARY parameter, it
+   * may be more practical to send it via a java.io.InputStream. JDBC will read
+   * the data from the stream as needed, until it reaches end-of-file. This
+   * should be more or less equivalent to setBytes(blob.getBytes()).
+   * <p>
+   * <b>Note: </b> This stream object can either be a standard Java stream
+   * object or your own subclass that implements the standard interface.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param inStreamArg the parameter value
+   * @param length the parameter length
+   * @exception SQLException if a database access error occurs
+   * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream,
+   *      int)
+   */
+  public void setBinaryStream(int parameterIndex, InputStream inStreamArg,
+      int length) throws SQLException
+  {
+    byte[] data = new byte[length];
+    try
+    {
+      inStreamArg.read(data, 0, length);
+    }
+    catch (Exception ioe)
+    {
+      throw new SQLException("Problem with streaming of data");
+    }
+    // TODO: optimize me and avoid the copy thanks to a new setBytesFromStream()
+    // setBytes does the blob filter encoding.
+    setBytes(parameterIndex, data);
+  }
+
+  /**
+   * In general, parameter values remain in force for repeated used of a
+   * <code>Statement</code>. Setting a parameter value automatically clears
+   * its previous value. However, in coms cases, it is useful to immediately
+   * release the resources used by the current parameter values; this can be
+   * done by calling <code>clearParameters()</code>.
+   * 
+   * @exception SQLException if a database access error occurs
+   */
+  public void clearParameters() throws SQLException
+  {
+    int i;
+
+    for (i = 0; i < inStrings.length; i++)
+      inStrings[i] = null;
+  }
+
+  /**
+   * Sets the value of a parameter using an object; use the
+   * <code>java.lang</code> equivalent objects for integral values.
+   * <p>
+   * The given Java object will be converted to the targetSqlType before being
+   * sent to the database.
+   * <p>
+   * Note that this method may be used to pass database-specific abstract data
+   * types. This is done by using a Driver-specific Java type and using a
+   * <code>targetSqlType</code> of <code>java.sql.Types.OTHER</code>.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the object containing the input parameter value
+   * @param targetSqlType The SQL type to be send to the database
+   * @param scale for <code>java.sql.Types.DECIMAL</code> or
+   *          <code>java.sql.Types.NUMERIC</code> types this is the number of
+   *          digits after the decimal. For all other types this value will be
+   *          ignored.
+   * @exception SQLException if a database access error or an incompatible type
+   *              match occurs
+   * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int, int)
+   */
+  public void setObject(int parameterIndex, Object x, int targetSqlType,
+      int scale) throws SQLException
+  {
+    if (x == null)
+    {
+      setNull(parameterIndex, targetSqlType);
+      return;
+    }
+
+    try
+    {
+      boolean failed = false;
+      switch (targetSqlType)
+      {
+        /**
+         * Reference is table "Conversions Performed by setObject()..." in JDBC
+         * Reference Book (table 47.9.5 in 2nd edition, 50.5 in 3rd edition).
+         * Also available online in Sun's "JDBC Technology Guide: Getting
+         * Started", section "Mapping SQL and Java Types".
+         */
+
+        // Some drivers (at least postgresql > 8.1) don't accept setInt for tiny
+        // and small ints. We can safely use setShort instead. See bug
+        // SEQUOIA-543
+        // setShort().
+        case Types.TINYINT :
+        case Types.SMALLINT :
+          if (x instanceof Number)
+            setShort(parameterIndex, ((Number) x).shortValue());
+          else if (x instanceof Boolean)
+            setShort(parameterIndex, ((Boolean) x).booleanValue()
+                ? (short) 1
+                : (short) 0);
+          else if (x instanceof String)
+            setShort(parameterIndex, Short.parseShort((String) x));
+          else
+            failed = true;
+          break;
+        // setInt()
+        case Types.INTEGER :
+          if (x instanceof Number)
+            setInt(parameterIndex, ((Number) x).intValue());
+          else if (x instanceof Boolean)
+            setInt(parameterIndex, ((Boolean) x).booleanValue() ? 1 : 0);
+          else if (x instanceof String)
+            setInt(parameterIndex, Integer.parseInt((String) x));
+          else
+            failed = true;
+          break;
+        // setLong()
+        case Types.BIGINT :
+          if (x instanceof Number)
+            setLong(parameterIndex, ((Number) x).longValue());
+          else if (x instanceof String)
+            setLong(parameterIndex, Long.parseLong((String) x));
+          else if (x instanceof Boolean)
+            setLong(parameterIndex, ((Boolean) x).booleanValue() ? 1 : 0);
+          else
+            failed = true;
+          break;
+        // setDouble()
+        case Types.REAL :
+        case Types.FLOAT :
+        case Types.DOUBLE :
+          if (x instanceof Number)
+            setDouble(parameterIndex, ((Number) x).doubleValue());
+          else if (x instanceof String)
+            setDouble(parameterIndex, Double.parseDouble((String) x));
+          else if (x instanceof Boolean)
+            setDouble(parameterIndex, ((Boolean) x).booleanValue() ? 1 : 0);
+          else
+            failed = true;
+          break;
+        // setBigDecimal()
+        case Types.DECIMAL :
+        case Types.NUMERIC :
+          BigDecimal bd;
+          if (x instanceof Boolean)
+            bd = new BigDecimal(((Boolean) x).booleanValue() ? 1d : 0d);
+          else if (x instanceof Number)
+            bd = new BigDecimal(((Number) x).toString());
+          else if (x instanceof String)
+            bd = new BigDecimal((String) x);
+          else
+          {
+            failed = true;
+            break;
+          }
+          bd = bd.setScale(scale, BigDecimal.ROUND_HALF_UP);
+          setBigDecimal(parameterIndex, bd);
+          break;
+        // setBoolean()
+        case Types.BIT :
+        case Types.BOOLEAN :
+          if (x instanceof Number)
+            setBoolean(parameterIndex, 0 != ((Number) x).longValue());
+          else if (x instanceof Boolean)
+            setBoolean(parameterIndex, ((Boolean) x).booleanValue());
+          else if (x instanceof String)
+            setBoolean(parameterIndex, Boolean.valueOf((String) x)
+                .booleanValue());
+          else
+            failed = true;
+          break;
+        // setString()
+        case Types.CHAR :
+        case Types.VARCHAR :
+        case Types.LONGVARCHAR :
+          setString(parameterIndex, x.toString());
+          break;
+        // setBytes(), setBlob(),...
+        case Types.BINARY :
+        case Types.VARBINARY :
+        case Types.LONGVARBINARY :
+          if (x instanceof byte[])
+            setBytes(parameterIndex, (byte[]) x);
+          else if (x instanceof Blob)
+            setBlob(parameterIndex, (Blob) x);
+          else if (x instanceof Serializable)
+            // Try it as an Object (serialized in bytes in setObject below)
+            setObject(parameterIndex, x);
+          else
+            failed = true;
+          break;
+        // setDate()
+        case Types.DATE :
+          if (x instanceof String)
+            setDate(parameterIndex, java.sql.Date.valueOf((String) x));
+          else if (x instanceof java.sql.Date)
+            setDate(parameterIndex, (java.sql.Date) x);
+          else if (x instanceof Timestamp)
+            setDate(parameterIndex,
+                new java.sql.Date(((Timestamp) x).getTime()));
+          else
+            failed = true;
+          break;
+        // setTime()
+        case Types.TIME :
+          if (x instanceof String)
+            setTime(parameterIndex, Time.valueOf((String) x));
+          else if (x instanceof Time)
+            setTime(parameterIndex, (Time) x);
+          else if (x instanceof Timestamp)
+            setTime(parameterIndex, new Time(((Timestamp) x).getTime()));
+          else
+            failed = true;
+          break;
+        // setTimeStamp()
+        case Types.TIMESTAMP :
+          if (x instanceof String)
+            setTimestamp(parameterIndex, Timestamp.valueOf((String) x));
+          else if (x instanceof Date)
+            setTimestamp(parameterIndex, new Timestamp(((Date) x).getTime()));
+          else if (x instanceof Timestamp)
+            setTimestamp(parameterIndex, (Timestamp) x);
+          else
+            failed = true;
+          break;
+        // setBlob()
+        case Types.BLOB :
+          if (x instanceof Blob)
+            setBlob(parameterIndex, (Blob) x);
+          else
+            failed = true;
+          break;
+        // setURL()
+        case Types.DATALINK :
+          if (x instanceof java.net.URL)
+            setURL(parameterIndex, (java.net.URL) x);
+          else
+            setURL(parameterIndex, new java.net.URL(x.toString()));
+          break;
+        case Types.JAVA_OBJECT :
+        case Types.OTHER :
+          // let's ignore the unknown target type given.
+          setObject(parameterIndex, x);
+          break;
+        case Types.ARRAY :
+          setArray(parameterIndex, (java.sql.Array) x);
+        default :
+          throw new SQLException("Unsupported type value");
+      }
+      if (true == failed)
+        throw new IllegalArgumentException(
+            "Attempt to perform an illegal conversion");
+    }
+    catch (Exception e)
+    {
+      SQLException outE = new SQLException("Exception while converting type "
+          + x.getClass() + " to SQL type " + targetSqlType);
+      outE.initCause(e);
+      throw outE;
+    }
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int)
+   */
+  public void setObject(int parameterIndex, Object x, int targetSqlType)
+      throws SQLException
+  {
+    setObject(parameterIndex, x, targetSqlType, 0);
+  }
+
+  /**
+   * This stores an Object parameter into the parameters array.
+   * 
+   * @param parameterIndex the first parameter is 1...
+   * @param x the object to set
+   * @exception SQLException if a database access error occurs
+   */
+  public void setObject(int parameterIndex, Object x) throws SQLException
+  {
+    if (x == null)
+    {
+      setParameterWithTag(parameterIndex,
+          PreparedStatementSerialization.OBJECT_TAG, null);
+    }
+    else
+    { // This is an optimization, faster than going through
+      // the generic setObject() method and calling instanceof again.
+      // This has to be in the end equivalent to
+      // setObject(index, object, DEFAULT_targetSqlType, 0)
+      // where DEFAULT_targetSqlType is defined in table:
+      // "Java Object Type Mapped to JDBC Types".
+      // It's currently not exactly the same, since generic setObject()
+      // is not strict enough in its conversions. For instance
+      // setObject(target=Float) actually calls "setDouble()" -- MH.
+
+      if (x instanceof String)
+        setString(parameterIndex, (String) x);
+      else if (x instanceof BigDecimal)
+        setBigDecimal(parameterIndex, (BigDecimal) x);
+      else if (x instanceof Boolean)
+        setBoolean(parameterIndex, ((Boolean) x).booleanValue());
+      else if (x instanceof Short)
+        setShort(parameterIndex, ((Short) x).shortValue());
+      else if (x instanceof Integer)
+        setInt(parameterIndex, ((Integer) x).intValue());
+      else if (x instanceof Long)
+        setLong(parameterIndex, ((Long) x).longValue());
+      else if (x instanceof Float)
+        setFloat(parameterIndex, ((Float) x).floatValue());
+      else if (x instanceof Double)
+        setDouble(parameterIndex, ((Double) x).doubleValue());
+      else if (x instanceof byte[])
+        setBytes(parameterIndex, (byte[]) x);
+      else if (x instanceof java.sql.Date)
+        setDate(parameterIndex, (java.sql.Date) x);
+      else if (x instanceof Time)
+        setTime(parameterIndex, (Time) x);
+      else if (x instanceof Timestamp)
+        setTimestamp(parameterIndex, (Timestamp) x);
+      else if (x instanceof Blob)
+        setBlob(parameterIndex, (Blob) x);
+      else if (x instanceof java.net.URL)
+        setURL(parameterIndex, (java.net.URL) x);
+      else if (x instanceof java.sql.Array)
+        setArray(parameterIndex, (java.sql.Array) x);
+      else if (x instanceof Serializable)
+      {
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+        try
+        {
+          // Serialize object to byte array
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+              byteOutputStream);
+          objectOutputStream.writeObject(x);
+          objectOutputStream.close();
+          synchronized (this.sbuf)
+          {
+            this.sbuf.setLength(0);
+            /**
+             * Encoded only for request inlining. Decoded right away by the
+             * controller
+             */
+            this.sbuf.append(AbstractBlobFilter.getDefaultBlobFilter().encode(
+                byteOutputStream.toByteArray()));
+            setParameterWithTag(parameterIndex,
+                PreparedStatementSerialization.OBJECT_TAG, trimStringBuffer());
+          }
+        }
+        catch (IOException e)
+        {
+          throw new SQLException("Failed to serialize object: " + e);
+        }
+      }
+      else
+        throw new SQLException("Objects of type " + x.getClass()
+            + " are not supported.");
+    }
+  }
+
+  /**
+   * Some prepared statements return multiple results; the execute method
+   * handles these complex statements as well as the simpler form of statements
+   * handled by <code>executeQuery()</code> and <code>executeUpdate()</code>.
+   * 
+   * @return <code>true</code> if the next result is a
+   *         <code>ResultSet<code>; <code>false<code> if it is an update count
+   * or there are no more results
+   * @exception SQLException if a database access error occurs
+   */
+  public boolean execute() throws SQLException
+  {
+    if (this.generatedKeysFlag == RETURN_GENERATED_KEYS)
+    {
+      if (connection.isAlwaysGettingGeneratedKeys()
+          && !requestMightGenerateKeys(sql))
+      {
+        return super.execute(sql, compileParameters(false));
+      }
+      int result = executeUpdate();
+      resultList = new LinkedList();
+      resultList.add(new Integer(result));
+      resultListIterator = resultList.iterator();
+      return getMoreResults();
+    }
+    return super.execute(sql, compileParameters(false));
+  }
+
+  /**
+   * Returns the SQL statement with the current template values substituted.
+   * <p>
+   * <b>Note: </b>: This is identical to <code>compileQuery()</code> except
+   * instead of throwing SQLException if a parameter is <code>null</code>, it
+   * places ? instead.
+   * 
+   * @return the SQL statement
+   */
+  public String toString()
+  {
+    synchronized (sbuf)
+    {
+      sbuf.setLength(0);
+      sbuf.append(sql);
+      int i;
+
+      if (inStrings == null)
+        return sbuf.toString();
+
+      for (i = 0; i < inStrings.length; ++i)
+      {
+        if (inStrings[i] == null)
+          sbuf.append('?');
+        else
+          sbuf.append(inStrings[i]);
+      }
+      return trimStringBuffer();
+    }
+  }
+
+  // ** JDBC 2 Extensions **
+
+  /**
+   * This parses the query and adds it to the current batch
+   * 
+   * @throws SQLException if an error occurs
+   */
+  public synchronized void addBatch() throws SQLException
+  {
+    if (batch == null)
+      batch = new Vector();
+    batch.addElement(new BatchElement(sql, compileParameters(false)));
+  }
+
+  /**
+   * Execute a batch of commands
+   * 
+   * @return an array containing update count that corresponding to the commands
+   *         that executed successfully
+   * @exception BatchUpdateException if an error occurs on one statement (the
+   *              number of updated rows for the successfully executed
+   *              statements can be found in
+   *              BatchUpdateException.getUpdateCounts())
+   */
+  public int[] executeBatch() throws BatchUpdateException
+  {
+    if (batch == null || batch.isEmpty())
+      return new int[0];
+
+    int size = batch.size();
+    int[] nbsRowsUpdated = new int[size];
+    int i = 0;
+
+    try
+    {
+      for (i = 0; i < size; i++)
+      {
+        BatchElement be = (BatchElement) batch.elementAt(i);
+        nbsRowsUpdated[i] = this.executeUpdateWithSkeleton(be.getSqlTemplate(),
+            be.getParameters());
+      }
+      return nbsRowsUpdated;
+    }
+    catch (SQLException e)
+    {
+      String message = "Batch failed for request " + i + ": "
+          + ((BatchElement) batch.elementAt(i)).getSqlTemplate() + " (" + e
+          + ")";
+
+      // shrink the returned array
+      int[] updateCounts = new int[i];
+      System.arraycopy(nbsRowsUpdated, 0, updateCounts, 0, i);
+
+      throw new BatchUpdateException(message, updateCounts);
+    }
+    finally
+    {
+      batch.removeAllElements();
+    }
+  }
+
+  /**
+   * Returns the <code>MetaData</code> for the last <code>ResultSet</code>
+   * returned.
+   * 
+   * @return The ResultSet Metadata
+   * @throws SQLException if an error occurs
+   */
+  public java.sql.ResultSetMetaData getMetaData() throws SQLException
+  {
+    java.sql.ResultSet rs = getResultSet();
+    if (rs != null)
+      return rs.getMetaData();
+    else
+      return connection.preparedStatementGetMetaData(sql);
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setArray(int, java.sql.Array)
+   */
+  public void setArray(int paramIndex, Array sqlArray) throws SQLException
+  {
+
+    ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+    try
+    {
+      // Serialize object to byte array
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+          byteOutputStream);
+      objectOutputStream.writeObject(sqlArray.getArray());
+      objectOutputStream.close();
+    }
+    catch (Exception e)
+    {
+      throw new SQLException("Failed to serialize Array object: " + e);
+    }
+    // Serialize java Object Array into the sbuf.
+    // Since Java.sql.Array is not serializable, we need to serialize it's
+    // contents. Java Object arrays are always serializable, so let's use the
+    // array fetched from java.sql.Array interface. In addition, we need to
+    // serialize sql type and type name to be able to construct a java.sql.Array
+    // object in the controller.
+    synchronized (this.sbuf)
+    {
+      try
+      {
+        this.sbuf.setLength(0);
+        // put SQL basetype as an integer
+        this.sbuf.append(sqlArray.getBaseType());
+        // put SQL base type name into the buffer, pre- and postfixed by a
+        // separator
+        this.sbuf
+            .append(PreparedStatementSerialization.ARRAY_BASETYPE_NAME_SEPARATOR);
+        this.sbuf.append(sqlArray.getBaseTypeName());
+        this.sbuf
+            .append(PreparedStatementSerialization.ARRAY_BASETYPE_NAME_SEPARATOR);
+        /**
+         * Encoded only for request inlining. Decoded right away by the
+         * controller
+         */
+        this.sbuf.append(AbstractBlobFilter.getDefaultBlobFilter().encode(
+            byteOutputStream.toByteArray()));
+        setParameterWithTag(paramIndex,
+            PreparedStatementSerialization.ARRAY_TAG, trimStringBuffer());
+      }
+      catch (OutOfMemoryError oome)
+      {
+        this.sbuf = null;
+        System.gc();
+        throw new SQLException("Out of memory");
+      }
+    }
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setBlob(int, Blob)
+   */
+  public void setBlob(int paramIndex, Blob sqlBlobParam) throws SQLException
+  {
+    if (sqlBlobParam == null)
+    {
+      setParameterWithTag(paramIndex, PreparedStatementSerialization.BLOB_TAG,
+          null);
+      return;
+    }
+
+    // sqlBlobParam.getBytes() seems limited in size ?
+    // So we use .getBinaryStream()
+    InputStream blobBinStream = sqlBlobParam.getBinaryStream();
+
+    byte[] data = new byte[(int) sqlBlobParam.length()];
+    try
+    {
+      blobBinStream.read(data, 0, (int) sqlBlobParam.length());
+    }
+    catch (Exception ioe)
+    {
+      throw new SQLException("Problem with data streaming");
+    }
+    try
+    {
+      synchronized (this.sbuf)
+      {
+        this.sbuf.setLength(0);
+        /**
+         * Encoded only for request inlining. Decoded right away by the
+         * controller at static
+         * {@link #setPreparedStatement(String, java.sql.PreparedStatement)}
+         */
+        this.sbuf
+            .append(AbstractBlobFilter.getDefaultBlobFilter().encode(data));
+        // this will make yet-another copy of the stringified blob.
+        // as a short-term fix for SEQUOIA-106, we should inline this call.
+        // The long term fix is to send binary parameters
+        setParameterWithTag(paramIndex,
+            PreparedStatementSerialization.BLOB_TAG, trimStringBuffer());
+      }
+    }
+    catch (OutOfMemoryError oome)
+    {
+      this.sbuf = null;
+      System.gc();
+      throw new SQLException("Out of memory");
+    }
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader,
+   *      int)
+   */
+  public void setCharacterStream(int i, java.io.Reader x, int length)
+      throws SQLException
+  {
+    char[] data = new char[length];
+    try
+    {
+      x.read(data, 0, length);
+    }
+    catch (Exception ioe)
+    {
+      throw new SQLException("Problem with streaming of data");
+    }
+    setString(i, new String(data));
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setClob(int, java.sql.Clob)
+   */
+  public void setClob(int i, java.sql.Clob clobArg) throws SQLException
+  {
+    String serializedParam = (clobArg == null ? null : clobArg.getSubString(0,
+        (int) clobArg.length()));
+
+    setParameterWithTag(i, PreparedStatementSerialization.CLOB_TAG,
+        serializedParam);
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setNull(int, int, java.lang.String)
+   */
+  public void setNull(int i, int t, String s) throws SQLException
+  {
+    setNull(i, t);
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setRef(int, java.sql.Ref)
+   */
+  public void setRef(int i, Ref x) throws SQLException
+  {
+    String serializedParam = (x == null ? null : x.toString());
+
+    setParameterWithTag(i, PreparedStatementSerialization.REF_TAG,
+        serializedParam);
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setDate(int, java.sql.Date,
+   *      java.util.Calendar)
+   */
+  public void setDate(int i, java.sql.Date d, java.util.Calendar cal)
+      throws SQLException
+  {
+    if (d == null)
+      setParameterWithTag(i, PreparedStatementSerialization.DATE_TAG, null);
+    else
+    {
+      if (cal == null)
+        setDate(i, d);
+      else
+      {
+        cal.setTime(d);
+        setDate(i, new java.sql.Date(cal.getTime().getTime()));
+      }
+    }
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setTime(int, java.sql.Time,
+   *      java.util.Calendar)
+   */
+  public void setTime(int i, Time t, java.util.Calendar cal)
+      throws SQLException
+  {
+    if (t == null)
+      setParameterWithTag(i, PreparedStatementSerialization.TIME_TAG, null);
+    else
+    {
+      if (cal == null)
+        setTime(i, t);
+      else
+      {
+        cal.setTime(t);
+        setTime(i, new java.sql.Time(cal.getTime().getTime()));
+      }
+    }
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp,
+   *      java.util.Calendar)
+   */
+  public void setTimestamp(int i, Timestamp t, java.util.Calendar cal)
+      throws SQLException
+  {
+    if (t == null)
+      setParameterWithTag(i, PreparedStatementSerialization.TIMESTAMP_TAG, null);
+    else
+    {
+      if (cal == null)
+        setTimestamp(i, t);
+      else
+      {
+        cal.setTime(t);
+        setTimestamp(i, new java.sql.Timestamp(cal.getTime().getTime()));
+      }
+    }
+  }
+
+  // ------------------------- JDBC 3.0 -----------------------------------
+
+  /**
+   * Sets the designated parameter to the given <code>java.net.URL</code>
+   * value. The driver converts this to an SQL <code>DATALINK</code> value
+   * when it sends it to the database.
+   * 
+   * @param parameterIndex the first parameter is 1, the second is 2, ...
+   * @param x the <code>java.net.URL</code> object to be set
+   * @exception SQLException if a database access error occurs
+   * @since JDK 1.4
+   */
+  public void setURL(int parameterIndex, java.net.URL x) throws SQLException
+  {
+    String serializedParam = (x == null ? null : x.toString());
+
+    setParameterWithTag(parameterIndex, PreparedStatementSerialization.URL_TAG,
+        serializedParam);
+  }
+
+  /**
+   * Retrieves the number, types and properties of this
+   * <code>PreparedStatement</code> object's parameters.
+   * 
+   * @return a <code>ParameterMetaData</code> object that contains information
+   *         about the number, types and properties of this
+   *         <code>PreparedStatement</code> object's parameters
+   * @exception SQLException if a database access error occurs
+   * @see ParameterMetaData
+   * @since JDK 1.4
+   */
+  public ParameterMetaData getParameterMetaData() throws SQLException
+  {
+    return connection.preparedStatementGetParameterMetaData(sql);
+  }
+
+  // **************************************************************
+  // END OF PUBLIC INTERFACE
+  // **************************************************************
+
+  /**
+   * Stores a parameter into parameters String array. Called by most setXXX()
+   * methods.
+   * 
+   * @param paramIndex the index into the inString
+   * @param s a string to be stored
+   * @exception SQLException if something goes wrong
+   */
+  protected void setParameter(int paramIndex, String s) throws SQLException
+  {
+    if (paramIndex < 1 || paramIndex > inStrings.length)
+      throw new SQLException("Parameter index out of range.");
+    inStrings[paramIndex - 1] = s;
+  }
+
+  /**
+   * Return a stored parameter tag and value.
+   * 
+   * @param paramIndex the index into the inString
+   * @return a the parameter tag and the parameter value
+   * @exception SQLException if something goes wrong
+   */
+  protected String[] getParameterTagAndValue(int paramIndex)
+      throws SQLException
+  {
+    if (paramIndex < 1 || paramIndex > inStrings.length)
+      throw new SQLException("Parameter index out of range.");
+    int typeStart = PreparedStatementSerialization.START_PARAM_TAG.length();
+
+    // Here we assume that all tags have the same length as the boolean tag.
+    String tagString = inStrings[paramIndex - 1];
+    String paramType = tagString.substring(typeStart, typeStart
+        + PreparedStatementSerialization.BOOLEAN_TAG.length());
+    String paramValue = tagString.substring(typeStart
+        + PreparedStatementSerialization.BOOLEAN_TAG.length(), tagString
+        .indexOf(PreparedStatementSerialization.END_PARAM_TAG));
+    paramValue = Strings.replace(paramValue,
+        PreparedStatementSerialization.TAG_MARKER_ESCAPE,
+        PreparedStatementSerialization.TAG_MARKER);
+    return new String[]{paramType, paramValue};
+  }
+
+  /**
+   * Stores parameter and its type as a <em>quoted</em> String, so the
+   * controller can decode them back.
+   * <p>
+   * We could avoid inlining the arguments and just tag them and send them apart
+   * as an object list. But this would imply a couple of changes elsewhere,
+   * among other: macro-handling, recoverylog,...
+   * 
+   * @param paramIndex the index into the inString
+   * @param typeTag type of the parameter
+   * @param param the parameter string to be stored
+   * @exception SQLException if something goes wrong
+   * @see PreparedStatementSerialization#setPreparedStatement(String,
+   *      java.sql.PreparedStatement)
+   */
+  void setParameterWithTag(int paramIndex, String typeTag, String param)
+      throws SQLException
+  {
+    if (isClosed())
+      throw new SQLException("Unable to set a parameter on a closed statement");
+
+    /**
+     * insert TAGS so the controller can parse and "unset" the request using
+     * {@link #setPreparedStatement(String, java.sql.PreparedStatement) 
+     */
+    if (param == null)
+      param = PreparedStatementSerialization.NULL_VALUE;
+    else
+      // escape the markers in argument data
+      param = Strings.replace(param, PreparedStatementSerialization.TAG_MARKER,
+          PreparedStatementSerialization.TAG_MARKER_ESCAPE);
+
+    setParameter(paramIndex, new String(
+        PreparedStatementSerialization.START_PARAM_TAG + typeTag + param
+            + PreparedStatementSerialization.END_PARAM_TAG));
+  }
+
+  /**
+   * This class defines a BatchElement used for the batch update vector of
+   * PreparedStatements to execute.
+   * 
+   * @author <a href="mailto:emmanuel.cecchet@emicnetworks.com">Emmanuel Cecchet
+   *         </a>
+   * @version 1.0
+   */
+  protected class BatchElement
+  {
+    private String sqlTemplate;
+    private String parameters;
+
+    /**
+     * Creates a new <code>BatchElement</code> object
+     * 
+     * @param sqlTemplate SQL query template (aka skeleton)
+     * @param parameters prepared statement parameters
+     */
+    public BatchElement(String sqlTemplate, String parameters)
+    {
+      this.sqlTemplate = sqlTemplate;
+      this.parameters = parameters;
+    }
+
+    /**
+     * Returns the compiledSql value.
+     * 
+     * @return Returns the compiledSql.
+     */
+    public String getParameters()
+    {
+      return parameters;
+    }
+
+    /**
+     * Returns the sqlTemplate value.
+     * 
+     * @return Returns the sqlTemplate.
+     */
+    public String getSqlTemplate()
+    {
+      return sqlTemplate;
+    }
+  }
+
+@Override
+public void setPoolable(boolean poolable) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public boolean isPoolable() throws SQLException {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+@Override
+public void closeOnCompletion() throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public boolean isCloseOnCompletion() throws SQLException {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+@Override
+public <T> T unwrap(Class<T> iface) throws SQLException {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public boolean isWrapperFor(Class<?> iface) throws SQLException {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+@Override
+public void setRowId(int parameterIndex, RowId x) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNString(int parameterIndex, String value) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNCharacterStream(int parameterIndex, Reader value, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNClob(int parameterIndex, NClob value) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setClob(int parameterIndex, Reader reader, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setBlob(int parameterIndex, InputStream inputStream, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNClob(int parameterIndex, Reader reader, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setAsciiStream(int parameterIndex, InputStream x, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setBinaryStream(int parameterIndex, InputStream x, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setCharacterStream(int parameterIndex, Reader reader, long length)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setAsciiStream(int parameterIndex, InputStream x)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setBinaryStream(int parameterIndex, InputStream x)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setCharacterStream(int parameterIndex, Reader reader)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNCharacterStream(int parameterIndex, Reader value)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setClob(int parameterIndex, Reader reader) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setBlob(int parameterIndex, InputStream inputStream)
+		throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void setNClob(int parameterIndex, Reader reader) throws SQLException {
+	// TODO Auto-generated method stub
+	
+}
+}

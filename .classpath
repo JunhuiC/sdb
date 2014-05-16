@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="classes" path="classes"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
+	<classpathentry kind="con" path="D:/concordia/comp490/sequoia-2.10.10-src/build/classes"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/octopus/Octopus.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/octopus/OctopusGenerator.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/octopus/csvjdbc.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/octopus/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/octopus/xmlutil.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/activation.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/appia.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/commons-cli.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/concurrent.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/crimson.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/hedera-appia.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/hedera-commons.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/hedera-jgroups.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/hedera-spread.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jaxen-1.1-beta-8.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jgroups-all.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jgroups-core.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jline.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/log4j.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/mail.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/spread.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jmx/mx4j-remote.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jmx/mx4j-tools.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/jmx/mx4j.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/other/ant.jar"/>
+	<classpathentry kind="lib" path="D:/concordia/comp490/sequoia-2.10.10-src/lib/other/standalone-compiler.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

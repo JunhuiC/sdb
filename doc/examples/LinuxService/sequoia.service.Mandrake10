@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# Startup script for sequoia controller
+# chkconfig: - 79 20
+# description: sequoia controller for clustering database 
+# processname: sequoia 
+# pid /var/run/sequoia.pid
+#
+# Author: Stephane Ducas (sducas@idealx.org)
+#
+# Tested under Mandrake 10 (it probably will also work with Red-Hat)
+# You will have to modify the controller.sh for storing the PID
+# You can add these lines:
+# SEQUOIA_PID=/var/run/sequoia.pid
+# echo $$ > $SEQUOIA_PID
+
+
+# Source function library.
+if [ -x /etc/rc.d/init.d/functions ]; then
+.. /etc/rc.d/init.d/functions
+fi
+
+
+# Path to the sequoia controller launch and stop script
+SEQUOIA_START_SCRIPT=/usr/share/sequoia/bin/cg95-raidb1-controller-start.sh
+SEQUOIA_STOP_SCRIPT=/usr/share/sequoia/bin/shutdown.sh
+SHUTDOWN_WAIT=10
+
+# sequoia name :)
+SEQUOIA_PROG="sequoia controller for cg-95"
+
+RETVAL=0
+
+# See how we were called.
+start() {
+    echo -n "Starting $SEQUOIA_PROG: "
+
+	if [ -f /var/lock/subsys/sequoia ] ; then
+ 		if [ -f /var/run/sequoia.pid ]; then
+   	      		read kpid < /var/run/sequoia.pid
+         		if checkpid $kpid 2>&1; then
+             			echo "process allready running"
+             			return -1
+         		else
+             			echo "lock file found but no process running for pid $kpid, continuing"
+ 			fi
+ 		fi
+ 	fi
+ 
+ 	export SEQUOIA_PID=/var/run/sequoia.pid
+ 	touch $SEQUOIA_PID
+
+        if [ -x /etc/rc.d/init.d/functions ]; then
+        	daemon $SEQUOIA_START_SCRIPT  
+    	else
+                $SEQUOIA_START_SCRIPT
+    	fi
+
+    	RETVAL=$?
+    	echo
+    	[ $RETVAL = 0 ] && touch /var/lock/subsys/sequoia
+    	return $RETVAL
+}
+
+stop() {
+    echo -n "Stopping $SEQUOIA_PROG: "
+
+    if [ -f /var/lock/subsys/sequoia ] ; then
+      if [ -x /etc/rc.d/init.d/functions ]; then
+          daemon $SEQUOIA_STOP_SCRIPT 
+      else
+	  $SEQUOIA_STOP_SCRIPT
+      fi
+      RETVAL=$?
+
+      if [ $RETVAL = 0 ]; then
+        count=0;
+
+        if [ -f /var/run/sequoia.pid ]; then
+
+            read kpid < /var/run/sequoia.pid
+            let kwait=$SHUTDOWN_WAIT
+
+            until [ `ps --pid $kpid | grep -c $kpid` = '0' ] || [ $count -gt $kwait ]
+            do
+                echo "waiting for processes to exit";
+                sleep 1
+                let count=$count+1;
+            done
+
+            if [ $count -gt $kwait ]; then
+                echo "killing processes which didn't stop after $SHUTDOWN_WAIT seconds"
+                kill -9 $kpid
+            fi
+        fi
+    
+		rm -f /var/lock/subsys/sequoia /var/run/sequoia.pid
+    fi
+
+    fi
+}
+
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        sleep 2	
+        start
+        ;;
+  condrestart)
+        if [ -f /var/run/sequoia.pid ] ; then
+                stop
+                start
+        fi
+        ;;
+  *)
+        echo "Usage: sequoia {start|stop|restart|condrestart}"
+        exit 1
+esac
+
+exit $RETVAL

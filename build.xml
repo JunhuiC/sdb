@@ -1,0 +1,1313 @@
+<!-- 
+  Sequoia: Database clustering technology.
+  Copyright (C) 2005 AmicoSoft, Inc. dba Emic Networks. All rights reserved.
+  Contact: sequoia@continuent.org
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. 
+
+  Initial developer(s): Emmanuel Cecchet.
+  Contributor(s): Nicolas Modrzyk, Mathieu Peltier, Marc Herbert
+-->
+
+<!-- Eclipse Ant formatter settings currently used: indent 2 spaces, no tabs,
+     wrap long lines (max line 80), do not align final '>'   -->
+
+<!-- ====================================================================== -->
+<!-- Sequoia Ant build file -->
+<!-- ====================================================================== -->
+<project name="sequoia" default="compile" basedir=".">
+
+  <!-- customizable properties -->
+  <property file="build.properties" />
+
+  <!-- This sets the ${histrevision} property from the CVS $Revision: number
+  extracted from the doc/HISTORY.txt file (the file that changes the most often) -->
+  <loadfile srcfile="doc/HISTORY.txt"
+            property="histrevision"
+            failonerror="false">
+    <filterchain>
+      <containsregex pattern=".*\$Revi.?sion: *[^ $]*.*\$.*" />
+      <striplinebreaks />
+      <replaceregex pattern=".*\$Revi.?sion: *([^ $]*).*\$.*" replace="-\1" />
+    </filterchain>
+  </loadfile>
+  <!-- backup on empty value in case HISTORY.txt is broken -->
+  <property name="histrevision" value="" />
+
+  <!-- uncustomizable properties -->
+  <tstamp />
+  <!-- ${histrevision} is much better than ${DSTAMP} because it is really attached to
+  the actual version of the code and not to the date of compilation. It
+  works fine but disabled for lack of extensive testing. Too many targets use ${version}
+  below in too many different ways. One issue is that the URLs of DTDs inside XML files
+  are built using ${version}. Also needs Windows testing. -->
+  <property name="versiondatesuffix" value="${histrevision}-${DSTAMP}" />
+  <property name="versiondatesuffix" value="-${DSTAMP}" />
+
+  <property file="src/org/continuent/sequoia/common/util/version.properties"/>
+  <property name="version" value="${sequoia.version}" />
+  <!-- alternative:
+  <property name="version" value="${versionnumber}${versiondatesuffix}" />
+  -->
+  <property name="packagepath" value="org/continuent/sequoia" />
+  <property name="packageprefix" value="org.continuent.sequoia" />
+  <property name="3rdparty" value="${basedir}/3rdparty" />
+  <property name="bin" value="${basedir}/bin" />
+  <property name="build" value="${basedir}/build" />
+  <property name="config" value="${basedir}/config" />
+  <property name="demo" value="${bin}/demo" />
+  <property name="dist" value="${basedir}/dist" />
+  <property name="doc" value="${basedir}/doc" />
+  <property name="lib" value="${basedir}/lib" />
+  <property name="src" value="${basedir}/src" />
+  <property name="xml" value="${basedir}/xml" />
+
+  <property name="build.bin" value="${build}/bin" />
+  <property name="build.classes" value="${build}/classes" />
+  <property name="build.dist" value="${build}/dist" />
+  <property name="build.dist.bin" value="${build.dist}/bin" />
+  <property name="build.dist.src" value="${build.dist}/src" />
+  <property name="build.doc" value="${build}/doc" />
+  <property name="build.jar" value="${build}/jar" />
+  <property name="build.depgraph" value="${build.jar}" />
+  <property name="build.javadoc" value="${build.doc}/api" />
+
+  <property name="build.izpack" value="${build}/IzPack" />
+  <property name="dist.bin.installer.release.name"
+            value="${ant.project.name}-${version}-bin-installer.jar" />
+  <property name="dist.bin.release.name"
+            value="${ant.project.name}-${version}-bin" />
+  <property name="dist.src.installer.release.name"
+            value="${ant.project.name}-${version}-src-installer.jar" />
+  <property name="dist.src.release.name"
+            value="${ant.project.name}-${version}-src" />
+  <property name="config.izpack" value="${config}/izpack" />
+  <property name="install.path"
+            value="${install.dir}/${ant.project.name}-${version}-bin" />
+
+  <!--   DependencyFinder classes and lib -->
+  <!-- this classpath trick is confusing ant. In my current configuration
+       "/usr/bin/ant show-depissues-driver" works while a short "ant"
+       throws ClassNotFoundException. But the funny thing is: "type ant"
+       gives /usr/bin/ant! Go figure... -->
+  <path id="dependencyfinder">
+    <fileset dir="${dependencyfinder.home}/lib">
+      <include name="*.jar"/>
+    </fileset>
+    <!-- there is one log4.properties file here -->
+    <pathelement location="${dependencyfinder.home}/classes" />
+  </path>
+
+  <!-- classpath -->
+  <path id="classpath">
+    <pathelement location="${build.classes}" />
+    <fileset dir="${lib}/octopus">
+      <include name="*.jar" />
+    </fileset>
+    <fileset dir="${lib}">
+      <include name="*.jar" />
+    </fileset>
+    <fileset dir="${lib}/jmx">
+      <include name="**/*.jar" />
+    </fileset>
+    <fileset dir="${lib}/other">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <!-- ====================================================================== -->
+  <!-- compile targets -->
+  <!-- ====================================================================== -->
+  <target name="init-compile">
+
+    <!-- Echo Target version -->
+    <echo message="Target JVM is set to: ${javac.target}" />
+
+    <mkdir dir="${build.classes}" />
+
+    <!-- Insert version number in Sequoia Constants and compile it -->
+    <copy filtering="true"
+          file="${src}/${packagepath}/common/util/Constants.java"
+          tofile="${build.classes}/${packagepath}/common/util/Constants.java">
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+    <javac includeantruntime="false" 
+    	srcdir="${build.classes}"
+           destdir="${build.classes}"
+           includes="${packagepath}/common/util/Constants.java"
+           target="${javac.target}"
+           source="${javac.source}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}" />
+  </target>
+
+  <target name="compile"
+          depends="init-compile, compile-commons, compile-jmx, compile-sql, compile-driver, compile-backend, compile-cache, compile-controller, compile-console"
+          description="Compiles all Sequoia components including driver, console and controller.">
+  </target>
+
+  <!-- Shared classes compilation -->
+  <target name="compile-commons" depends="init-compile">
+    <javac includeantruntime="false"
+    	srcdir="${src}"
+           destdir="${build.classes}"
+           target="${javac.target}"
+           source="${javac.source}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}">
+      <include name="${packagepath}/common/**/*" />
+      <exclude name="${packagepath}/common/jmx/**/*" />
+      <exclude name="${packagepath}/common/sql/**/*" />
+    </javac>
+  </target>
+
+  <target name="compile-jmx" depends="init-compile">
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           target="${javac.target}"
+           source="${javac.source}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}">
+      <include name="${packagepath}/common/jmx/**/*" />
+    </javac>
+  </target>
+
+  <target name="compile-sql" depends="init-compile">
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           target="${javac.target}"
+           source="${javac.source}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}">
+      <include name="${packagepath}/common/sql/**/*" />
+    </javac>
+  </target>
+
+  <!-- Driver compilation -->
+  <target name="compile-driver"
+          depends="compile-commons"
+          description="Compiles the Sequoia driver.">
+
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           includes="${packagepath}/driver/**/*"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}">
+    </javac>
+  </target>
+
+  <!-- Controller compilation -->
+  <target name="compile-controller"
+          depends="compile-commons"
+          description="Compiles the Sequoia controller.">
+
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}">
+      <include name="${packagepath}/controller/**/*" />
+      <exclude name="${packagepath}/controller/backend/**/*" />
+      <exclude name="${packagepath}/controller/backup/backupers/**/*" />
+      <exclude name="${packagepath}/controller/cache/**/*" />
+    </javac>
+  </target>
+
+  <!-- Backend compilation -->
+  <target name="compile-backend"
+          depends="init-compile"
+          description="Compiles the Sequoia backend.">
+
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           includes="${packagepath}/controller/backend/**/*"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}" />
+  </target>
+
+  <!-- Backupers compilation -->
+  <target name="compile-backupers"
+          depends="init-compile"
+          description="Compiles the Sequoia backupers.">
+
+    <javac srcdir="${src}"
+           destdir="${build.classes}"
+           includes="${packagepath}/controller/backup/backupers/**/*"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}" />
+  </target>
+
+  <!-- Cache compilation -->
+  <target name="compile-cache"
+          depends="init-compile"
+          description="Compiles the Sequoia cache.">
+
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           includes="${packagepath}/controller/cache/**/*"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}" />
+  </target>
+
+  <!-- Console compilation -->
+  <target name="compile-console"
+          depends="compile-commons"
+          description="Compiles the Sequoia console.">
+
+    <javac srcdir="${src}" includeantruntime="false"
+           destdir="${build.classes}"
+           includes="${packagepath}/console/**/*"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpathref="classpath"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           encoding="${javac.encoding}" />
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- jar target -->
+  <!-- ====================================================================== -->
+  <target name="init-jar" depends="compile">
+    <mkdir dir="${build.jar}" />
+  </target>
+
+  <target name="jar"
+          depends="init-jar, jar-commons, jar-jmx, jar-sql, jar-backend, jar-backupers, jar-cache, jar-driver, jar-console, jar-controller"
+          description="Creates JAR files for Sequoia driver, console, and controller." />
+
+  <!-- define contents of jar files -->
+
+  <!-- jar-driver MUST be self-contained: no external dependency at all -->
+
+  <!-- On the other hand, other (controller) jars should implement a perfect
+      partition (empty intersections, NO multiple instances of a .class file) -->
+
+  <!-- driver jar classes -->
+  <selector id="jar-sql.classes">
+    <or>
+      <filename name="${packagepath}/common/sql/**/*.class" />
+      <filename name="${packagepath}/common/locks/**/*.class" />
+    </or>
+  </selector>
+  <property name="jar-sql.regexp" value="/^${packageprefix}\.common\.(sql|locks)\./" />
+
+  <selector id="commons-driver-subset.classes">
+    <or>
+      <selector refid="jar-sql.classes" />
+      <filename name="${packagepath}/common/exceptions/**/*.class" />
+      <filename name="${packagepath}/common/stream/**/*.class" />
+      <filename name="${packagepath}/common/util/*.class" />
+      <filename name="${packagepath}/common/util/version.properties" />
+      <filename name="${packagepath}/common/protocol/*.class" />
+    </or>
+  </selector>
+  <property name="commons-driver-subset.regexp"
+            value="${jar-sql.regexp},/^${packageprefix}\.common\.(exceptions|stream|util|protocol)\./" />
+
+  <selector id="jar-driver.classes">
+    <or>
+      <selector refid="commons-driver-subset.classes" />
+      <filename name="${packagepath}/driver/**/*.class" />
+    </or>
+  </selector>
+  <property name="jar-driver.regexp"
+            value="${commons-driver-subset.regexp},/^${packageprefix}\.driver\./" />
+  <!-- (Filtered) well-known dependencies of jar-driver. All other (spurious!)
+  dependencies will be printed by target "depissues-driver" -->
+  <property name="jar-driver.dependencies"
+            value="/^java\./,/^javax\.(net|sql|naming)\./" />
+
+  <!-- non-driver jars classes -->
+  <selector id="jar-jmx.classes">
+    <filename name="${packagepath}/common/jmx/**/*.class" />
+  </selector>
+  <property name="jar-jmx.regexp" value="/^${packageprefix}\.common\.jmx\./" />
+
+  <selector id="jar-commons.classes">
+    <or>
+      <selector refid="commons-driver-subset.classes" />
+      <filename name="${packagepath}/common/authentication/**/*.class" />
+      <filename name="${packagepath}/common/i18n/**/*.class" />
+      <filename name="${packagepath}/common/i18n/**/*.properties" />
+      <filename name="${packagepath}/common/log/**/*.class" />
+      <filename name="${packagepath}/common/net/**/*.class" />
+      <filename name="${packagepath}/common/users/*.class" />
+      <filename name="${packagepath}/common/xml/*.class" />
+    </or>
+  </selector>
+  <property name="jar-commons.regexp"
+            value="${commons-driver-subset.regexp},/^${packageprefix}\.common\.(authentication|i18n|log|net|users|xml)\./" />
+  <property name="jar-commons.dependencies"
+            value="/^java\./,/^javax\.(net|xml)\./,/^com.sun.net.ssl/,/^org.apache.log4j/,/^org\.xml\./" />
+
+
+  <selector id="jar-cache.classes">
+    <filename name="${packagepath}/controller/cache/**/*.class" />
+  </selector>
+
+  <selector id="jar-backend.classes">
+    <filename name="${packagepath}/controller/backend/**/*.class" />
+  </selector>
+
+  <selector id="jar-backuper.classes">
+    <filename name="${packagepath}/controller/backup/backupers/**/*.class" />
+  </selector>
+
+  <selector id="jar-controller.classes">
+    <and>
+      <filename name="${packagepath}/controller/**/*.class" />
+      <not>
+        <or>
+          <selector refid="jar-backend.classes" />
+          <selector refid="jar-cache.classes" />
+          <selector refid="jar-backuper.classes" />
+        </or>
+      </not>
+    </and>
+  </selector>
+
+  <selector id="jar-console.classes">
+    <filename name="${packagepath}/console/**/*" />
+  </selector>
+  <property name="jar-console.regexp"
+             value="/^${packageprefix}\.console\./" />
+   <!-- (Filtered) well-known dependencies of jar-console. All other (spurious!)
+   dependencies will be printed by target "depissues-console" -->
+   <property name="jar-console.dependencies"
+             value="${jar-commons.regexp},${jar-jmx.regexp},/^org\.apache\.commons\.cli\./,/^jline\./,/^java\./,/^javax\.(net|sql|management|security)\./" />
+
+  <!-- Create sequoia-commons.jar file -->
+  <target name="jar-commons"
+          depends="init-jar, compile-commons"
+          description="Creates the Sequoia commons JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-commons.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.commons}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.commons}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-commons.classes" />
+      </fileset>
+      <fileset dir="${src}">
+        <include name="org/continuent/sequoia/common/i18n/*.properties"/>
+        <include name="org/continuent/sequoia/common/util/version.properties"/>
+      </fileset>
+        <fileset dir="${src}">
+          <include name="org/continuent/sequoia/common/xml/*.xsl"/>
+        </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-jmx.jar file -->
+  <target name="jar-jmx"
+          depends="init-jar, compile-jmx"
+          description="Creates the Sequoia JMX JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-jmx.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.jmx}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.jmx}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-jmx.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-sql.jar file -->
+  <target name="jar-sql"
+          depends="init-jar, compile-sql"
+          description="Creates the Sequoia SQL JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-sql.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.jmx}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.jmx}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-sql.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-backend.jar file -->
+  <target name="jar-backend"
+          depends="init-jar, compile-backend"
+          description="Creates the Sequoia backend JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-backend.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.backend}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.backend}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-backend.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-backupers.jar file -->
+  <target name="jar-backupers"
+          depends="init-jar, compile-backupers"
+          description="Creates the Sequoia backupers JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-backupers.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.backupers}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.backupers}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-backuper.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-cache.jar file -->
+  <target name="jar-cache"
+          depends="init-jar, compile-cache"
+          description="Creates the Sequoia cache JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-cache.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.cache}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.cache}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-cache.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create sequoia-driver.jar file -->
+  <target name="jar-driver"
+          depends="init-jar, compile-driver"
+          description="Creates the Sequoia driver JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-driver.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.driver}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.driver}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-driver.classes" />
+      </fileset>
+      <fileset dir="${src}">
+        <include name="org/continuent/sequoia/common/util/version.properties"/>
+      </fileset>
+
+    </jar>
+  </target>
+
+  <!-- Create sequoia-controller.jar file -->
+  <target name="jar-controller"
+          depends="init-jar, compile-controller"
+          description="Creates the Sequoia controller JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-controller.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.controller}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.controller}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-controller.classes" />
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create the console jar file -->
+  <target name="jar-console"
+          depends="init-jar, compile-console"
+          description="Creates the Sequoia console JAR file.">
+
+    <jar jarfile="${build.jar}/sequoia-console.jar">
+      <manifest>
+        <attribute name="Specification-Title"
+                   value="${specification.title.controller}" />
+        <attribute name="Specification-Version" value="${version}" />
+        <attribute name="Specification-Vendor"
+                   value="${specification.vendor}" />
+        <attribute name="Implementation-Title"
+                   value="${specification.title.controller}" />
+        <attribute name="Implementation-Version" value="${version}" />
+        <attribute name="Implementation-Vendor"
+                   value="${specification.vendor}" />
+      </manifest>
+      <fileset dir="${build.classes}">
+        <selector refid="jar-console.classes" />
+      </fileset>
+      <fileset dir="${src}">
+        <include name="org/continuent/sequoia/console/text/console.ini"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <!-- Create (import) the hedera jar files -->
+  <target name="jar-hedera"
+          description="Creates hedera-commons.jar and hedera-jgroups.jar (build and imports from external project).">
+    <property name="hedera.dir" value="${basedir}/../hedera_open" />
+    <ant inheritAll="false"
+         antfile="${hedera.dir}/build.xml"
+         target="jar-hedera-export">
+      <property name="export.dir" value="${lib}" />
+    </ant>
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- dist target -->
+  <!-- ====================================================================== -->
+  <target name="dist"
+          depends="dist-bin, dist-src"
+          description="Creates binary and source Sequoia distributions (tar.gz, zip and Java graphical installer using IzPack)." />
+
+  <target name="init-dist">
+    <copy todir="${build.izpack}">
+      <fileset dir="${config.izpack}" />
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+
+    <!-- Allows to use the IzPack Ant task -->
+    <taskdef name="izpack"
+             classpath="${lib}/other/standalone-compiler.jar"
+             classname="com.izforge.izpack.ant.IzPackTask" />
+
+    <!-- Create Izpack files to change default install directory given the plateforn the Sequoia version -->
+    <echo file="${build.izpack}/TargetPanel.dir.unix.src"
+          append="false"
+          message="/tmp/sequoia-${version}-src" />
+    <echo file="${build.izpack}/TargetPanel.dir.unix.bin"
+          append="false"
+          message="/tmp/sequoia-${version}-bin" />
+    <echo file="${build.izpack}/TargetPanel.dir.windows.src"
+          append="false"
+          message="C:\Program Files\sequoia-${version}-src" />
+    <echo file="${build.izpack}/TargetPanel.dir.windows.bin"
+          append="false"
+          message="C:\Program Files\sequoia-${version}-bin" />
+    <mkdir dir="${dist}" />
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- binary dist targets -->
+  <!-- ====================================================================== -->
+  <target name="init-dist-bin" depends="init-dist, jar, doc">
+
+    <!-- Build dist-bin only when needed -->
+    <uptodate property="rebuild.dist-bin.not.needed"
+              targetfile="${dist}/.dist-bin">
+      <srcfiles dir="${bin}" />
+      <srcfiles dir="${config}" />
+      <srcfiles dir="${demo}" />
+      <srcfiles dir="${doc}" />
+      <srcfiles dir="${lib}" />
+      <srcfiles dir="${src}" />
+      <srcfiles dir="${xml}" />
+      <srcfiles dir="${basedir}" includes="build.*" />
+    </uptodate>
+  </target>
+
+  <target name="prepare-dist-bin" depends="jar, doc">
+    <!-- Does most of the layout of the tar/install directory -->
+    <antcall target="generate-scripts" />
+
+    <!-- Copy needed files to ${build.dist.bin} -->
+    <mkdir dir="${build.dist.bin}" />
+    <copy todir="${build.dist.bin}/3rdparty">
+      <fileset dir="${3rdparty}" />
+    </copy>
+    <copy todir="${build.dist.bin}/bin">
+      <fileset dir="${build.bin}">
+        <include name="*.sh" />
+        <include name="*.bat" />
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.bin}/demo">
+      <fileset dir="${demo}">
+        <include name="*.*" />
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.bin}/config">
+      <fileset dir="${config}">
+        <include name="*.*" />
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+    <copy todir="${build.dist.bin}/config/controller">
+      <fileset dir="${config}/controller">
+        <include name="*.xml" />
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+    <copy todir="${build.dist.bin}/config/virtualdatabase">
+      <fileset dir="${config}/virtualdatabase">
+        <include name="*.xml" />
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+    <!-- Unzip all octopus classes so we can edit xml files -->
+    <unzip src="${lib}/octopus/Octopus.jar"
+           dest="${build.dist.bin}/lib/octopus" />
+
+    <mkdir dir="${build.dist.bin}/lib/octopus/xml/XmlTransform/xml/xmlschema/" />
+    <copy toDir="${build.dist.bin}/lib/octopus/xml/XmlTransform/xml/xmlschema/">
+      <fileset dir="${build.dist.bin}/lib/octopus/xml/xmlschema/" />
+    </copy>
+    <!-- Overwrite is set to true because we want to replace the
+    default Octopus files with our own -->
+    <copy todir="${build.dist.bin}/lib" overwrite="true">
+      <fileset dir="${lib}">
+        <include name="*.jar" />
+        <exclude name="Octopus.jar" />
+        <include name="jmx/**/*" />
+        <include name="octopus/**/*" />
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.bin}/xml">
+      <fileset dir="${xml}">
+        <include name="*.dtd" />
+        <include name="*.xsl" />
+      </fileset>
+    </copy>
+    <mkdir dir="${build.dist.bin}/log" />
+
+    <!-- The user has to set the SEQUOIA_HOME variable in this case -->
+    <replace dir="${build.dist.bin}">
+      <include name="**/*.sh" />
+      <replacetoken><![CDATA[SEQUOIA_HOME=%INSTALL_PATH]]></replacetoken>
+      <replacevalue><![CDATA[if [ -z "$SEQUOIA_HOME" ] ; then 
+  echo "Cannot find Sequoia home directory. Please set the SEQUOIA_HOME environment variable."
+  exit 1
+fi]]></replacevalue>
+    </replace>
+    <replace dir="${build.dist.bin}">
+      <include name="**/*.bat" />
+      <replacetoken><![CDATA[SET SEQUOIA_HOME="$INSTALL_PATH"]]></replacetoken>
+      <replacevalue><![CDATA[if exist %SEQUOIA_HOME% goto begin
+echo "Cannot find Sequoia home directory. Please set the SEQUOIA_HOME environment variable."
+goto end]]></replacevalue>
+    </replace>
+    <replace dir="${build.dist.bin}">
+      <include name="**/*.bat" />
+      <exclude name="**/hsqldb.bat" />
+      <replacetoken><![CDATA[/]]></replacetoken>
+      <replacevalue><![CDATA[\]]></replacevalue>
+    </replace>
+    <replace dir="${build.dist.bin}">
+      <!-- Revert the previous /B -> \B conversion for 'start /B ...' 
+           See SEQUOIA-154
+      -->
+      <include name="demo/*.bat" />
+      <replacetoken><![CDATA[ \B ]]></replacetoken>
+      <replacevalue><![CDATA[ /B ]]></replacevalue>
+    </replace>
+    <chmod perm="ugo+rx">
+      <fileset dir="${build.dist.bin}">
+        <include name="**/*.sh" />
+      </fileset>
+    </chmod>
+
+    <mkdir dir="${build.dist.bin}/drivers" />
+    <copy todir="${build.dist.bin}/drivers"
+          file="${build.jar}/sequoia-driver.jar" />
+
+    <copy todir="${build.dist.bin}/lib">
+      <fileset dir="${build.jar}">
+        <include name="sequoia-controller.jar" />
+        <include name="sequoia-backend.jar" />
+        <include name="sequoia-backupers.jar" />
+        <include name="sequoia-cache.jar" />
+        <include name="sequoia-commons.jar" />
+        <include name="sequoia-console.jar" />
+        <include name="sequoia-jmx.jar" />
+        <include name="sequoia-sql.jar" />
+      </fileset>
+    </copy>
+
+    <copy todir="${build.dist.bin}/doc">
+      <fileset dir="${build.doc}">
+        <include name="**/*" />
+        <exclude name="README.txt" />
+        <exclude name="api/**/*" />
+        <exclude name="api" />
+      </fileset>
+    </copy>
+    <copy file="${build.doc}/README.txt" todir="${build.dist.bin}" />
+  </target>
+
+  <!-- Generate the scripts to use Sequoia -->
+  <target name="generate-scripts" depends="init-compile, compile-commons">
+    <mkdir dir="${build.bin}" />
+    <!-- First split the scripts.xml file -->
+    <taskdef name="split"
+             classname="${packageprefix}.common.util.SplitXmlTask"
+             classpath="${build.classes}" />
+    <split scriptXmlFile="bin/scripts.xml"
+           outputDir="${build.bin}"
+           parsingTagName="script"
+           ouputFileAttribute="name" />
+
+    <!-- Generation sh and bat scripts -->
+    <xslt basedir="${build.bin}"
+          destdir="${build.bin}"
+          extension=".sh"
+          style="${bin}/unix-script.xsl">
+      <include name="*.xml" />
+    </xslt>
+    <xslt basedir="${build.bin}"
+          destdir="${build.bin}"
+          extension=".bat"
+          style="${bin}/windows-script.xsl">
+      <include name="*.xml" />
+    </xslt>
+
+    <!-- Replace backslashes with slashes for some windows scripts -->
+    <replace dir="${build.bin}">
+      <include name="**/isql.bat" />
+      <replacetoken>\</replacetoken>
+      <replacevalue>/</replacevalue>
+    </replace>
+
+    <!-- Copy other scripts not generated by XML -->
+    <copy todir="${build.bin}">
+      <fileset dir="${bin}">
+        <include name="**/*.sh" />
+        <include name="**/*.bat" />
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- Build zip bin distribution -->
+  <target name="dist-bin-zip" depends="init-dist-bin">
+    <!-- Make sure the demos work out of the box without hardcoding the jar in
+    controller.sh -->
+    <copy todir="${build.dist.bin}/drivers">
+      <fileset dir="3rdparty/hsqldb/lib">
+        <include name="hsqldb*.jar" />
+      </fileset>
+    </copy>
+    <zip destfile="${dist}/${dist.bin.release.name}.zip" update="true">
+      <zipfileset dir="${build.dist.bin}"
+                  prefix="${dist.bin.release.name}"
+                  filemode="755">
+        <include name="bin/*.sh" />
+        <include name="demo/*.sh" />
+      </zipfileset>
+      <zipfileset dir="${build.dist.bin}" prefix="${dist.bin.release.name}">
+        <exclude name="bin/*.sh" />
+        <exclude name="demo/*.sh" />
+      </zipfileset>
+    </zip>
+  </target>
+
+  <!-- Build tar.gz bin distribution -->
+  <target name="dist-bin-targz" depends="init-dist-bin">
+    <!-- workaround: new files seem not to be updated by default? So
+    just delete first the file to be sure -->
+    <delete file="${dist}/${dist.bin.release.name}.tar.gz" />
+    <!-- Make sure the demos work out of the box without hardcoding the jar in
+    controller.sh -->
+    <copy todir="${build.dist.bin}/drivers">
+      <fileset dir="3rdparty/hsqldb/lib">
+        <include name="hsqldb*.jar" />
+      </fileset>
+    </copy>
+    <tar destfile="${dist}/${dist.bin.release.name}.tar.gz"
+         longfile="gnu"
+         compression="gzip">
+      <tarfileset dir="${build.dist.bin}"
+                  prefix="${dist.bin.release.name}"
+                  mode="755">
+        <include name="bin/*.sh" />
+        <include name="demo/*.sh" />
+      </tarfileset>
+      <tarfileset dir="${build.dist.bin}" prefix="${dist.bin.release.name}">
+        <exclude name="bin/*.sh" />
+        <exclude name="demo/*.sh" />
+      </tarfileset>
+    </tar>
+  </target>
+
+  <target name="dist-bin-installer" depends="init-dist-bin">
+    <!-- Build Java graphical installer bin distribution -->
+    <izpack input="${build.izpack}/bin-release.xml"
+            output="${dist}/${dist.bin.installer.release.name}"
+            basedir="${basedir}"
+            izPackDir="${build.izpack}" />
+  </target>
+
+  <target name="dist-bin"
+          depends="init-dist-bin"
+          description="Creates binary Sequoia distributions (tar.gz, zip and Java graphical installer using IzPack)."
+          unless="rebuild.dist-bin.not.needed">
+    <antcall target="prepare-dist-bin" />
+    <antcall target="dist-bin-targz" />
+    <antcall target="dist-bin-zip" />
+    <antcall target="dist-bin-installer" />
+    <touch file="${dist}/.dist-bin" />
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- sources dist target -->
+  <!-- ====================================================================== -->
+  <target name="init-dist-src" depends="init-dist, jar, javadoc">
+
+    <!-- Build dist-src only when needed -->
+    <uptodate property="rebuild.dist-src.not.needed"
+              targetfile="${dist}/.dist-src">
+      <srcfiles dir="${bin}" />
+      <srcfiles dir="${config}" />
+      <srcfiles dir="${doc}" />
+      <srcfiles dir="${lib}" />
+      <srcfiles dir="${src}" />
+      <srcfiles dir="${xml}" />
+      <srcfiles dir="${basedir}" includes="build.*" />
+    </uptodate>
+  </target>
+
+  <target name="dist-src"
+          depends="init-dist-src"
+          description="Creates source Sequoia distributions (tar.gz, zip and Java graphical installer using IzPack)."
+          unless="rebuild.dist-src.not.needed">
+
+    <!-- Copy needed files to ${build.dist.src} -->
+    <mkdir dir="${build.dist.src}" />
+    <copy todir="${build.dist.src}/3rdparty">
+      <fileset dir="3rdparty" />
+    </copy>
+    <copy todir="${build.dist.src}/bin">
+      <fileset dir="${bin}" />
+    </copy>
+    <copy todir="${build.dist.src}">
+      <fileset dir="${basedir}">
+        <include name="build.*" />
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.src}/build/doc/api">
+      <fileset dir="${build.javadoc}" />
+    </copy>
+    <copy todir="${build.dist.src}/config">
+      <fileset dir="${config}" />
+    </copy>
+    <copy todir="${build.dist.src}/doc">
+      <fileset dir="${doc}" />
+    </copy>
+    <copy todir="${build.dist.src}/lib">
+      <fileset dir="${lib}" />
+    </copy>
+    <copy todir="${build.dist.src}/src">
+      <fileset dir="${src}" />
+    </copy>
+    <copy todir="${build.dist.src}/xml">
+      <fileset dir="${xml}" />
+    </copy>
+    <chmod perm="ugo+rx">
+      <fileset dir="${build.dist.src}/bin">
+        <include name="*.sh" />
+      </fileset>
+    </chmod>
+
+    <!-- Build zip src distribution -->
+    <zip destfile="${dist}/${dist.src.release.name}.zip" update="true">
+      <zipfileset dir="${build.dist.src}" prefix="${dist.src.release.name}" />
+    </zip>
+
+    <!-- Build tar.gz src distribution -->
+    <!-- workaround: new files seem not to be updated by default? So
+    just delete first the file to be sure -->
+    <delete file="${dist}/${dist.src.release.name}.tar.gz" />
+    <tar destfile="${dist}/${dist.src.release.name}.tar.gz"
+         longfile="gnu"
+         compression="gzip">
+      <tarfileset dir="${build.dist.src}"
+                  prefix="${dist.src.release.name}"
+                  mode="755">
+        <include name="bin/*.sh" />
+        <include name="demo/*.sh" />
+      </tarfileset>
+      <tarfileset dir="${build.dist.src}" prefix="${dist.src.release.name}">
+        <exclude name="bin/*.sh" />
+        <exclude name="demo/*.sh" />
+      </tarfileset>
+    </tar>
+
+    <!-- Build Java graphical installer src distribution -->
+    <izpack input="${build.izpack}/src-release.xml"
+            output="${dist}/${dist.src.installer.release.name}"
+            basedir="${basedir}"
+            izPackDir="${build.izpack}" />
+
+    <touch file="${dist}/.dist-src" />
+  </target>
+
+
+  <!-- ====================================================================== -->
+  <!-- install targets -->
+  <!-- ====================================================================== -->
+  <target name="install"
+          depends="init-dist-bin, prepare-dist-bin, dist-bin-installer"
+          description="Installs Sequoia distribution in the directory specified by ${install.dir}.">
+
+    <copy file="${config}/izpack/install.xml" tofile="${build.izpack}" />
+
+    <replace file="${build.izpack}/install.xml">
+      <replacefilter token="@install_path@" value="${install.path}" />
+    </replace>
+
+    <java jar="${dist}/${dist.bin.installer.release.name}"
+          failonerror="true"
+          fork="true"
+          maxmemory="128m">
+      <arg value="${build.izpack}/install.xml" />
+      <classpath>
+        <pathelement location="${dist}/${dist.bin.installer.release.name}" />
+      </classpath>
+    </java>
+
+    <!-- Fix permissions -->
+    <chmod perm="ugo+rx">
+      <fileset dir="${install.path}/bin">
+        <include name="*.sh" />
+      </fileset>
+      <fileset dir="${install.path}/demo">
+        <include name="*.sh" />
+      </fileset>
+    </chmod>
+
+    <echo message="Done installation in ${install.path}" />
+  </target>
+
+  <target name="update-installed-jars"
+          depends="jar,prepare-dist-bin"
+          description="Update jar files only into the ${install.dir} directory.">
+    <sync todir="${install.path}/lib" overwrite="true" includeEmptyDirs="true">
+      <fileset dir="${build.dist.bin}/lib">
+        <include name="**/*.*" />
+      </fileset>
+    </sync>
+
+    <copy todir="${install.path}/drivers"
+          overwrite="true"
+          includeEmptyDirs="true">
+      <fileset dir="${build.dist.bin}/drivers">
+        <include name="**/*.*" />
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- doc target -->
+  <!-- ====================================================================== -->
+  <target name="doc">
+
+    <mkdir dir="${build.doc}" />
+    <copy todir="${build.doc}">
+      <fileset dir="${doc}">
+        <include name="README.txt" />
+        <include name="LICENSE.txt" />
+        <include name="HISTORY.txt" />
+        <include name="adminGuide.pdf" />
+        <include name="installGuide.pdf" />
+        <include name="userGuide/**/*.*" />
+      </fileset>
+    </copy>
+
+    <copy todir="${build.doc}/examples">
+      <fileset dir="${doc}/examples">
+        <include name="**/*" />
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${version}" />
+      </filterset>
+    </copy>
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- javadoc target -->
+  <!-- ====================================================================== -->
+  <target name="init-javadoc">
+
+    <!-- Build Javadoc only when a src file has been modified -->
+    <uptodate property="rebuild.javadoc.not.needed"
+              targetfile="${build}/.javadoc">
+      <srcfiles dir="${src}" />
+    </uptodate>
+  </target>
+
+  <target name="javadoc"
+          depends="init-javadoc,jar"
+          description="Generates Javadoc documentation."
+          unless="rebuild.javadoc.not.needed">
+
+    <property name="javadoc.title" value="Sequoia ${sequoia.version} API" />
+    <javadoc classpathref="classpath"
+             stylesheetfile="doc/javadoc-stylesheet.css"
+             defaultexcludes="yes"
+             destdir="${build.javadoc}"
+             author="true"
+             version="true"
+             use="true"
+             private="true"
+             windowtitle="${javadoc.title}"
+             additionalparam="-linksource -breakiterator"
+             bottom="${javadoc.bottom}">
+      <doctitle>${javadoc.title}</doctitle>
+      <packageset dir="${src}">
+        <include name="org/**/*" />
+      </packageset>
+      <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
+    </javadoc>
+    <touch file="${build}/.javadoc" />
+  </target>
+
+  <!-- ====================================================================== -->
+  <!-- jar check targets -->
+  <!-- ====================================================================== -->
+
+  <!-- These tasks need installed DependencyFinder -->
+  <target name="check-dependencyfinder" unless="dependencyfinder.home">
+    <echo>This target requires DependencyFinder. Please edit dependencyfinder.home in build.properties.</echo>
+  </target>
+  <target name="init-dependency-tasks" if="dependencyfinder.home">
+    <taskdef name="dependencyextractor" classname="com.jeantessier.dependencyfinder.ant.DependencyExtractor">
+      <classpath refid="dependencyfinder" />
+    </taskdef>
+    <taskdef name="dependencyreporter" classname="com.jeantessier.dependencyfinder.ant.DependencyReporter">
+      <classpath refid="dependencyfinder" />
+    </taskdef>
+  </target>
+
+  <!-- check -commons.jar dependencies -->
+  <uptodate property="commons.graph.uptodate"
+            srcfile="${build.jar}/sequoia-commons.jar"
+            targetfile="${build.depgraph}/commons-depgraph.xml" />
+  <target name="build-depgraph-commons" depends="check-dependencyfinder, init-dependency-tasks" unless="commons.graph.uptodate" if="dependencyfinder.home">
+    <antcall target="jar-commons" />
+    <dependencyextractor destfile="${build.depgraph}/commons-depgraph.xml"
+                         xml="yes">
+      <path path="${build.jar}/sequoia-commons.jar" />
+    </dependencyextractor>
+  </target>
+
+  <!-- p2p shows only packages, c2c: classes, f2f: features; etc.-->
+  <target name="show-depissues-commons" depends="check-dependencyfinder, init-dependency-tasks, build-depgraph-commons" if="dependencyfinder.home" description="Show sequoia-commons.jar dependencies (require DepencyFinder)">
+    <echo message="Content of ___-commons.jar is: ${jar-commons.regexp}" />
+    <echo message="known external DEPENDENCIES are: ${jar-commons.dependencies}" />
+    <echo message="UNEXPECTED external depencies are listed below:" />
+    <dependencyreporter srcfile="${build.depgraph}/commons-depgraph.xml"
+                        destfile="${build.depgraph}/commons-issues.txt"
+                        featurescope="yes"
+                        featurefilter="yes"
+                        showinbounds="yes"
+                        scopeexcludes="${jar-commons.regexp},${jar-commons.dependencies}" />
+    <concat>
+      <path path="${build.depgraph}/commons-issues.txt" />
+    </concat>
+  </target>
+
+  <!-- check driver.jar dependencies -->
+  <uptodate property="driver.graph.uptodate"
+            srcfile="${build.jar}/sequoia-driver.jar"
+            targetfile="${build.depgraph}/driver-depgraph.xml" />
+  <target name="build-depgraph-driver" depends="check-dependencyfinder, init-dependency-tasks" unless="driver.graph.uptodate" if="dependencyfinder.home">
+    <antcall target="jar-driver" />
+    <dependencyextractor destfile="${build.depgraph}/driver-depgraph.xml"
+                         xml="yes">
+      <path path="${build.jar}/sequoia-driver.jar" />
+    </dependencyextractor>
+  </target>
+
+  <!-- p2p shows only packages, c2c: classes, f2f: features; etc.-->
+  <target name="show-depissues-driver" depends="check-dependencyfinder, init-dependency-tasks, build-depgraph-driver" if="dependencyfinder.home" description="Show sequoia-driver.jar dependencies (require DepencyFinder)">
+    <echo message="Content of ___-driver.jar is: ${jar-driver.regexp}" />
+    <echo message="known external DEPENDENCIES are: ${jar-driver.dependencies}" />
+    <echo message="UNEXPECTED external depencies are listed below:" />
+    <dependencyreporter srcfile="${build.depgraph}/driver-depgraph.xml"
+                        destfile="${build.depgraph}/driver-issues.txt"
+                        featurescope="yes"
+                        featurefilter="yes"
+                        showinbounds="yes"
+                        scopeexcludes="${jar-driver.regexp},${jar-driver.dependencies}" />
+    <concat>
+      <path path="${build.depgraph}/driver-issues.txt" />
+    </concat>
+  </target>
+
+  <!-- check console.jar dependencies -->
+  <uptodate property="console.graph.uptodate"
+            srcfile="${build.jar}/sequoia-console.jar"
+            targetfile="${build.depgraph}/console-depgraph.xml" />
+  <target name="build-depgraph-console" depends="check-dependencyfinder, init-dependency-tasks" unless="console.graph.uptodate" if="dependencyfinder.home">
+    <antcall target="jar-console" />
+    <dependencyextractor destfile="${build.depgraph}/console-depgraph.xml"
+                         xml="yes">
+      <path path="${build.jar}/sequoia-console.jar" />
+    </dependencyextractor>
+  </target>
+
+  <!-- p2p shows only packages, c2c: classes, f2f: features; etc.-->
+  <target name="show-depissues-console" depends="check-dependencyfinder, init-dependency-tasks, build-depgraph-console" if="dependencyfinder.home" description="Show sequoia-console.jar dependencies (require DepencyFinder)">
+    <echo message="Content of ___-console.jar is: ${jar-console.regexp}" />
+    <echo message="known external DEPENDENCIES are: ${jar-console.dependencies}" />
+    <echo message="UNEXPECTED external depencies are listed below:" />
+    <dependencyreporter srcfile="${build.depgraph}/console-depgraph.xml"
+                        destfile="${build.depgraph}/console-issues.txt"
+                        featurescope="yes"
+                        featurefilter="yes"
+                        showinbounds="yes"
+                        scopeexcludes="${jar-console.regexp},${jar-console.dependencies}" />
+    <concat>
+      <path path="${build.depgraph}/console-issues.txt" />
+    </concat>
+  </target>
+
+  <!-- ===================================================================  -->
+  <!-- clean target -->
+  <!-- ===================================================================  -->
+  <target name="clean"
+          description="Deletes all generated files and emacs backup files.">
+
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+    <delete>
+      <fileset dir="${basedir}" defaultexcludes="no">
+        <patternset>
+          <!-- emacs backup files -->
+          <include name="**/*~" />
+        </patternset>
+      </fileset>
+    </delete>
+  </target>
+
+</project>
