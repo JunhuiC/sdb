@@ -59,13 +59,13 @@ public abstract class AbstractPoolConnectionManager
   //
 
   /** Stack of available <code>PooledConnection</code> */
-  protected transient LinkedList freeConnections;
+  protected transient LinkedList<PooledConnection> freeConnections;
 
   /**
    * Pool of currently used connections (<code>Vector</code> type because
    * synchronisation is needed). Uses <code>PooledConnection</code> objects.
    */
-  protected transient ArrayList  activeConnections;
+  protected transient ArrayList<PooledConnection>  activeConnections;
 
   /** Size of the connection pool with the real database. */
   protected int                  poolSize;
@@ -101,8 +101,8 @@ public abstract class AbstractPoolConnectionManager
           "Illegal value for size of the pool connection manager: " + poolSize);
 
     this.poolSize = poolSize;
-    this.freeConnections = new LinkedList();
-    this.activeConnections = new ArrayList(poolSize);
+    this.freeConnections = new LinkedList<PooledConnection>();
+    this.activeConnections = new ArrayList<PooledConnection>(poolSize);
     this.initialized = false;
 
     if (logger.isDebugEnabled())
@@ -257,10 +257,10 @@ public abstract class AbstractPoolConnectionManager
           retry = false;
           try
           {
-            for (Iterator iter = persistentConnections.entrySet().iterator(); iter
+            for (Iterator<?> iter = persistentConnections.entrySet().iterator(); iter
                 .hasNext();)
             {
-              Map.Entry element = (Map.Entry) iter.next();
+              Map.Entry<?,?> element = (Map.Entry<?,?>) iter.next();
               if (element.getValue() == c)
               {
                 iter.remove();
@@ -317,13 +317,13 @@ public abstract class AbstractPoolConnectionManager
       throw new RuntimeException(msg);
     }
 
-    for (Iterator iter = freeConnections.iterator(); iter.hasNext();)
+    for (Iterator<PooledConnection> iter = freeConnections.iterator(); iter.hasNext();)
     {
       PooledConnection c = (PooledConnection) iter.next();
       c.setMustBeRenewed(true);
     }
 
-    for (Iterator iter = activeConnections.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = activeConnections.iterator(); iter.hasNext();)
     {
       PooledConnection c = (PooledConnection) iter.next();
       c.setMustBeRenewed(true);

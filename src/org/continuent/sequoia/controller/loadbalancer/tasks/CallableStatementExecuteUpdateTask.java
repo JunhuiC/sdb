@@ -54,7 +54,7 @@ public class CallableStatementExecuteUpdateTask extends AbstractTask
   /**
    * results : store results from all the backends
    */
-  private Map                 results       = null;
+  private Map<BackendWorkerThread, ExecuteUpdateResult>                 results       = null;
   /**
    * result : this is the result for the first backend to succeed
    */
@@ -76,7 +76,7 @@ public class CallableStatementExecuteUpdateTask extends AbstractTask
     super(nbToComplete, totalNb, proc.isPersistentConnection(), proc
         .getPersistentConnectionId());
     this.proc = proc;
-    this.results = new HashMap();
+    this.results = new HashMap<BackendWorkerThread, ExecuteUpdateResult>();
   }
 
   /**

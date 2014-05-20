@@ -58,7 +58,7 @@ public class ListDatabases extends ConsoleCommand
 
     try
     {
-      List list = jmxClient.getControllerProxy().getVirtualDatabaseNames();
+      List<?> list = jmxClient.getControllerProxy().getVirtualDatabaseNames();
       for (int i = 0; i < list.size(); i++)
         console.println((String) list.get(i));
     }

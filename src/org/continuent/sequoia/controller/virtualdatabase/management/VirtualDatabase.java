@@ -206,7 +206,7 @@ public class VirtualDatabase extends AbstractStandardMBean
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean#getAllBackendNames()
    */
-  public List getAllBackendNames() throws VirtualDatabaseException
+  public List<?> getAllBackendNames() throws VirtualDatabaseException
   {
     return managedVirtualDatabase.getAllBackendNames();
   }
@@ -216,7 +216,7 @@ public class VirtualDatabase extends AbstractStandardMBean
    *      java.lang.String, java.util.Map)
    */
   public void replicateBackend(String backendName, String newBackendName,
-      Map parameters) throws VirtualDatabaseException
+      Map<?, ?> parameters) throws VirtualDatabaseException
   {
     try
     {
@@ -365,7 +365,7 @@ public class VirtualDatabase extends AbstractStandardMBean
    *      java.lang.String, java.lang.String, java.util.ArrayList)
    */
   public void backupBackend(String backendName, String login, String password,
-      String dumpName, String backuperName, String path, ArrayList tables)
+      String dumpName, String backuperName, String path, ArrayList<?> tables)
       throws VirtualDatabaseException
   {
     try
@@ -394,7 +394,7 @@ public class VirtualDatabase extends AbstractStandardMBean
    */
   public void backupBackend(String backendName, String login, String password,
       String dumpName, String backuperName, String path, boolean force,
-      ArrayList tables) throws VirtualDatabaseException
+      ArrayList<?> tables) throws VirtualDatabaseException
   {
     try
     {
@@ -490,7 +490,7 @@ public class VirtualDatabase extends AbstractStandardMBean
    *      java.util.ArrayList)
    */
   public void restoreDumpOnBackend(String databaseBackendName, String login,
-      String password, String dumpName, ArrayList tables)
+      String password, String dumpName, ArrayList<?> tables)
       throws VirtualDatabaseException
   {
     try

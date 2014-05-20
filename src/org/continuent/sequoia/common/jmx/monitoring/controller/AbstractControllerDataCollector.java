@@ -34,7 +34,11 @@ public abstract class AbstractControllerDataCollector
     extends
       AbstractDataCollector
 {
-  private String controllerName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4232240596060077970L;
+private String controllerName;
 
   /**
    * Default constructors

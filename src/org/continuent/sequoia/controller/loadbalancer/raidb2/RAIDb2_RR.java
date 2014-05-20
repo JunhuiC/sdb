@@ -119,7 +119,7 @@ public class RAIDb2_RR extends RAIDb2
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)
@@ -129,7 +129,7 @@ public class RAIDb2_RR extends RAIDb2
       // Take the next backend that has the needed tables
       int maxTries = size;
       int enabledBackends = 0;
-      Collection tables = request.getFrom();
+      Collection<?> tables = request.getFrom();
       if (tables == null)
         throw new SQLException(Translate.get("loadbalancer.from.not.found",
             request.getSqlShortForm(vdb.getSqlShortFormLength())));
@@ -274,7 +274,7 @@ public class RAIDb2_RR extends RAIDb2
       Object result = null;
       do
       {
-        ArrayList backends = vdb.getBackends();
+        ArrayList<?> backends = vdb.getBackends();
         int size = backends.size();
 
         if (size == 0)

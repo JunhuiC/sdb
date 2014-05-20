@@ -108,7 +108,7 @@ public class JmxNotification
   String                      mbeanServerIP;
   String                      mbeanServerPort;
   String                      time;
-  Hashtable                   dataList;
+  Hashtable<String, ArrayList<String>>                   dataList;
 
   /**
    * Create a new JmxNotification object
@@ -128,7 +128,7 @@ public class JmxNotification
   public JmxNotification(String priority, String sequence, String type,
       String description, String time, String controllerName,
       String mbeanClass, String mbeanName, String mbeanServerIP,
-      String mbeanServerPort, Hashtable dataList)
+      String mbeanServerPort, Hashtable<String, ArrayList<String>> dataList)
   {
     this.priority = priority;
     this.sequence = sequence;
@@ -164,7 +164,7 @@ public class JmxNotification
   /**
    * @return Returns the dataList.
    */
-  public Hashtable getDataList()
+  public Hashtable<String, ArrayList<String>> getDataList()
   {
     return dataList;
   }
@@ -180,7 +180,7 @@ public class JmxNotification
     if (!dataList.containsKey(key))
       return null;
     else
-      return (String) ((ArrayList) dataList.get(key)).get(0);
+      return (String) ((ArrayList<?>) dataList.get(key)).get(0);
   }
 
   /**
@@ -374,12 +374,12 @@ public class JmxNotification
 
     Element root = document.getRootElement();
 
-    Hashtable dataList = new Hashtable();
-    for (Iterator i = root.elementIterator(ELT_data); i.hasNext();)
+    Hashtable<String, ArrayList<String>> dataList = new Hashtable<String, ArrayList<String>>();
+    for (Iterator<?> i = root.elementIterator(ELT_data); i.hasNext();)
     {
       Element data = (Element) i.next();
-      ArrayList list = new ArrayList();
-      for (Iterator j = data.elementIterator(ELT_value); j.hasNext();)
+      ArrayList<String> list = new ArrayList<String>();
+      for (Iterator<?> j = data.elementIterator(ELT_value); j.hasNext();)
       {
         Element value = (Element) j.next();
         list.add(value.getTextTrim());
@@ -422,7 +422,7 @@ public class JmxNotification
         .addAttribute(ATT_port, mbeanServerPort);
 
     // Describe data
-    Enumeration keys = dataList.keys();
+    Enumeration<String> keys = dataList.keys();
     while (keys.hasMoreElements())
     {
       String key = (String) keys.nextElement();
@@ -431,7 +431,7 @@ public class JmxNotification
       Object entry = dataList.get(key);
       if (entry instanceof ArrayList)
       {
-        ArrayList list = (ArrayList) entry;
+        ArrayList<?> list = (ArrayList<?>) entry;
         for (int i = 0; i < list.size(); i++)
           data.addElement(ELT_value).addText((String) list.get(i));
       }
@@ -487,7 +487,7 @@ public class JmxNotification
   /**
    * @param dataList The dataList to set.
    */
-  public void setDataList(Hashtable dataList)
+  public void setDataList(Hashtable<String, ArrayList<String>> dataList)
   {
     this.dataList = dataList;
   }

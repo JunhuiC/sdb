@@ -96,7 +96,7 @@ public class MySQLBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String url = backend.getURL();
     if (!url.startsWith("jdbc:mysql:"))
@@ -326,7 +326,7 @@ public class MySQLBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String url = backend.getURL();
     if (!url.startsWith("jdbc:mysql:"))
@@ -579,8 +579,8 @@ public class MySQLBackuper extends AbstractBackuper
 
   protected void printErrors()
   {
-    ArrayList errors = nativeCmdExec.getStderr();
-    Iterator it = errors.iterator();
+    ArrayList<?> errors = nativeCmdExec.getStderr();
+    Iterator<?> it = errors.iterator();
     while (it.hasNext())
     {
       String msg = (String) it.next();

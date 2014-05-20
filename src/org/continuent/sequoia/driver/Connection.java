@@ -26,6 +26,7 @@
 package org.continuent.sequoia.driver;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.sql.Array;
@@ -263,7 +264,7 @@ public class Connection implements java.sql.Connection
    */
   private void setUrlParametersOptionsOnConnection(SequoiaUrl sequoiaUrl)
   {
-    HashMap sequoiaUrlParameters = sequoiaUrl.getParameters();
+    HashMap<?, ?> sequoiaUrlParameters = sequoiaUrl.getParameters();
 
     String escapeBaskslash = (String) sequoiaUrlParameters
         .get(Driver.ESCAPE_BACKSLASH_PROPERTY);
@@ -319,10 +320,10 @@ public class Connection implements java.sql.Connection
     {
       // Give a warning for unrecognized driver options in the URL
       // (only in the URL: unknown properties have been filtered out)
-      for (Iterator iter = sequoiaUrlParameters.entrySet().iterator(); iter
+      for (Iterator<?> iter = sequoiaUrlParameters.entrySet().iterator(); iter
           .hasNext();)
       {
-        Map.Entry e = (Map.Entry) iter.next();
+        Map.Entry<?,?> e = (Map.Entry<?,?>) iter.next();
         String param = (String) e.getKey();
         if (!Driver.driverPropertiesNames.contains(param))
           System.out.println("Unrecognized driver parameter: " + param + " = "
@@ -488,7 +489,8 @@ public class Connection implements java.sql.Connection
    * 
    * @exception SQLException if a database access error occurs
    */
-  public void clearWarnings() throws SQLException
+  @SuppressWarnings("deprecation")
+public void clearWarnings() throws SQLException
   {
     if (!persistentConnection || !retrieveSQLWarnings)
       // nop
@@ -689,7 +691,8 @@ public class Connection implements java.sql.Connection
     doCommit();
   }
 
-  private void doCommit() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+private void doCommit() throws DriverSQLException
   {
     try
     {
@@ -870,7 +873,8 @@ public class Connection implements java.sql.Connection
    * @throws DriverSQLException if any error occurs
    * @see Connection#getCatalog()
    */
-  public synchronized String getCatalog() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public synchronized String getCatalog() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     try
@@ -908,7 +912,8 @@ public class Connection implements java.sql.Connection
    * @return instace of <code>ResultSet<code>
    * @throws DriverSQLException if fails (include ANY exception that can be thrown in the code)
    */
-  public synchronized ResultSet getCatalogs() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public synchronized ResultSet getCatalogs() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     try
@@ -990,7 +995,7 @@ public class Connection implements java.sql.Connection
    * @return an exception
    * @exception SQLException not supported
    */
-  public java.util.Map getTypeMap() throws SQLException
+  public Map<String,Class<?>> getTypeMap() throws SQLException
   {
     throw new NotImplementedException(getCurrentMethodName());
   }
@@ -1005,7 +1010,8 @@ public class Connection implements java.sql.Connection
    * @exception DriverSQLException if a database access error occurs or this
    *              method is called on a closed connection
    */
-  public SQLWarning getWarnings() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public SQLWarning getWarnings() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     if (!persistentConnection || !retrieveSQLWarnings)
@@ -1367,7 +1373,8 @@ public class Connection implements java.sql.Connection
    *              in the current transaction
    * @since JDK 1.4
    */
-  public void releaseSavepoint(Savepoint savepoint) throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public void releaseSavepoint(Savepoint savepoint) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     if (savepoint == null)
@@ -1422,7 +1429,8 @@ public class Connection implements java.sql.Connection
    *              connection is in autocommit mode
    * @see Connection#commit()
    */
-  public synchronized void rollback() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public synchronized void rollback() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     if (autoCommit)
@@ -1499,7 +1507,8 @@ public class Connection implements java.sql.Connection
    * @see #rollback()
    * @since JDK 1.4
    */
-  public void rollback(Savepoint savepoint) throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public void rollback(Savepoint savepoint) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     if (savepoint == null)
@@ -1626,7 +1635,8 @@ public class Connection implements java.sql.Connection
    * @param catalog a <code>String</code> value
    * @exception SQLException if fails or if catalog name is invalid
    */
-  public synchronized void setCatalog(String catalog) throws SQLException
+  @SuppressWarnings("deprecation")
+public synchronized void setCatalog(String catalog) throws SQLException
   {
     throwSQLExceptionIfClosed();
     if (catalog == null)
@@ -1698,7 +1708,8 @@ public class Connection implements java.sql.Connection
    *          <code>false</code> disables it
    * @exception DriverSQLException if a database access error occurs
    */
-  public void setReadOnly(boolean readOnly) throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public void setReadOnly(boolean readOnly) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
 
@@ -1752,7 +1763,8 @@ public class Connection implements java.sql.Connection
    * @see Savepoint
    * @since JDK 1.4
    */
-  public Savepoint setSavepoint() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public Savepoint setSavepoint() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     beginTransactionIfNeeded();
@@ -1813,7 +1825,8 @@ public class Connection implements java.sql.Connection
    * @see Savepoint
    * @since JDK 1.4
    */
-  public Savepoint setSavepoint(String name) throws DriverSQLException
+  @SuppressWarnings("deprecation")
+public Savepoint setSavepoint(String name) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     beginTransactionIfNeeded();
@@ -1877,7 +1890,8 @@ public class Connection implements java.sql.Connection
    * @exception DriverSQLException if a database access error occurs
    * @see java.sql.DatabaseMetaData#supportsTransactionIsolationLevel
    */
-  public synchronized void setTransactionIsolation(int level)
+  @SuppressWarnings("deprecation")
+public synchronized void setTransactionIsolation(int level)
       throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -1978,12 +1992,12 @@ public class Connection implements java.sql.Connection
    * 
    * @return the list of results
    */
-  private List fetchMultipleResultsFromStream(String callerName)
+  private List<Serializable> fetchMultipleResultsFromStream(String callerName)
       throws IOException, SerializableException, ProtocolException
   {
     boolean hasResult;
     int updateCount = 0;
-    LinkedList results = new LinkedList();
+    LinkedList<Serializable> results = new LinkedList<Serializable>();
     do
     {
       hasResult = receiveBooleanOrException();
@@ -2019,7 +2033,7 @@ public class Connection implements java.sql.Connection
    * @throws IOException if an error with the socket occured
    * @throws SerializableException if a problem occured deserializing an object
    */
-  private HashMap fetchNamedParameters() throws ProtocolException, IOException,
+  private HashMap<Comparable<?>, Object> fetchNamedParameters() throws ProtocolException, IOException,
       SerializableException
   {
     if (sequoiaUrl.isDebugEnabled())
@@ -2027,7 +2041,7 @@ public class Connection implements java.sql.Connection
     String paramName = receiveStringOrException();
     if ("0".equals(paramName))
       return null;
-    HashMap params = new HashMap();
+    HashMap<Comparable<?>, Object> params = new HashMap<Comparable<?>, Object>();
     while (!"0".equals(paramName))
     {
       Object value = receiveObject();
@@ -2045,7 +2059,7 @@ public class Connection implements java.sql.Connection
    * @throws IOException if an error with the socket occured
    * @throws SerializableException if a problem occured deserializing an object
    */
-  private HashMap fetchOutParameters() throws ProtocolException, IOException,
+  private HashMap<Comparable<?>, Object> fetchOutParameters() throws ProtocolException, IOException,
       SerializableException
   {
     if (sequoiaUrl.isDebugEnabled())
@@ -2054,7 +2068,7 @@ public class Connection implements java.sql.Connection
     int index = receiveIntOrException();
     if (index == 0)
       return null;
-    HashMap params = new HashMap();
+    HashMap<Comparable<?>, Object> params = new HashMap<Comparable<?>, Object>();
     while (index != 0)
     {
       Object value = receiveObject();
@@ -2384,7 +2398,7 @@ public class Connection implements java.sql.Connection
       DriverResultSet drs = receiveResultSet(getCurrentMethodName());
       if (drs == null)
         return null;
-      List result = new ArrayList(3);
+      List<Serializable> result = new ArrayList<Serializable>(3);
       result.add(drs);
       result.add(fetchOutParameters());
       result.add(fetchNamedParameters());
@@ -2420,7 +2434,7 @@ public class Connection implements java.sql.Connection
       int updateCount = receiveIntOrException();
       if (updateCount == -1)
         return null; // No result found in failover
-      List result = new ArrayList(3);
+      List<Serializable> result = new ArrayList<Serializable>(3);
       result.add(new Integer(updateCount));
       result.add(fetchOutParameters());
       result.add(fetchNamedParameters());
@@ -2453,10 +2467,10 @@ public class Connection implements java.sql.Connection
       socketOutput.writeLong(request.getId());
       socketOutput.flush();
       SQLWarning statementWarnings = receiveSQLWarnings();
-      List results = fetchMultipleResultsFromStream(getCurrentMethodName());
+      List<Serializable> results = fetchMultipleResultsFromStream(getCurrentMethodName());
       if (results == null)
         return null; // No result found in failover
-      List result = new ArrayList(3);
+      List<Object> result = new ArrayList<Object>(3);
       result.add(results);
       result.add(fetchOutParameters());
       result.add(fetchNamedParameters());
@@ -2558,7 +2572,7 @@ public class Connection implements java.sql.Connection
       socketOutput.writeLong(request.getId());
       socketOutput.flush();
       SQLWarning statementWarnings = receiveSQLWarnings();
-      List resList = fetchMultipleResultsFromStream(getCurrentMethodName());
+      List<Serializable> resList = fetchMultipleResultsFromStream(getCurrentMethodName());
       return new ResultAndWarnings(resList, statementWarnings);
     }
     catch (Throwable e)
@@ -2579,7 +2593,8 @@ public class Connection implements java.sql.Connection
    * 
    * @throws DriverSQLException if an error occured during reconnect
    */
-  private synchronized void reconnect() throws DriverSQLException,
+  @SuppressWarnings("deprecation")
+private synchronized void reconnect() throws DriverSQLException,
       VirtualDatabaseUnavailableException
   {
     // Get rid of current connection
@@ -2781,7 +2796,8 @@ public class Connection implements java.sql.Connection
    * @return a <code>java.sql.ResultSet</code> value
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized DriverResultSet statementExecuteQuery(
+  @SuppressWarnings("deprecation")
+protected synchronized DriverResultSet statementExecuteQuery(
       RequestWithResultSetParameters request) throws DriverSQLException,
       NotImplementedException
   {
@@ -2913,7 +2929,8 @@ public class Connection implements java.sql.Connection
    * @return number of rows affected
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized ResultAndWarnings statementExecuteUpdate(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultAndWarnings statementExecuteUpdate(
       Request request) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed connection cannot process request '"
@@ -2980,7 +2997,8 @@ public class Connection implements java.sql.Connection
    * @return a <code>List</code> of results
    * @throws DriverSQLException if an error occurs
    */
-  protected synchronized ResultAndWarnings statementExecute(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultAndWarnings statementExecute(
       RequestWithResultSetParameters request) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed Connection cannot process request '"
@@ -3004,7 +3022,7 @@ public class Connection implements java.sql.Connection
         writeExecutedInTransaction = true;
 
       SQLWarning sqlw = receiveSQLWarnings();
-      List res = fetchMultipleResultsFromStream(getCurrentMethodName());
+      List<Serializable> res = fetchMultipleResultsFromStream(getCurrentMethodName());
       return new ResultAndWarnings(res, sqlw);
     }
     catch (RuntimeException e)
@@ -3051,7 +3069,8 @@ public class Connection implements java.sql.Connection
    * @return auto generated keys
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized DriverGeneratedKeysResult statementExecuteUpdateWithKeys(
+  @SuppressWarnings("deprecation")
+protected synchronized DriverGeneratedKeysResult statementExecuteUpdateWithKeys(
       Request request) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed Connection cannot process request '"
@@ -3155,7 +3174,8 @@ public class Connection implements java.sql.Connection
    *         <code>HashMap</code> of named parameters result objects.
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized ResultAndWarnings callableStatementExecuteQuery(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultAndWarnings callableStatementExecuteQuery(
       RequestWithResultSetParameters proc) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed Connection cannot process request '"
@@ -3222,12 +3242,12 @@ public class Connection implements java.sql.Connection
       }
 
       // Now fetch the OUT parameters
-      HashMap outParameters = fetchOutParameters();
+      HashMap<Comparable<?>, Object> outParameters = fetchOutParameters();
 
       // Now fetch the named parameters
-      HashMap namedParameters = fetchNamedParameters();
+      HashMap<Comparable<?>, Object> namedParameters = fetchNamedParameters();
 
-      List result = new ArrayList(3);
+      List<Serializable> result = new ArrayList<Serializable>(3);
       result.add(drs);
       result.add(outParameters);
       result.add(namedParameters);
@@ -3279,7 +3299,8 @@ public class Connection implements java.sql.Connection
    *         <code>HashMap</code> of named parameters result objects.
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized ResultAndWarnings callableStatementExecuteUpdate(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultAndWarnings callableStatementExecuteUpdate(
       Request proc) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed Connection cannot process request '"
@@ -3313,12 +3334,12 @@ public class Connection implements java.sql.Connection
       Integer updateCount = new Integer(receiveIntOrException());
 
       // Now fetch the OUT parameters
-      HashMap outParameters = fetchOutParameters();
+      HashMap<Comparable<?>, Object> outParameters = fetchOutParameters();
 
       // Now fetch the named parameters
-      HashMap namedParameters = fetchNamedParameters();
+      HashMap<Comparable<?>, Object> namedParameters = fetchNamedParameters();
 
-      List result = new ArrayList(3);
+      List<Serializable> result = new ArrayList<Serializable>(3);
       result.add(updateCount);
       result.add(outParameters);
       result.add(namedParameters);
@@ -3364,7 +3385,8 @@ public class Connection implements java.sql.Connection
    *         <code>HashMap</code> of named parameters result objects.
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized ResultAndWarnings callableStatementExecute(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultAndWarnings callableStatementExecute(
       RequestWithResultSetParameters proc) throws DriverSQLException
   {
     throwSQLExceptionIfClosed("Closed Connection cannot process request '"
@@ -3395,15 +3417,15 @@ public class Connection implements java.sql.Connection
       SQLWarning sqlw = receiveSQLWarnings();
 
       // Fetch results
-      List resultList = fetchMultipleResultsFromStream(getCurrentMethodName());
+      List<Serializable> resultList = fetchMultipleResultsFromStream(getCurrentMethodName());
 
       // Now fetch the OUT parameters
-      HashMap outParameters = fetchOutParameters();
+      HashMap<Comparable<?>, Object> outParameters = fetchOutParameters();
 
       // Now fetch the named parameters
-      HashMap namedParameters = fetchNamedParameters();
+      HashMap<Comparable<?>, Object> namedParameters = fetchNamedParameters();
 
-      List result = new ArrayList(3);
+      List<Object> result = new ArrayList<Object>(3);
       result.add(resultList);
       result.add(outParameters);
       result.add(namedParameters);
@@ -3484,7 +3506,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getAttributes(java.lang.String,
    *      java.lang.String, java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getAttributes(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getAttributes(String catalog,
       String schemaPattern, String typeNamePattern, String attributeNamePattern)
       throws DriverSQLException
   {
@@ -3529,7 +3552,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getBestRowIdentifier(java.lang.String,
    *      java.lang.String, java.lang.String, int, boolean)
    */
-  protected synchronized ResultSet getBestRowIdentifier(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getBestRowIdentifier(String catalog,
       String schema, String table, int scope, boolean nullable)
       throws DriverSQLException
   {
@@ -3573,7 +3597,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getColumnPrivileges(java.lang.String,
    *      java.lang.String, java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getColumnPrivileges(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getColumnPrivileges(String catalog,
       String schemaPattern, String tableName, String columnNamePattern)
       throws DriverSQLException
   {
@@ -3617,7 +3642,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getColumns(java.lang.String,
    *      java.lang.String, java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getColumns(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getColumns(String catalog,
       String schemaPattern, String tableNamePattern, String columnNamePattern)
       throws DriverSQLException
   {
@@ -3664,7 +3690,8 @@ public class Connection implements java.sql.Connection
    * @return a String containing the controller version
    * @exception DriverSQLException if an error occurs
    */
-  protected synchronized String getControllerVersionNumber()
+  @SuppressWarnings("deprecation")
+protected synchronized String getControllerVersionNumber()
       throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -3702,7 +3729,8 @@ public class Connection implements java.sql.Connection
    *      java.lang.String, java.lang.String, java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getCrossReference(String primaryCatalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getCrossReference(String primaryCatalog,
       String primarySchema, String primaryTable, String foreignCatalog,
       String foreignSchema, String foreignTable) throws DriverSQLException
   {
@@ -3748,7 +3776,8 @@ public class Connection implements java.sql.Connection
   /**
    * @see DatabaseMetaData#getDatabaseProductName()
    */
-  protected synchronized String getDatabaseProductName()
+  @SuppressWarnings("deprecation")
+protected synchronized String getDatabaseProductName()
       throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -3785,7 +3814,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getExportedKeys(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getExportedKeys(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getExportedKeys(String catalog,
       String schema, String table) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -3826,7 +3856,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getImportedKeys(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getImportedKeys(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getImportedKeys(String catalog,
       String schema, String table) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -3867,7 +3898,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getIndexInfo(java.lang.String,
    *      java.lang.String, java.lang.String, boolean, boolean)
    */
-  protected synchronized ResultSet getIndexInfo(String catalog, String schema,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getIndexInfo(String catalog, String schema,
       String table, boolean unique, boolean approximate)
       throws DriverSQLException
   {
@@ -3911,7 +3943,8 @@ public class Connection implements java.sql.Connection
    * @param sqlTemplate sql template of the PreparedStatement
    * @see java.sql.PreparedStatement#getMetaData()
    */
-  protected synchronized ResultSetMetaData preparedStatementGetMetaData(
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSetMetaData preparedStatementGetMetaData(
       String sqlTemplate) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -3953,7 +3986,8 @@ public class Connection implements java.sql.Connection
    * @param sqlTemplate sql template of the PreparedStatement
    * @see java.sql.PreparedStatement#getParameterMetaData()
    */
-  protected synchronized ParameterMetaData preparedStatementGetParameterMetaData(
+  @SuppressWarnings("deprecation")
+protected synchronized ParameterMetaData preparedStatementGetParameterMetaData(
       String sqlTemplate) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4009,7 +4043,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getPrimaryKeys(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getPrimaryKeys(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getPrimaryKeys(String catalog,
       String schemaPattern, String tableNamePattern) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4046,7 +4081,8 @@ public class Connection implements java.sql.Connection
     }
   }
 
-  protected synchronized java.sql.ResultSet getProcedures(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized java.sql.ResultSet getProcedures(String catalog,
       String schemaPattern, String procedureNamePattern)
       throws DriverSQLException
   {
@@ -4084,7 +4120,8 @@ public class Connection implements java.sql.Connection
     }
   }
 
-  protected synchronized java.sql.ResultSet getProcedureColumns(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized java.sql.ResultSet getProcedureColumns(String catalog,
       String schemaPattern, String procedureNamePattern,
       String columnNamePattern) throws DriverSQLException
   {
@@ -4128,7 +4165,8 @@ public class Connection implements java.sql.Connection
   /**
    * @see java.sql.DatabaseMetaData#getSchemas()
    */
-  protected synchronized ResultSet getSchemas() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getSchemas() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
 
@@ -4165,7 +4203,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getSuperTables(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getSuperTables(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getSuperTables(String catalog,
       String schemaPattern, String tableNamePattern) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4206,7 +4245,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getSuperTypes(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getSuperTypes(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getSuperTypes(String catalog,
       String schemaPattern, String typeNamePattern) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4254,7 +4294,8 @@ public class Connection implements java.sql.Connection
    * @see org.continuent.sequoia.controller.virtualdatabase.VirtualDatabaseWorkerThread#databaseStaticMetadata()
    * @see org.continuent.sequoia.controller.backend.DatabaseBackendMetaData#retrieveDatabaseMetadata()
    */
-  protected synchronized Object getStaticMetadata(String key)
+  @SuppressWarnings("deprecation")
+protected synchronized Object getStaticMetadata(String key)
       throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4309,7 +4350,8 @@ public class Connection implements java.sql.Connection
    * @return <code>ResultSet</code> each row is a table privilege description
    * @throws DriverSQLException if a database access error occurs
    */
-  protected synchronized ResultSet getTablePrivileges(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getTablePrivileges(String catalog,
       String schemaPattern, String tableNamePattern) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
@@ -4350,7 +4392,8 @@ public class Connection implements java.sql.Connection
    * @see org.continuent.sequoia.driver.DatabaseMetaData#getTables(String,
    *      String, String, String[])
    */
-  protected synchronized ResultSet getTables(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getTables(String catalog,
       String schemaPattern, String tableNamePattern, String[] types)
       throws DriverSQLException
   {
@@ -4406,7 +4449,8 @@ public class Connection implements java.sql.Connection
    *         is a catalog name
    * @throws SQLException if a database error occurs
    */
-  protected synchronized ResultSet getTableTypes() throws SQLException
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getTableTypes() throws SQLException
   {
     throwSQLExceptionIfClosed();
     try
@@ -4441,7 +4485,8 @@ public class Connection implements java.sql.Connection
   /**
    * @see java.sql.DatabaseMetaData#getTypeInfo()
    */
-  protected synchronized ResultSet getTypeInfo() throws DriverSQLException
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getTypeInfo() throws DriverSQLException
   {
     throwSQLExceptionIfClosed();
     try
@@ -4477,7 +4522,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getUDTs(java.lang.String, java.lang.String,
    *      java.lang.String, int[])
    */
-  protected synchronized ResultSet getUDTs(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getUDTs(String catalog,
       String schemaPattern, String typeNamePattern, int[] types)
       throws DriverSQLException
   {
@@ -4529,7 +4575,8 @@ public class Connection implements java.sql.Connection
    * @see java.sql.DatabaseMetaData#getVersionColumns(java.lang.String,
    *      java.lang.String, java.lang.String)
    */
-  protected synchronized ResultSet getVersionColumns(String catalog,
+  @SuppressWarnings("deprecation")
+protected synchronized ResultSet getVersionColumns(String catalog,
       String schema, String table) throws DriverSQLException
   {
     throwSQLExceptionIfClosed();

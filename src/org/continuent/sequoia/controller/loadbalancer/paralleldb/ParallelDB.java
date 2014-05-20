@@ -95,7 +95,7 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabase;
 public abstract class ParallelDB extends AbstractLoadBalancer
 {
   // transaction id -> DatabaseBackend
-  private Hashtable backendPerTransactionId;
+  private Hashtable<Long, DatabaseBackend> backendPerTransactionId;
   private int       numberOfEnabledBackends = 0;
 
   static Trace      endUserLogger           = Trace
@@ -111,7 +111,7 @@ public abstract class ParallelDB extends AbstractLoadBalancer
   public ParallelDB(VirtualDatabase vdb) throws SQLException
   {
     super(vdb, RAIDbLevels.SingleDB, ParsingGranularities.NO_PARSING);
-    backendPerTransactionId = new Hashtable();
+    backendPerTransactionId = new Hashtable<Long, DatabaseBackend>();
   }
 
   //
@@ -2256,7 +2256,7 @@ public abstract class ParallelDB extends AbstractLoadBalancer
       logger.error(msg);
     }
     int size = vdb.getBackends().size();
-    List backends = vdb.getBackends();
+    List<?> backends = vdb.getBackends();
     for (int i = 0; i < size; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) backends.get(i);
@@ -2294,7 +2294,7 @@ public abstract class ParallelDB extends AbstractLoadBalancer
       logger.error(msg);
     }
     int size = vdb.getBackends().size();
-    List backends = vdb.getBackends();
+    List<?> backends = vdb.getBackends();
     for (int i = 0; i < size; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) backends.get(i);

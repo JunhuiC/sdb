@@ -48,7 +48,7 @@ public class CompleteRecoveryLogResync
   private String               nowCheckpointName;
   private long                 nbOfEntriesToResync;
 
-  private transient LinkedList totalOrderQueue;
+  private transient LinkedList<Object> totalOrderQueue;
 
   /**
    * Creates a new <code>CompleteRecoveryLogResync</code> object. <br>

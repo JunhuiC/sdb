@@ -198,14 +198,14 @@ public class RequestManager extends AbstractStandardMBean
   // 2/ I don't spell check my code :-)
   // Jeff.
   // </pedantic>
-  protected Hashtable            transactionMetaDatas;
+  protected Hashtable<Long, TransactionMetaData>            transactionMetaDatas;
 
   /**
    * Hashtable&lt;Long, String&gt;, the <code>Long</code> being a transaction
    * ID and its corresponding <code>String</code> being the name of a
    * savepoint.
    */
-  protected Hashtable            tidSavepoints;
+  protected Hashtable<Long, LinkedList<String>>            tidSavepoints;
 
   protected Trace                logger                        = null;
 
@@ -275,7 +275,7 @@ public class RequestManager extends AbstractStandardMBean
     if (recoveryLog == null)
       return;
     String databaseName = vdb.getVirtualDatabaseName();
-    ArrayList backends = vdb.getBackends();
+    ArrayList<?> backends = vdb.getBackends();
     int size = backends.size();
     DatabaseBackend backend;
     BackendRecoveryInfo info;
@@ -383,8 +383,8 @@ public class RequestManager extends AbstractStandardMBean
   private void initRequestManagerVariables(VirtualDatabase vdb,
       long beginTimeout, long commitTimeout, long rollbackTimeout)
   {
-    this.transactionMetaDatas = new Hashtable();
-    this.tidSavepoints = new Hashtable();
+    this.transactionMetaDatas = new Hashtable<Long, TransactionMetaData>();
+    this.tidSavepoints = new Hashtable<Long, LinkedList<String>>();
     this.beginTimeout = beginTimeout;
     this.commitTimeout = commitTimeout;
     this.rollbackTimeout = rollbackTimeout;
@@ -832,7 +832,7 @@ public class RequestManager extends AbstractStandardMBean
     { // Check that the transaction has been
       // started
       long tid = request.getTransactionId();
-      TransactionMetaData tm = (TransactionMetaData) transactionMetaDatas
+      TransactionMetaData tm = transactionMetaDatas
           .get(new Long(tid));
       if (tm == null)
         throw new SQLException(Translate.get("transaction.not.started", tid));
@@ -1126,10 +1126,10 @@ public class RequestManager extends AbstractStandardMBean
             }
             else if (request.isDrop())
             { // Delete the table from the schema
-              SortedSet tables = ((DropRequest) request).getTablesToDrop();
+              SortedSet<?> tables = ((DropRequest) request).getTablesToDrop();
               if (tables != null)
               { // Tables to drop !
-                for (Iterator iter = tables.iterator(); iter.hasNext();)
+                for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
                 {
                   String tableName = (String) iter.next();
                   DatabaseTable table = currentSchema.getTable(tableName);
@@ -1456,7 +1456,7 @@ public class RequestManager extends AbstractStandardMBean
     if (!proc.isAutoCommit())
     { // Check that the transaction has been started
       long tid = proc.getTransactionId();
-      TransactionMetaData tm = (TransactionMetaData) transactionMetaDatas
+      TransactionMetaData tm = transactionMetaDatas
           .get(new Long(tid));
       if (tm == null)
         throw new SQLException(Translate.get("transaction.not.started", tid));
@@ -2006,7 +2006,7 @@ public class RequestManager extends AbstractStandardMBean
   public TransactionMetaData getTransactionMetaData(Long tid)
       throws SQLException
   {
-    TransactionMetaData tm = (TransactionMetaData) transactionMetaDatas
+    TransactionMetaData tm = transactionMetaDatas
         .get(tid);
 
     if (tm == null)
@@ -2031,7 +2031,7 @@ public class RequestManager extends AbstractStandardMBean
     else
     { // Asynchronous execution, wait for the last backend to complete the
       // transaction
-      TransactionMetaData tm = (TransactionMetaData) transactionMetaDatas
+      TransactionMetaData tm = transactionMetaDatas
           .get(tid);
       if (tm != null)
       { // Check that everyone has released its locks
@@ -2578,10 +2578,10 @@ public class RequestManager extends AbstractStandardMBean
    */
   public void addSavepoint(Long tid, String savepointName)
   {
-    LinkedList savepoints = (LinkedList) tidSavepoints.get(tid);
+    LinkedList<String> savepoints = tidSavepoints.get(tid);
     if (savepoints == null)
     { // Lazy list creation
-      savepoints = new LinkedList();
+      savepoints = new LinkedList<String>();
       tidSavepoints.put(tid, savepoints);
     }
 
@@ -2596,7 +2596,7 @@ public class RequestManager extends AbstractStandardMBean
    */
   public void removeSavepoint(Long tid, String savepointName)
   {
-    LinkedList savepoints = (LinkedList) tidSavepoints.get(tid);
+    LinkedList<?> savepoints = tidSavepoints.get(tid);
     if (savepoints == null)
       logger.error("No savepoints found for transaction " + tid);
     else
@@ -2612,7 +2612,7 @@ public class RequestManager extends AbstractStandardMBean
    */
   public void removeSavepoints(Long tid, String savepointName)
   {
-    LinkedList savepoints = (LinkedList) tidSavepoints.get(tid);
+    LinkedList<?> savepoints = tidSavepoints.get(tid);
     if (savepoints == null)
     {
       logger.error("No savepoints found for transaction " + tid);
@@ -2636,7 +2636,7 @@ public class RequestManager extends AbstractStandardMBean
    */
   public boolean hasSavepoint(Long tid, String savepointName)
   {
-    LinkedList savepoints = (LinkedList) tidSavepoints.get(tid);
+    LinkedList<?> savepoints = tidSavepoints.get(tid);
     if (savepoints == null)
       return false;
 
@@ -2770,7 +2770,7 @@ public class RequestManager extends AbstractStandardMBean
   public void disableBackendWithCheckpoint(DatabaseBackend db,
       String checkpointName) throws SQLException
   {
-    ArrayList backendsArrayList = new ArrayList();
+    ArrayList<BackendInfo> backendsArrayList = new ArrayList<BackendInfo>();
     backendsArrayList.add(new BackendInfo(db));
     disableBackendsWithCheckpoint(backendsArrayList, checkpointName);
   }
@@ -2786,7 +2786,7 @@ public class RequestManager extends AbstractStandardMBean
    * @throws SQLException if an error occurs
    */
   public void disableBackendsWithCheckpoint(
-      final ArrayList/* <BackendInfo> */backendInfos, String checkpointName)
+      final ArrayList/* <BackendInfo> */<BackendInfo> backendInfos, String checkpointName)
       throws SQLException
   {
     // Sanity checks
@@ -2808,11 +2808,11 @@ public class RequestManager extends AbstractStandardMBean
     logger.info(Translate.get("recovery.checkpoint.stored", checkpointName));
 
     // Copy the list and consider only the backends that are enabled
-    List backendsToDisable = new ArrayList();
-    Iterator iter = backendInfos.iterator();
+    List<DatabaseBackend> backendsToDisable = new ArrayList<DatabaseBackend>();
+    Iterator<BackendInfo> iter = backendInfos.iterator();
     while (iter.hasNext())
     {
-      BackendInfo backendInfo = (BackendInfo) iter.next();
+      BackendInfo backendInfo = iter.next();
       DatabaseBackend db;
       try
       {
@@ -2836,7 +2836,7 @@ public class RequestManager extends AbstractStandardMBean
     int size = backendsToDisable.size();
     for (int i = 0; i < size; i++)
     {
-      DatabaseBackend db = (DatabaseBackend) backendsToDisable.get(i);
+      DatabaseBackend db = backendsToDisable.get(i);
       db.setState(BackendState.DISABLING);
       logger.info(Translate.get("backend.state.disabling", db.getName()));
     }
@@ -2848,14 +2848,14 @@ public class RequestManager extends AbstractStandardMBean
     // Wait for all current transactions on backends to finish
     for (int i = 0; i < size; i++)
     {
-      DatabaseBackend db = (DatabaseBackend) backendsToDisable.get(i);
+      DatabaseBackend db = backendsToDisable.get(i);
       db.waitForAllTransactionsAndPersistentConnectionsToComplete();
     }
 
     // Now we can safely disable all backends
     for (int i = 0; i < size; i++)
     {
-      DatabaseBackend db = (DatabaseBackend) backendsToDisable.get(i);
+      DatabaseBackend db = backendsToDisable.get(i);
       db.setLastKnownCheckpoint(checkpointName);
       loadBalancer.disableBackend(db, true);
       logger.info(Translate.get("backend.state.disabled", db.getName()));
@@ -2878,7 +2878,7 @@ public class RequestManager extends AbstractStandardMBean
    */
   public void backupBackend(DatabaseBackend backend, String login,
       String password, String dumpName, String backuperName, String path,
-      ArrayList tables) throws SQLException
+      ArrayList<?> tables) throws SQLException
   {
     Backuper backuper = backupManager.getBackuperByName(backuperName);
     if (backuper == null)
@@ -2913,7 +2913,7 @@ public class RequestManager extends AbstractStandardMBean
       // backend. This is probably excessive paranoia as we should have cleared
       // them
       // previously.
-      Vector pending = backend.getPendingRequests();
+      Vector<?> pending = backend.getPendingRequests();
       if (pending.size() != 0)
       {
         boolean pendingWrites = false;
@@ -3021,7 +3021,7 @@ public class RequestManager extends AbstractStandardMBean
    * @throws BackupException if the restore operation failed
    */
   public void restoreBackendFromBackupCheckpoint(DatabaseBackend backend,
-      String login, String password, String dumpName, ArrayList tables)
+      String login, String password, String dumpName, ArrayList<?> tables)
       throws BackupException
   {
     DumpInfo dumpInfo;
@@ -3079,7 +3079,7 @@ public class RequestManager extends AbstractStandardMBean
    * @param databaseName the virtual database name
    * @param backends the <code>Arraylist</code> of backends
    */
-  public void storeBackendsInfo(String databaseName, ArrayList backends)
+  public void storeBackendsInfo(String databaseName, ArrayList<?> backends)
   {
     if (recoveryLog == null)
       return;
@@ -3371,7 +3371,7 @@ public class RequestManager extends AbstractStandardMBean
       return;
     this.recoveryLog = recoveryLog;
     loadBalancer.setRecoveryLog(recoveryLog);
-    ArrayList backends = vdb.getBackends();
+    ArrayList<?> backends = vdb.getBackends();
     int size = backends.size();
     backendStateListener = new BackendStateListener(vdb
         .getVirtualDatabaseName(), recoveryLog);
@@ -3532,7 +3532,7 @@ public class RequestManager extends AbstractStandardMBean
    */
   public int getNumberOfSavepointsInTransaction(long tId)
   {
-    LinkedList savepoints = (LinkedList) tidSavepoints.get(new Long(tId));
+    LinkedList<?> savepoints = tidSavepoints.get(new Long(tId));
     if (savepoints == null)
     {
       return 0;

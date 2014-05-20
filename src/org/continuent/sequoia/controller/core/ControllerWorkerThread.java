@@ -242,8 +242,8 @@ public class ControllerWorkerThread extends Thread
         // At this point we have the virtual database the driver wants to
         // connect to and we have to give the job to a
         // VirtualDatabaseWorkerThread
-        ArrayList vdbActiveThreads = vdb.getActiveThreads();
-        ArrayList vdbPendingQueue = vdb.getPendingConnections();
+        ArrayList<?> vdbActiveThreads = vdb.getActiveThreads();
+        ArrayList<Object> vdbPendingQueue = vdb.getPendingConnections();
 
         if (vdbActiveThreads == null)
         {

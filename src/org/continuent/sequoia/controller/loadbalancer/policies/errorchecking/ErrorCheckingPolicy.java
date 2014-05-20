@@ -116,7 +116,7 @@ public abstract class ErrorCheckingPolicy
    * @return Arraylist of choosen <code>DatabaseBackend</code>
    * @exception ErrorCheckingException if the rule cannot be applied
    */
-  public abstract ArrayList getBackends(ArrayList backends)
+  public abstract ArrayList<?> getBackends(ArrayList<?> backends)
       throws ErrorCheckingException;
 
   /**

@@ -39,7 +39,7 @@ import org.continuent.sequoia.controller.backend.DatabaseBackend;
 public abstract class CreateTableRule
 {
   /** List of backend names to wait for. */
-  protected ArrayList backendList;
+  protected ArrayList<String> backendList;
 
   /** Number of nodes that must create the table. */
   protected int       nbOfNodes = 0;
@@ -60,7 +60,7 @@ public abstract class CreateTableRule
   public CreateTableRule(int policy)
   {
     this.policy = policy;
-    backendList = new ArrayList();
+    backendList = new ArrayList<String>();
   }
 
   /**
@@ -69,7 +69,7 @@ public abstract class CreateTableRule
    * @param policy the implemented policy
    * @param backendList the backend list to use
    */
-  public CreateTableRule(int policy, ArrayList backendList)
+  public CreateTableRule(int policy, ArrayList<String> backendList)
   {
     if (backendList == null)
       throw new IllegalArgumentException(
@@ -94,7 +94,7 @@ public abstract class CreateTableRule
    * 
    * @return ArrayList
    */
-  public ArrayList getBackendList()
+  public ArrayList<String> getBackendList()
   {
     return backendList;
   }
@@ -178,15 +178,15 @@ public abstract class CreateTableRule
    * @throws CreateTableException in some specific implementations (not this
    *           one)
    */
-  public ArrayList getBackends(ArrayList backends) throws CreateTableException
+  public ArrayList<DatabaseBackend> getBackends(ArrayList<?> backends) throws CreateTableException
   {
-    ArrayList clonedList;
+    ArrayList<DatabaseBackend> clonedList;
 
     int size = backends.size();
 
     if (backendList.size() > 0)
     { // Keep only the backends that are affected by this rule
-      clonedList = new ArrayList(size);
+      clonedList = new ArrayList<DatabaseBackend>(size);
       for (int i = 0; i < size; i++)
       {
         DatabaseBackend db = (DatabaseBackend) backends.get(i);
@@ -196,7 +196,7 @@ public abstract class CreateTableRule
     }
     else
     { // Take all enabled backends
-      clonedList = new ArrayList(size);
+      clonedList = new ArrayList<DatabaseBackend>(size);
       for (int i = 0; i < size; i++)
       {
         DatabaseBackend db = (DatabaseBackend) backends.get(i);
@@ -229,7 +229,7 @@ public abstract class CreateTableRule
         + DatabasesXmlTags.ATT_policy + "=\""
         + CreateTablePolicy.getXmlValue(policy) + "\" "
         + DatabasesXmlTags.ATT_numberOfNodes + "=\"" + nbOfNodes + "\">");
-    ArrayList list = this.getBackendList();
+    ArrayList<String> list = this.getBackendList();
     int count = list.size();
     for (int i = 0; i < count; i++)
     {

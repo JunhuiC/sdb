@@ -53,7 +53,8 @@ public class SingleDBPassThroughScheduler extends AbstractScheduler
   /**
    * Creates a new Single Database Scheduler
    */
-  public SingleDBPassThroughScheduler()
+  @SuppressWarnings("deprecation")
+public SingleDBPassThroughScheduler()
   {
     super(RAIDbLevels.SingleDB, ParsingGranularities.NO_PARSING);
   }

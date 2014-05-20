@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.continuent.sequoia.common.i18n.ConsoleTranslate;
@@ -63,27 +62,27 @@ public class DumpConnections extends AbstractAdminCommand
     AbstractSchedulerControlMBean ascMbean = jmxClient.getAbstractScheduler(
         dbName, user, password);
 
-    Map loginToConnId = new HashMap();
-    Hashtable connIdToLogin = ascMbean.listOpenPersistentConnections();
+    Map<String, StringBuffer> loginToConnId = new HashMap<String, StringBuffer>();
+    Hashtable<?, ?> connIdToLogin = ascMbean.listOpenPersistentConnections();
     Long connId;
     String login;
-    for (Iterator iter = connIdToLogin.entrySet().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = connIdToLogin.entrySet().iterator(); iter.hasNext();)
     {
-      Map.Entry entry = (Map.Entry) iter.next();
+      Map.Entry<?,?> entry = (Map.Entry<?,?>) iter.next();
       connId = (Long) entry.getKey();
       login = (String) entry.getValue();
       if (!loginToConnId.containsKey(login))
       {
         loginToConnId.put(login, new StringBuffer("\n\t" + login + ": "));
       }
-      ((StringBuffer) loginToConnId.get(login)).append(connId + " ");
+      loginToConnId.get(login).append(connId + " ");
     }
 
     StringBuffer disp = new StringBuffer();
     disp.append(ConsoleTranslate.get("DumpConnections.connections"));
-    for (Iterator iter = loginToConnId.values().iterator(); iter.hasNext();)
+    for (Iterator<StringBuffer> iter = loginToConnId.values().iterator(); iter.hasNext();)
     {
-      StringBuffer sb = (StringBuffer) iter.next();
+      StringBuffer sb = iter.next();
       disp.append(sb);
     }
 

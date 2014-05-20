@@ -96,13 +96,13 @@ public abstract class AbstractScheduler implements XmlComponent
    * Read requests only account for SelectRequest objects (stored procedures
    * even with a read-only semantic will be in the write requests list).
    */
-  private Map              activeReadRequests                       = new HashMap();
+  private Map<Long, SelectRequest>              activeReadRequests                       = new HashMap<Long, SelectRequest>();
 
   /**
    * Write requests also include stored procedures.
    */
-  private Map              activeWriteRequests                      = new HashMap();
-  private Set              suspendedRequests                        = new HashSet();
+  private Map<Long, AbstractRequest>              activeWriteRequests                      = new HashMap<Long, AbstractRequest>();
+  private Set<Object>              suspendedRequests                        = new HashSet<Object>();
 
   // Transaction management
   private long             controllerId                             = 0;
@@ -112,7 +112,7 @@ public abstract class AbstractScheduler implements XmlComponent
   private int              pendingTransactions                      = 0;
   private final Object     transactionsSync                         = new Object();
   private final Object     endOfCurrentTransactions                 = new Object();
-  private List             activeTransactions                       = new ArrayList();
+  private List<TransactionMetaData>             activeTransactions                       = new ArrayList<TransactionMetaData>();
   private long             waitForSuspendedTransactionsTimeout;
 
   // Persistent connection management
@@ -128,7 +128,7 @@ public abstract class AbstractScheduler implements XmlComponent
    * List of persistent connections that have been created <br>
    * persistentConnectionId (Long) -> vLogin (String)
    */
-  protected Hashtable      activePersistentConnections              = new Hashtable();
+  protected Hashtable<Long, String>      activePersistentConnections              = new Hashtable<Long, String>();
 
   // Monitoring values
   private int              numberRead                               = 0;
@@ -255,7 +255,7 @@ public abstract class AbstractScheduler implements XmlComponent
    *
    * @return Returns the active read requests.
    */
-  public final Map getActiveReadRequests()
+  public final Map<Long, SelectRequest> getActiveReadRequests()
   {
     return activeReadRequests;
   }
@@ -267,7 +267,7 @@ public abstract class AbstractScheduler implements XmlComponent
    *
    * @return Returns the active write requests.
    */
-  public final Map getActiveWriteRequests()
+  public final Map<Long, AbstractRequest> getActiveWriteRequests()
   {
     return activeWriteRequests;
   }
@@ -832,7 +832,7 @@ public abstract class AbstractScheduler implements XmlComponent
    *
    * @return persistent connection hashtable
    */
-  public Hashtable getOpenPersistentConnections()
+  public Hashtable<Long, String> getOpenPersistentConnections()
   {
     return activePersistentConnections;
   }
@@ -846,7 +846,7 @@ public abstract class AbstractScheduler implements XmlComponent
    *
    * @return Returns the active transaction ids.
    */
-  public final List getActiveTransactions()
+  public final List<TransactionMetaData> getActiveTransactions()
   {
     return activeTransactions;
   }
@@ -1096,42 +1096,6 @@ public abstract class AbstractScheduler implements XmlComponent
         throw new SQLException("Transaction " + tm.getTransactionId()
             + " is not active, rejecting the commit.");
 
-      // if ((suspendedWrites > 0) && !tm.isPersistentConnection())
-      if (false) // never suspend a commit
-      {
-        addSuspendedRequest(dmsg);
-        try
-        {
-          // Wait on writesSync
-          long timeout = tm.getTimeout();
-          if (timeout > 0)
-          {
-            long start = System.currentTimeMillis();
-            writesSync.wait(timeout);
-            long end = System.currentTimeMillis();
-            long remaining = timeout - (end - start);
-            if (remaining > 0)
-              tm.setTimeout(remaining);
-            else
-            {
-              String msg = Translate.get("scheduler.commit.timeout.writesSync",
-                  pendingWrites);
-              logger.warn(msg);
-              throw new SQLException(msg);
-            }
-          }
-          else
-            writesSync.wait();
-        }
-        catch (InterruptedException e)
-        {
-          String msg = Translate.get("scheduler.commit.timeout.writesSync",
-              pendingWrites)
-              + " (" + e + ")";
-          logger.error(msg);
-          throw new SQLException(msg);
-        }
-      }
       pendingWrites++;
 
       if (logger.isDebugEnabled())
@@ -1230,42 +1194,6 @@ public abstract class AbstractScheduler implements XmlComponent
         throw new SQLException("Transaction " + tm.getTransactionId()
             + " is not active, rejecting the rollback.");
 
-      // if ((suspendedWrites > 0) && !tm.isPersistentConnection())
-      if (false) // never suspend a rollback
-      {
-        addSuspendedRequest(dmsg);
-        try
-        {
-          // Wait on writesSync
-          long timeout = tm.getTimeout();
-          if (timeout > 0)
-          {
-            long start = System.currentTimeMillis();
-            writesSync.wait(timeout);
-            long end = System.currentTimeMillis();
-            long remaining = timeout - (end - start);
-            if (remaining > 0)
-              tm.setTimeout(remaining);
-            else
-            {
-              String msg = Translate.get(
-                  "scheduler.rollback.timeout.writesSync", pendingWrites);
-              logger.warn(msg);
-              throw new SQLException(msg);
-            }
-          }
-          else
-            writesSync.wait();
-        }
-        catch (InterruptedException e)
-        {
-          String msg = Translate.get("scheduler.rollback.timeout.writesSync",
-              pendingWrites)
-              + " (" + e + ")";
-          logger.error(msg);
-          throw new SQLException(msg);
-        }
-      }
       pendingWrites++;
 
       if (logger.isDebugEnabled())
@@ -1291,43 +1219,6 @@ public abstract class AbstractScheduler implements XmlComponent
     // Check if writes are suspended
     synchronized (writesSync)
     {
-      // if ((suspendedWrites > 0) && !tm.isPersistentConnection())
-      if (false) // never suspend a rollback
-      {
-        addSuspendedRequest(dmsg);
-        try
-        {
-          // Wait on writesSync
-          long timeout = tm.getTimeout();
-          if (timeout > 0)
-          {
-            long start = System.currentTimeMillis();
-            writesSync.wait(timeout);
-            long end = System.currentTimeMillis();
-            long remaining = timeout - (end - start);
-            if (remaining > 0)
-              tm.setTimeout(remaining);
-            else
-            {
-              String msg = Translate.get(
-                  "scheduler.rollbacksavepoint.timeout.writeSync",
-                  pendingWrites);
-              logger.warn(msg);
-              throw new SQLException(msg);
-            }
-          }
-          else
-            writesSync.wait();
-        }
-        catch (InterruptedException e)
-        {
-          String msg = Translate.get(
-              "scheduler.rollbacksavepoint.timeout.writeSync", pendingWrites)
-              + " (" + e + ")";
-          logger.error(msg);
-          throw new SQLException(msg);
-        }
-      }
       pendingWrites++;
 
       if (logger.isDebugEnabled())
@@ -1794,7 +1685,7 @@ public abstract class AbstractScheduler implements XmlComponent
         if (logger.isWarnEnabled() && (activeTransactions.size() > 0))
         {
           StringBuffer transactions = new StringBuffer("[");
-          for (Iterator iter = activeTransactions.iterator(); iter.hasNext();)
+          for (Iterator<TransactionMetaData> iter = activeTransactions.iterator(); iter.hasNext();)
             transactions.append((transactions.length() > 1 ? ", " : "")
                 + ((TransactionMetaData) iter.next()).getTransactionId());
           transactions.append("]");
@@ -2206,7 +2097,7 @@ public abstract class AbstractScheduler implements XmlComponent
     }
     if (vdb.isDistributed())
     { // Distributed virtual database only
-      List totalOrderQueue = vdb.getTotalOrderQueue();
+      List<?> totalOrderQueue = vdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.notifyAll();
@@ -2239,7 +2130,7 @@ public abstract class AbstractScheduler implements XmlComponent
     }
     if (vdb.isDistributed())
     { // Distributed virtual database only
-      List totalOrderQueue = vdb.getTotalOrderQueue();
+      List<?> totalOrderQueue = vdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.notifyAll();
@@ -2311,14 +2202,14 @@ public abstract class AbstractScheduler implements XmlComponent
 
   private void abortRemainingActiveTransactions() throws SQLException
   {
-    List transactionsToAbort = new ArrayList();
-    List transactionsAbortFailureList = new ArrayList();
+    List<TransactionMetaData> transactionsToAbort = new ArrayList<TransactionMetaData>();
+    List<Long> transactionsAbortFailureList = new ArrayList<Long>();
 
     synchronized (writesSync)
     {
       transactionsToAbort.addAll(activeTransactions);
     }
-    for (Iterator iter = transactionsToAbort.iterator(); iter.hasNext();)
+    for (Iterator<TransactionMetaData> iter = transactionsToAbort.iterator(); iter.hasNext();)
     {
       long transactionId = ((TransactionMetaData) iter.next())
           .getTransactionId();
@@ -2340,7 +2231,7 @@ public abstract class AbstractScheduler implements XmlComponent
     if (!transactionsAbortFailureList.isEmpty())
     {
       StringBuffer transactions = new StringBuffer("[");
-      for (Iterator iter = transactionsAbortFailureList.iterator(); iter
+      for (Iterator<?> iter = transactionsAbortFailureList.iterator(); iter
           .hasNext();)
         transactions.append((transactions.length() > 1 ? ", " : "")
             + ((TransactionMetaData) iter.next()).getTransactionId());
@@ -2352,12 +2243,12 @@ public abstract class AbstractScheduler implements XmlComponent
 
   private void closeRemainingPersistentConnections()
   {
-    Map persistentConnectionsToClose = new HashMap();
+    Map<Long, String> persistentConnectionsToClose = new HashMap<Long, String>();
     synchronized (endOfCurrentPersistentConnections)
     {
       persistentConnectionsToClose.putAll(activePersistentConnections);
     }
-    for (Iterator iter = persistentConnectionsToClose.keySet().iterator(); iter
+    for (Iterator<Long> iter = persistentConnectionsToClose.keySet().iterator(); iter
         .hasNext();)
     {
       Long persistentConnectionId = (Long) iter.next();

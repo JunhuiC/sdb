@@ -75,7 +75,7 @@ public interface AbstractSchedulerControlMBean
    * 
    * @return persistent connection hashtable
    */
-  Hashtable listOpenPersistentConnections();
+  Hashtable<?, ?> listOpenPersistentConnections();
 
   /**
    * Returns a string containing information about the given request (if found

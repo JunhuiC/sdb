@@ -69,7 +69,7 @@ public class Backup extends AbstractAdminCommand
     String dumpName = st.nextToken();
     String backuperName = st.nextToken();
     String path = st.nextToken();
-    ArrayList tables = null;
+    ArrayList<String> tables = null;
     boolean force = false;
     if (st.hasMoreTokens())
     {
@@ -80,7 +80,7 @@ public class Backup extends AbstractAdminCommand
       }
       else
       {
-        tables = new ArrayList();
+        tables = new ArrayList<String>();
         tables.add(tok);
       }
     }
@@ -88,7 +88,7 @@ public class Backup extends AbstractAdminCommand
     if (st.hasMoreTokens())
     {
       if (tables == null)
-        tables = new ArrayList();
+        tables = new ArrayList<String>();
       while (st.hasMoreTokens())
       {
         tables.add(st.nextToken());

@@ -41,7 +41,7 @@ public final class ActivityService
    *         * TRUE means *some* activity since the member was flagged as unreachable
    *         * FALSE means *no* activity since the member was flagged as unreachable
    */
-  private final Map/*<String, Map>*/ vdbs = new HashMap();
+  private final Map/*<String, Map>*/<String, Map<Object,Boolean>> vdbs = new HashMap<String, Map<Object,Boolean>>();
 
   private ActivityService()
   {
@@ -83,13 +83,13 @@ public final class ActivityService
    */
   public void notifyActivityFor(String vdb)
   {
-    Map unreachableMembers = (Map) vdbs.get(vdb);
+    Map<Object, Boolean> unreachableMembers = (Map<Object, Boolean>) vdbs.get(vdb);
     if (unreachableMembers != null)
     {
-      Iterator iter = unreachableMembers.entrySet().iterator();
+      Iterator<Map.Entry<Object, Boolean>> iter = unreachableMembers.entrySet().iterator();
       while (iter.hasNext())
       {
-        Entry entry = (Entry) iter.next();
+        Entry<Object, Boolean> entry = (Entry<Object, Boolean>) iter.next();
         // This is only writing an object reference, which is guaranteed to be
         // an atomic operation by the JLS (beginning of chapter 17. Threads and
         // locks). No need to synchronize here.
@@ -106,11 +106,11 @@ public final class ActivityService
    */
   public synchronized void addUnreachableMember(String vdb, Object member)
   {
-    Map unreachableMembers = (Map) vdbs.get(vdb);
+    Map<Object, Boolean> unreachableMembers = (Map<Object, Boolean>) vdbs.get(vdb);
     if (unreachableMembers == null)
     {
       // 1st unreachable member for the vdb -> lazy creation of the unreachableMembers Map
-      unreachableMembers = new HashMap();
+      unreachableMembers = new HashMap<Object, Boolean>();
       vdbs.put(vdb, unreachableMembers);
     }
     // set the boolean to false only if the member is not already flagged as unreachable
@@ -132,7 +132,7 @@ public final class ActivityService
    */
   public boolean hasActivitySinceUnreachable(String vdb, Object member)
   {
-    Map unreachableMembers = (Map) vdbs.get(vdb);
+    Map<?, ?> unreachableMembers = (Map<?, ?>) vdbs.get(vdb);
     if (unreachableMembers == null)
     {
       return false;

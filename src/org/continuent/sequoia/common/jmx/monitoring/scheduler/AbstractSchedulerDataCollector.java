@@ -34,7 +34,11 @@ public abstract class AbstractSchedulerDataCollector
     extends
       AbstractDataCollector
 {
-  private String virtualDatabaseName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3231349347518475413L;
+private String virtualDatabaseName;
 
   /**
    * create a new collector

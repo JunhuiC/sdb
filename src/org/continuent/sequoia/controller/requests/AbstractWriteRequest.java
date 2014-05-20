@@ -25,6 +25,7 @@ package org.continuent.sequoia.controller.requests;
 import java.util.ArrayList;
 
 import org.continuent.sequoia.common.i18n.Translate;
+import org.continuent.sequoia.common.sql.schema.TableColumn;
 
 /**
  * <code>AbstractWriteRequest</code> is the super-class of all requests which
@@ -36,14 +37,19 @@ import org.continuent.sequoia.common.i18n.Translate;
  */
 public abstract class AbstractWriteRequest extends AbstractRequest
 {
-  /** Name of the table involved in this write query. */
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1172527898128980031L;
+
+/** Name of the table involved in this write query. */
   protected transient String    tableName;
 
   /**
    * <code>ArrayList</code> of <code>TableColumn</code> involved in this
    * write query.
    */
-  protected transient ArrayList columns;
+  protected transient ArrayList<TableColumn> columns;
 
   /** <code>true</code> if this request might block. */
   protected transient boolean   blocking = true;
@@ -94,7 +100,7 @@ public abstract class AbstractWriteRequest extends AbstractRequest
    * 
    * @return an <code>ArrayList</code> value
    */
-  public ArrayList getColumns()
+  public ArrayList<TableColumn> getColumns()
   {
     return columns;
   }

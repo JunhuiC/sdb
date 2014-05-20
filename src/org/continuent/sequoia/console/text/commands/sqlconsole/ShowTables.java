@@ -70,7 +70,7 @@ public class ShowTables extends ConsoleCommand
             .get("sql.command.show.tables.no.tables")); //$NON-NLS-1$
         return;
       }
-      List tableNames = new ArrayList();
+      List<String> tableNames = new ArrayList<String>();
       while (tableSet.next())
       {
         try
@@ -100,7 +100,7 @@ public class ShowTables extends ConsoleCommand
     }
   }
 
-  private String[][] getTableNamesAsCells(List tableNames)
+  private String[][] getTableNamesAsCells(List<String> tableNames)
   {
     String[][] cells = new String[tableNames.size()][1];
     for (int i = 0; i < tableNames.size(); i++)

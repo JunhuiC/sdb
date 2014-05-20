@@ -47,7 +47,7 @@ public class LoggerThread extends Thread
    * the only place where we must remove the first element of the queue is in
    * the run() method. do note remove its first element anywhere else!
    */
-  private LinkedList        logQueue;
+  private LinkedList<LogEvent>        logQueue;
   private Trace             logger;
   private RecoveryLog       recoveryLog;
   private LogEvent          currentEvent = null;
@@ -63,7 +63,7 @@ public class LoggerThread extends Thread
     super("LoggerThread");
     this.recoveryLog = log;
     this.logger = RecoveryLog.logger;
-    logQueue = new LinkedList();
+    logQueue = new LinkedList<LogEvent>();
   }
 
   /**
@@ -114,7 +114,7 @@ public class LoggerThread extends Thread
    */
   public synchronized boolean hasLogEntryForTransaction(long tid)
   {
-    for (Iterator iter = logQueue.iterator(); iter.hasNext();)
+    for (Iterator<LogEvent> iter = logQueue.iterator(); iter.hasNext();)
     {
       LogEvent logEvent = (LogEvent) iter.next();
       if (logEvent.belongToTransaction(tid))
@@ -174,7 +174,7 @@ public class LoggerThread extends Thread
   {
     if (logger.isDebugEnabled())
       logger.debug(Translate.get("recovery.jdbc.loggerthread.removing", tid));
-    Iterator iter = logQueue.iterator();
+    Iterator<LogEvent> iter = logQueue.iterator();
     // do not remove the first element of the queue
     // (must only be done by the run() method)
     if (iter.hasNext())

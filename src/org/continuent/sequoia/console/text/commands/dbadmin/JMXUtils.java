@@ -21,10 +21,10 @@ public class JMXUtils
    *          CompositeDate
    * @return a matrix of String
    */
-  static String[][] from(Collection/*<CompositeData>*/ collection, String[] headers)
+  static String[][] from(Collection/*<CompositeData>*/<?> collection, String[] headers)
   {
     String[][] entries = new String[collection.size()][];
-    Iterator iter = collection.iterator();
+    Iterator<?> iter = collection.iterator();
     int i = 0;
     while (iter.hasNext())
     {
@@ -53,13 +53,14 @@ public class JMXUtils
    * @return a List&lt;CompositeData&gt; where the composite data are sorted by
    *         the specified <code>key</code>
    */
-  static List/*<CompositeData>*/ sortEntriesByKey(TabularData tabularData, final String key)
+  static List/*<CompositeData>*/<?> sortEntriesByKey(TabularData tabularData, final String key)
   {
-    List entries = new ArrayList(tabularData.values());
-    Collections.sort(entries, new Comparator()
+    List<?> entries = new ArrayList<Object>(tabularData.values());
+    Collections.sort(entries, new Comparator<Object>()
     {
   
-      public int compare(Object o1, Object o2)
+      @SuppressWarnings("unchecked")
+	public int compare(Object o1, Object o2)
       {
         CompositeData entry1 = (CompositeData) o1;
         CompositeData entry2 = (CompositeData) o2;
@@ -70,8 +71,8 @@ public class JMXUtils
         if (value1 != null
             && value1 instanceof Comparable 
             && value2 instanceof Comparable) {
-          Comparable comp1 = (Comparable) value1;
-          Comparable comp2 = (Comparable) value2;
+          Comparable<Comparable<?>> comp1 = (Comparable<Comparable<?>>) value1;
+          Comparable<?> comp2 = (Comparable<?>) value2;
           return comp1.compareTo(comp2);
         }
         return 0;

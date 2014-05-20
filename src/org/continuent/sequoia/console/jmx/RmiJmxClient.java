@@ -40,7 +40,7 @@ import javax.management.monitor.StringMonitor;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.naming.Context;
+//import javax.naming.Context;
 import javax.security.auth.Subject;
 
 import org.continuent.sequoia.common.authentication.PasswordAuthenticator;
@@ -172,7 +172,7 @@ public class RmiJmxClient
 
     JMXServiceURL address = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
 
-    Map environment = new HashMap();
+    Map<String, Object> environment = new HashMap<String, Object>();
 
     // use username and password for authentication of connections
     // with the controller, the values are compared to the ones
@@ -209,9 +209,9 @@ public class RmiJmxClient
    * @return a set of <tt>ObjectInstance</tt>
    * @throws Exception if fails
    */
-  public Set listSequoiaMBeans() throws Exception
+  public Set<?> listSequoiaMBeans() throws Exception
   {
-    Set set = connector.getMBeanServerConnection().queryMBeans(
+    Set<?> set = connector.getMBeanServerConnection().queryMBeans(
         new ObjectName("sequoia:*"), null);
     return set;
   }
@@ -268,9 +268,9 @@ public class RmiJmxClient
   {
     // we build a subject for authentication
     AdminUser dbUser = new AdminUser(user, password);
-    Set principals = new HashSet();
+    Set<AdminUser> principals = new HashSet<AdminUser>();
     principals.add(dbUser);
-    return new Subject(true, principals, new HashSet(), new HashSet());
+    return new Subject(true, principals, new HashSet<Object>(), new HashSet<Object>());
   }
 
   /**
@@ -485,7 +485,8 @@ public class RmiJmxClient
    * @throws IOException if cannot connect to MBean
    * @throws InstanceNotFoundException if cannot locate MBean
    */
-  public DatabaseBackendMBean getDatabaseBackendProxy(String vdb,
+  @SuppressWarnings("deprecation")
+public DatabaseBackendMBean getDatabaseBackendProxy(String vdb,
       String backend, String user, String password)
       throws InstanceNotFoundException, IOException
   {

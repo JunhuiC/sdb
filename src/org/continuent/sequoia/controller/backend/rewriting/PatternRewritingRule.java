@@ -115,7 +115,7 @@ public class PatternRewritingRule extends AbstractRewritingRule
    */
   public String rewrite(String sqlQuery)
   {
-    Hashtable tokens = null; // Parameters value in the query
+    Hashtable<String, String> tokens = null; // Parameters value in the query
     String lastParameter = null;
     String currentToken;
     int oldIndex = 0;
@@ -143,7 +143,7 @@ public class PatternRewritingRule extends AbstractRewritingRule
       if (lastParameter != null)
       { // Add the parameter value
         if (tokens == null)
-          tokens = new Hashtable();
+          tokens = new Hashtable<String, String>();
         tokens.put(lastParameter, sqlQuery.substring(oldIndex, newIndex));
       }
       oldIndex = newIndex + currentToken.length();

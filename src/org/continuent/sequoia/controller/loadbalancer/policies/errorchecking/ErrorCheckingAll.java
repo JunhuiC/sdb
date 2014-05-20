@@ -46,7 +46,7 @@ public class ErrorCheckingAll extends ErrorCheckingPolicy
   /**
    * @see org.continuent.sequoia.controller.loadbalancer.policies.errorchecking.ErrorCheckingPolicy#getBackends(ArrayList)
    */
-  public ArrayList getBackends(ArrayList backends)
+  public ArrayList<?> getBackends(ArrayList<?> backends)
     throws ErrorCheckingException
   {
     return backends;

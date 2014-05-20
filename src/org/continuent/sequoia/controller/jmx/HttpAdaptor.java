@@ -58,7 +58,7 @@ public class HttpAdaptor
   private ObjectName                          objectName;
   private ObjectName                          processorName;
 
-  private static List                         httpAdaptors = new ArrayList();
+  private static List<HttpAdaptor>                         httpAdaptors = new ArrayList<HttpAdaptor>();
 
   /**
    * Creates a new <code>HttpAdaptor</code> object
@@ -158,7 +158,7 @@ public class HttpAdaptor
    * 
    * @return Returns list of HttpAdaptor.
    */
-  public static List getHttpAdaptors()
+  public static List<HttpAdaptor> getHttpAdaptors()
   {
     return httpAdaptors;
   }

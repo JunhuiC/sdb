@@ -76,19 +76,19 @@ public class SelectRequest extends AbstractRequest implements Serializable
   private boolean                mustBroadcast    = false;
 
   /** <code>ArrayList</code> of <code>TableColumn</code> objects. */
-  protected transient ArrayList  select;
+  protected transient ArrayList<TableColumn>  select;
 
   /** <code>ArrayList</code> of <code>String</code> objects. */
-  protected transient Collection from;
+  protected transient Collection<Serializable> from;
 
   /** <code>ArrayList</code> of <code>AliasedTable</code> objects */
-  protected transient Collection aliasFrom;
+  protected transient Collection<Serializable> aliasFrom;
 
   /** <code>ArrayList</code> of <code>TableColumn</code> objects. */
-  protected transient ArrayList  where;
+  protected transient ArrayList<TableColumn>  where;
 
   /** <code>ArrayList</code> of <code>OrderBy</code> objects */
-  protected transient ArrayList  order;
+  protected transient ArrayList<?>  order;
 
   /** Some values to keep track of function in the SELECT request */
   public static final int        NO_FUNCTION      = 0;
@@ -118,7 +118,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @see org.continuent.sequoia.controller.cache.result.CachingGranularities
    */
-  protected transient Hashtable  whereValues;
+  protected transient Hashtable<?, ?>  whereValues;
 
   /**
    * Creates a new <code>SelectRequest</code> instance. The caller must give
@@ -389,8 +389,8 @@ public class SelectRequest extends AbstractRequest implements Serializable
       // Convert 'from' to an ArrayList of String objects instead of
       // AliasedTables objects
       int size = from.size();
-      ArrayList unaliased = new ArrayList(size);
-      for (Iterator iter = from.iterator(); iter.hasNext();)
+      ArrayList<Serializable> unaliased = new ArrayList<Serializable>(size);
+      for (Iterator<Serializable> iter = from.iterator(); iter.hasNext();)
         unaliased
             .add(((AliasedDatabaseTable) iter.next()).getTable().getName());
       from = unaliased;
@@ -427,10 +427,10 @@ public class SelectRequest extends AbstractRequest implements Serializable
    *         objects
    * @exception SQLException if an error occurs
    */
-  private Collection getFromTables(String fromClause, DatabaseSchema schema,
+  private Collection<Serializable> getFromTables(String fromClause, DatabaseSchema schema,
       boolean isCaseSensitive) throws SQLException
   {
-    ArrayList result = new ArrayList();
+    ArrayList<Serializable> result = new ArrayList<Serializable>();
 
     // Search for subselects in from clause
     try
@@ -463,7 +463,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
             subSelect, bracket - 1).trim(), this.escapeProcessing, 0,
             getLineSeparator());
         subQuery.parse(schema, ParsingGranularities.TABLE, isCaseSensitive);
-        for (Iterator iter = subQuery.getFrom().iterator(); iter.hasNext();)
+        for (Iterator<Serializable> iter = subQuery.getFrom().iterator(); iter.hasNext();)
         {
           result.add(new AliasedDatabaseTable(schema.getTable((String) iter
               .next(), isCaseSensitive), null));
@@ -492,9 +492,9 @@ public class SelectRequest extends AbstractRequest implements Serializable
     catch (RuntimeException e)
     {
       // Parsing failed, select everything
-      Collection unaliasedTables = schema.getTables().values();
-      ArrayList fromAliasedTables = new ArrayList(unaliasedTables.size());
-      for (Iterator iter = unaliasedTables.iterator(); iter.hasNext();)
+      Collection<?> unaliasedTables = schema.getTables().values();
+      ArrayList<Serializable> fromAliasedTables = new ArrayList<Serializable>(unaliasedTables.size());
+      for (Iterator<?> iter = unaliasedTables.iterator(); iter.hasNext();)
       {
         DatabaseTable t = (DatabaseTable) iter.next();
         fromAliasedTables.add(new AliasedDatabaseTable(t, null));
@@ -504,13 +504,13 @@ public class SelectRequest extends AbstractRequest implements Serializable
 
     // Use a brutal force technique by matching schema table names in the from
     // clause
-    Collection tables = schema.getTables().values();
+    Collection<?> tables = schema.getTables().values();
     // Note that we use an iterator here since the tables might be modified
     // concurrently by a write query that alters the database schema. In case
     // of a concurrent modification, iter.next() will fail and we will restart
     // the parsing and this will prevent the disgracious error message reported
     // by BUG #303423.
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       // Check if this table is found in the FROM string
       DatabaseTable t;
@@ -603,11 +603,11 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * @param isCaseSensitive true if column name parsing is case sensitive
    * @return an <code>ArrayList</code> of <code>TableColumn</code>
    */
-  private ArrayList getSelectedColumns(String selectClause,
-      Collection aliasedFrom, boolean isCaseSensitive)
+  private ArrayList<TableColumn> getSelectedColumns(String selectClause,
+      Collection<Serializable> aliasedFrom, boolean isCaseSensitive)
   {
     StringTokenizer selectTokens = new StringTokenizer(selectClause, ",");
-    ArrayList result = new ArrayList();
+    ArrayList<TableColumn> result = new ArrayList<TableColumn>();
     StringBuffer unresolvedTokens = null;
 
     while (selectTokens.hasMoreTokens())
@@ -646,10 +646,10 @@ public class SelectRequest extends AbstractRequest implements Serializable
         {
           // We have to take all colums of all tables of the FROM
           // clause
-          for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+          for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
           {
             DatabaseTable t = ((AliasedDatabaseTable) iter.next()).getTable();
-            ArrayList cols = t.getColumns();
+            ArrayList<?> cols = t.getColumns();
             int colSize = cols.size();
             for (int j = 0; j < colSize; j++)
               result.add(new TableColumn(t.getName(), ((DatabaseColumn) cols
@@ -660,7 +660,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
         else
         {
           // Add all colums of the table corresponding to the alias
-          for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+          for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
           {
             AliasedDatabaseTable adt = (AliasedDatabaseTable) iter.next();
             // The alias could be the full name of the table
@@ -669,7 +669,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
                 || alias.equals(adt.getTable().getName()))
             {
               DatabaseTable t = adt.getTable();
-              ArrayList cols = t.getColumns();
+              ArrayList<?> cols = t.getColumns();
               int colSize = cols.size();
               for (int j = 0; j < colSize; j++)
                 result.add(new TableColumn(t.getName(), ((DatabaseColumn) cols
@@ -687,7 +687,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
 
       if (alias == null)
       {
-        for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+        for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
         {
           DatabaseTable t = ((AliasedDatabaseTable) iter.next()).getTable();
           col = t.getColumn(token, isCaseSensitive);
@@ -701,7 +701,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
       else
       // same with an alias
       {
-        for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+        for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
         {
           AliasedDatabaseTable t = (AliasedDatabaseTable) iter.next();
           // It can be either an alias or the fully qualified name of
@@ -740,10 +740,10 @@ public class SelectRequest extends AbstractRequest implements Serializable
       if (!isCaseSensitive)
         unresolvedTokensString = unresolvedTokensString.toLowerCase();
 
-      for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+      for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
       {
         DatabaseTable t = ((AliasedDatabaseTable) iter.next()).getTable();
-        ArrayList cols = t.getColumns();
+        ArrayList<?> cols = t.getColumns();
         int size = cols.size();
         for (int j = 0; j < size; j++)
         {
@@ -835,10 +835,10 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * @param isCaseSensitive true if column name parsing is case sensitive
    * @return an <code>ArrayList</code> of <code>TableColumn</code>
    */
-  private ArrayList getWhereColumns(String whereClause, Collection aliasedFrom,
+  private ArrayList<TableColumn> getWhereColumns(String whereClause, Collection<Serializable> aliasedFrom,
       boolean setUniqueCacheable, boolean isCaseSensitive)
   {
-    ArrayList result = new ArrayList(); // TableColumn
+    ArrayList<TableColumn> result = new ArrayList<TableColumn>(); // TableColumn
     // objects
 
     if (!isCaseSensitive)
@@ -847,10 +847,10 @@ public class SelectRequest extends AbstractRequest implements Serializable
     // Instead of parsing the clause, we use a brutal force technique
     // and we try to directly identify every column name of each table.
     DatabaseColumn col;
-    for (Iterator iter = aliasedFrom.iterator(); iter.hasNext();)
+    for (Iterator<Serializable> iter = aliasedFrom.iterator(); iter.hasNext();)
     {
       DatabaseTable t = ((AliasedDatabaseTable) iter.next()).getTable();
-      ArrayList cols = t.getColumns();
+      ArrayList<?> cols = t.getColumns();
       int size = cols.size();
       for (int j = 0; j < size; j++)
       {
@@ -1004,7 +1004,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return a <code>Collection</code> of <code>AliasedDatabaseTable</code>
    */
-  public Collection getAliasedFrom()
+  public Collection<Serializable> getAliasedFrom()
   {
     return aliasFrom;
   }
@@ -1016,7 +1016,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return a <code>Collection</code> of <code>String</code>
    */
-  public Collection getFrom()
+  public Collection<Serializable> getFrom()
   {
     return from;
   }
@@ -1028,7 +1028,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return an <code>ArrayList</code> of <code>OrderBy</code>
    */
-  public ArrayList getOrderBy()
+  public ArrayList<?> getOrderBy()
   {
     return order;
   }
@@ -1048,7 +1048,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return an <code>ArrayList</code> of <code>TableColumn</code>
    */
-  public ArrayList getSelect()
+  public ArrayList<TableColumn> getSelect()
   {
     return select;
   }
@@ -1060,7 +1060,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return an <code>ArrayList</code> of <code>TableColumn</code>
    */
-  public ArrayList getWhere()
+  public ArrayList<TableColumn> getWhere()
   {
     return where;
   }
@@ -1072,7 +1072,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
    * 
    * @return an <code>Hashtable</code> value
    */
-  public Hashtable getWhereValues()
+  public Hashtable<?, ?> getWhereValues()
   {
     return whereValues;
   }
@@ -1195,7 +1195,7 @@ public class SelectRequest extends AbstractRequest implements Serializable
     {
       System.out.println("");
       System.out.println("From tables:");
-      for (Iterator iter = from.iterator(); iter.hasNext();)
+      for (Iterator<Serializable> iter = from.iterator(); iter.hasNext();)
         for (int i = 0; i < from.size(); i++)
           System.out.println("  " + iter.next());
     }

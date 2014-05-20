@@ -70,7 +70,7 @@ public class DriverClassLoader extends ClassLoader
   /**
    * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
    */
-  protected synchronized Class loadClass(String name, boolean resolve)
+  protected synchronized Class<?> loadClass(String name, boolean resolve)
       throws ClassNotFoundException
   {
     try
@@ -79,7 +79,7 @@ public class DriverClassLoader extends ClassLoader
     }
     catch (ClassNotFoundException e)
     {
-      Class c = findClass(name);
+      Class<?> c = findClass(name);
       if (resolve)
         resolveClass(c);
       return c;
@@ -91,7 +91,7 @@ public class DriverClassLoader extends ClassLoader
    * 
    * @see java.lang.ClassLoader#findClass(java.lang.String)
    */
-  protected Class findClass(String className) throws ClassNotFoundException
+  protected Class<?> findClass(String className) throws ClassNotFoundException
   {
     FileInputStream fis = null;
 
@@ -116,7 +116,7 @@ public class DriverClassLoader extends ClassLoader
       }
 
       // we convert the bytes into the specified class
-      Class clazz = defineClass(className, classBytes, 0, classBytes.length);
+      Class<?> clazz = defineClass(className, classBytes, 0, classBytes.length);
       return clazz;
     }
     catch (Exception e)
@@ -143,7 +143,7 @@ public class DriverClassLoader extends ClassLoader
    * we cache the contents of the jar files, as we don't want to have to read
    * the file for every single class we are going to need
    */
-  private Hashtable htJarContents = new Hashtable();
+  private Hashtable<String, byte[]> htJarContents = new Hashtable<String, byte[]>();
 
   /**
    * Find the first jar file containing the className and load it
@@ -214,7 +214,8 @@ public class DriverClassLoader extends ClassLoader
   /**
    * @see java.lang.ClassLoader#findResource(java.lang.String)
    */
-  protected URL findResource(String name)
+  @SuppressWarnings("deprecation")
+protected URL findResource(String name)
   {
 
     // we try to locate the resource unjarred
@@ -303,13 +304,13 @@ public class DriverClassLoader extends ClassLoader
    */
   private void loadJarFile(String jarFileName) throws IOException
   {
-    Hashtable htSizes = new Hashtable();
+    Hashtable<String, Integer> htSizes = new Hashtable<String, Integer>();
     // extracts just sizes only.
     // For a reason I dont' understand not all files return the size in the loop
     // below (using ZipInputStream). So we cache the sizes here in case the loop
     // below does not give us the file size
     ZipFile zf = new ZipFile(jarFileName);
-    Enumeration e = zf.entries();
+    Enumeration<?> e = zf.entries();
     while (e.hasMoreElements())
     {
       ZipEntry ze = (ZipEntry) e.nextElement();

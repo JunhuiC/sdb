@@ -68,7 +68,7 @@ public class ResultSetFormatter
   {
     int totalLines = 0;
     String[] headers = getHeaders(rs);
-    List cells;
+    List<String[]> cells;
     do {
       cells = getCells(rs, fetchsize);
       if (cells.size() == 0) {
@@ -91,13 +91,13 @@ public class ResultSetFormatter
     } while (cells != null && cells.size() > 0);
   }
 
-  private static List getCells(ResultSet rs, int fetchsize)
+  private static List<String[]> getCells(ResultSet rs, int fetchsize)
   {
     try
     {
       ResultSetMetaData meta = rs.getMetaData();
       int columnCount = meta.getColumnCount();
-      List cells = new ArrayList();
+      List<String[]> cells = new ArrayList<String[]>();
       while (rs.next())
       {
         String[] cell = new String[columnCount];

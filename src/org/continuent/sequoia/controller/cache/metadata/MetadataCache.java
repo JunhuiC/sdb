@@ -44,10 +44,10 @@ public class MetadataCache
   private static Trace logger = Trace.getLogger(MetadataCache.class.getName());
 
   // SQL -> Field[]
-  private Hashtable    metadataCache;
+  private Hashtable<String, Field[]>    metadataCache;
 
   // Schema.Table.Column name -> Field
-  private Hashtable    fieldCache;
+  private Hashtable<String, Field>    fieldCache;
   private int          maxNbOfMetadata;
   private int          maxNbOfField;
 
@@ -59,10 +59,10 @@ public class MetadataCache
    */
   public MetadataCache(int maxNbOfMetadata, int maxNbOfField)
   {
-    metadataCache = new Hashtable(maxNbOfMetadata == 0
+    metadataCache = new Hashtable<String, Field[]>(maxNbOfMetadata == 0
         ? 10000
         : maxNbOfMetadata);
-    fieldCache = new Hashtable(maxNbOfField == 0 ? 100 : maxNbOfField);
+    fieldCache = new Hashtable<String, Field>(maxNbOfField == 0 ? 100 : maxNbOfField);
     if (maxNbOfMetadata < 0)
       throw new RuntimeException(Translate.get("cache.metadata.invalid.size",
           maxNbOfMetadata));

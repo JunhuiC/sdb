@@ -36,7 +36,11 @@ import org.continuent.sequoia.common.stream.DriverBufferedOutputStream;
  */
 public class SerializableStackTraceElement implements Serializable
 {
-  private String declaringClass;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+private String declaringClass;
   private String methodName;
   private String fileName;
   private int    lineNumber;

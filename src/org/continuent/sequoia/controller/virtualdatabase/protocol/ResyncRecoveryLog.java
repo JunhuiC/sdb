@@ -184,7 +184,7 @@ public class ResyncRecoveryLog extends DistributedVirtualDatabaseMessage
     // potentially be huge (e.g. if it contains a blob)
     try
     {
-      ArrayList dest = new ArrayList();
+      ArrayList<Member> dest = new ArrayList<Member>();
       dest.add(sender);
       long copyLogEntryTimeout = dvdb.getMessageTimeouts()
           .getCopyLogEntryTimeout();

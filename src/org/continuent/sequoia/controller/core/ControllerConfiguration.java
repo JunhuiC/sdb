@@ -63,7 +63,7 @@ import org.continuent.sequoia.controller.xml.ControllerParser;
  * @author <a href="mailto:duncan@mightybot.com">Duncan Smith </a>
  * @version 1.0
  */
-public class ControllerConfiguration extends Hashtable
+public class ControllerConfiguration extends Hashtable<Object, Object>
 {
   private static final long  serialVersionUID   = -3766086549425915891L;
 
@@ -209,7 +209,8 @@ public class ControllerConfiguration extends Hashtable
       }
       else
       {
-        String file = URLDecoder.decode(defaultControllerXmlFile.getFile());
+        @SuppressWarnings("deprecation")
+		String file = URLDecoder.decode(defaultControllerXmlFile.getFile());
         this.put(XML_FILE, file);
       }
     }

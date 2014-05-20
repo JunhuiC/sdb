@@ -105,7 +105,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
   protected int                         raidbLevel;
   protected int                         parsingGranularity;
   /** Reference to distributed virtual database total order queue */
-  protected LinkedList                  totalOrderQueue;
+  protected LinkedList<?>                  totalOrderQueue;
 
   protected MacrosHandler               macroHandler;
 
@@ -115,7 +115,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
    * 
    * @see org.continuent.sequoia.common.jmx.management.BackendState
    */
-  protected ArrayList                   enabledBackends;
+  protected ArrayList<Object>                  enabledBackends;
   protected ReadPrioritaryFIFOWriteLock backendListLock = new ReadPrioritaryFIFOWriteLock();
 
   /** Should we wait for all backends to commit before returning ? */
@@ -142,7 +142,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
     this.parsingGranularity = parsingGranularity;
     this.vdb = vdb;
     this.totalOrderQueue = vdb.getTotalOrderQueue();
-    this.enabledBackends = new ArrayList();
+    this.enabledBackends = new ArrayList<Object>();
     try
     {
       vdb.acquireReadLockBackendLists();
@@ -155,7 +155,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
       throw new SQLException(msg);
     }
     int size = vdb.getBackends().size();
-    ArrayList backends = vdb.getBackends();
+    ArrayList<?> backends = vdb.getBackends();
     for (int i = 0; i < size; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) backends.get(i);
@@ -562,7 +562,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
           // Checking total order queue to see if there is an
           // SuspendWritesMessage before this request.
           // If this is the case, this request will have to wait.
-          for (Iterator iter = totalOrderQueue.iterator(); iter.hasNext();)
+          for (Iterator<?> iter = totalOrderQueue.iterator(); iter.hasNext();)
           {
             Object elem = iter.next();
             if (elem instanceof SuspendWritesMessage)
@@ -628,7 +628,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)
@@ -1249,10 +1249,10 @@ public abstract class AbstractLoadBalancer implements XmlComponent
       StoredProcedure proc) throws SQLException
   {
     // First fetch the out parameters
-    List outParamIndexes = proc.getOutParameterIndexes();
+    List<?> outParamIndexes = proc.getOutParameterIndexes();
     if (outParamIndexes != null)
     {
-      for (Iterator iter = outParamIndexes.iterator(); iter.hasNext();)
+      for (Iterator<?> iter = outParamIndexes.iterator(); iter.hasNext();)
       {
         Object index = iter.next();
         if (index instanceof Integer)
@@ -1265,10 +1265,10 @@ public abstract class AbstractLoadBalancer implements XmlComponent
     }
 
     // Fetch the named parameters
-    List namedParamNames = proc.getNamedParameterNames();
+    List<?> namedParamNames = proc.getNamedParameterNames();
     if (namedParamNames != null)
     {
-      for (Iterator iter = namedParamNames.iterator(); iter.hasNext();)
+      for (Iterator<?> iter = namedParamNames.iterator(); iter.hasNext();)
       {
         // Overwrite the type with the result (re-use the same map)
         String paramName = (String) iter.next();
@@ -1586,7 +1586,7 @@ public abstract class AbstractLoadBalancer implements XmlComponent
       ps = c.prepareStatement(sqlTemplate);
       return new ControllerResultSet(ControllerConstants.CONTROLLER_FACTORY
           .getResultSetMetaDataFactory().copyResultSetMetaData(
-              ps.getMetaData(), null), new ArrayList());
+              ps.getMetaData(), null), new ArrayList<Object[]>());
     }
     catch (SQLException e)
     { // Something bad happened
@@ -1839,14 +1839,6 @@ public abstract class AbstractLoadBalancer implements XmlComponent
       }
     }
     while (!isConnectionValid);
-    if (pc == null)
-    {
-      if (logger.isErrorEnabled())
-      {
-        logger.error("Got a null connection [backend=" + backend.getName()
-            + ", tid=" + request.getTransactionId() + "]");
-      }
-    }
     return c;
   }
 

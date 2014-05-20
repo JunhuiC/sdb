@@ -46,9 +46,9 @@ import org.continuent.sequoia.common.exceptions.driver.VirtualDatabaseUnavailabl
 import org.continuent.sequoia.common.net.SSLConfiguration;
 import org.continuent.sequoia.common.net.SocketFactoryFactory;
 import org.continuent.sequoia.common.protocol.Commands;
-import org.continuent.sequoia.common.protocol.Field;
-import org.continuent.sequoia.common.protocol.SQLDataSerialization;
-import org.continuent.sequoia.common.protocol.TypeTag;
+//import org.continuent.sequoia.common.protocol.Field;
+//import org.continuent.sequoia.common.protocol.SQLDataSerialization;
+//import org.continuent.sequoia.common.protocol.TypeTag;
 import org.continuent.sequoia.common.stream.DriverBufferedInputStream;
 import org.continuent.sequoia.common.stream.DriverBufferedOutputStream;
 import org.continuent.sequoia.common.util.Constants;
@@ -178,7 +178,7 @@ public class Driver implements java.sql.Driver
    * <p>
    * !!! Static intializer needs to be udpated when new properties are added !!!
    */
-  protected static ArrayList     driverPropertiesNames;
+  protected static ArrayList<String>     driverPropertiesNames;
 
   /** Sequoia driver property name (if you add one, read driverProperties above). */
   protected static final String  HOST_PROPERTY                                     = "HOST";
@@ -241,19 +241,19 @@ public class Driver implements java.sql.Driver
    * <p>
    * Hashmap is URL=> <code>SequoiaUrl</code>
    */
-  private HashMap                parsedUrlsCache                                   = new HashMap();
+  private HashMap<String, SequoiaUrl>                parsedUrlsCache                                   = new HashMap<String, SequoiaUrl>();
 
   /** List of connections that are ready to be closed. */
-  protected ArrayList            pendingConnectionClosing                          = new ArrayList();
+  protected ArrayList<Connection>            pendingConnectionClosing                          = new ArrayList<Connection>();
   protected boolean              connectionClosingThreadisAlive                    = false;
 
   private JDBCRegExp             jdbcRegExp                                        = new SequoiaJDBCRegExp();
 
-  // optimization: non-lazy class loading
-  private static Class           c1                                                = Field.class;
-  private static Class           c2                                                = SQLDataSerialization.class;
-  private static Class           c3                                                = TypeTag.class;
-  private static Class           c4                                                = DriverResultSet.class;
+//  // optimization: non-lazy class loading
+//  private static Class<Field>           c1                                                = Field.class;
+//  private static Class<SQLDataSerialization>           c2                                                = SQLDataSerialization.class;
+//  private static Class<TypeTag>           c3                                                = TypeTag.class;
+//  private static Class<DriverResultSet>           c4                                                = DriverResultSet.class;
 
   // The static initializer registers ourselves with the DriverManager
   // and try to bind the Sequoia Controller
@@ -271,7 +271,7 @@ public class Driver implements java.sql.Driver
     }
 
     // Build the static list of driver properties
-    driverPropertiesNames = new ArrayList();
+    driverPropertiesNames = new ArrayList<String>();
     driverPropertiesNames.add(Driver.HOST_PROPERTY);
     driverPropertiesNames.add(Driver.PORT_PROPERTY);
     driverPropertiesNames.add(Driver.DATABASE_PROPERTY);
@@ -355,12 +355,11 @@ public class Driver implements java.sql.Driver
       }
     }
 
-    ControllerInfo controller = null;
     try
     {
       Connection newConn = getConnectionToNewController(sequoiaUrl);
-      if (newConn != null)
-        controller = newConn.getControllerInfo();
+      if (newConn != null) {
+	}
       return newConn;
     }
     // Exceptions thrown directly to client:
@@ -583,7 +582,7 @@ public class Driver implements java.sql.Driver
       return filtered;
 
     // extract only the keys we know
-    Iterator iter = driverPropertiesNames.iterator();
+    Iterator<String> iter = driverPropertiesNames.iterator();
     while (iter.hasNext())
     {
       String name = (String) iter.next();
@@ -646,7 +645,7 @@ public class Driver implements java.sql.Driver
         {
           pendingConnectionClosing.add(c);
           // Now scan the list for a suitable connection
-          for (Iterator iter = pendingConnectionClosing.iterator(); iter
+          for (Iterator<Connection> iter = pendingConnectionClosing.iterator(); iter
               .hasNext();)
           {
             Connection conn = (Connection) iter.next();
@@ -747,10 +746,10 @@ public class Driver implements java.sql.Driver
     sb.append("/" + newDbName);
 
     // append parameters parsed above
-    HashMap params = sequoiaUrl.getParameters();
+    HashMap<?, ?> params = sequoiaUrl.getParameters();
     if (params != null)
     {
-      Iterator paramsKeys = params.keySet().iterator();
+      Iterator<?> paramsKeys = params.keySet().iterator();
       String element = null;
       while (paramsKeys.hasNext())
       {
@@ -834,7 +833,7 @@ public class Driver implements java.sql.Driver
       if (sequoiaUrl == null)
         throw new SQLException("Error while retrieving URL information");
     }
-    HashMap params = sequoiaUrl.getParameters();
+    HashMap<?, ?> params = sequoiaUrl.getParameters();
 
     String host = info.getProperty(HOST_PROPERTY);
     if (host == null)

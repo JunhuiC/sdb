@@ -61,7 +61,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
   protected transient boolean   isUnique         = false;
 
   /** <code>ArrayList</code> of <code>String</code> objects */
-  protected transient ArrayList from;
+  protected transient ArrayList<Serializable> from;
 
   /**
    * <code>ArrayList</code> of values <code>String</code> associated with
@@ -76,7 +76,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
    * 
    * @see org.continuent.sequoia.controller.cache.result.CachingGranularities
    */
-  protected ArrayList           whereValues;
+  protected ArrayList<?>           whereValues;
 
   /**
    * Creates a new <code>DeleteRequest</code> instance. The caller must give
@@ -194,11 +194,11 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
    *         objects
    * @exception an <code>SQLException</code> if an error occurs
    */
-  private ArrayList getFromTables(String fromClause, DatabaseSchema dbs)
+  private ArrayList<Serializable> getFromTables(String fromClause, DatabaseSchema dbs)
       throws SQLException
   {
     StringTokenizer tables = new StringTokenizer(fromClause, ",");
-    ArrayList result = new ArrayList(tables.countTokens());
+    ArrayList<Serializable> result = new ArrayList<Serializable>(tables.countTokens());
     while (tables.hasMoreTokens())
     {
       String dropTableName = tables.nextToken().trim();
@@ -236,10 +236,10 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
    *          <code>AliasedDatabaseTable</code>
    * @return an <code>ArrayList</code> of <code>TableColumn</code>
    */
-  private ArrayList getWhereColumns(String whereClause, ArrayList aliasedFrom)
+  private ArrayList<TableColumn> getWhereColumns(String whereClause, ArrayList<Serializable> aliasedFrom)
   {
-    ArrayList result = new ArrayList(); // TableColumn objects
-    ArrayList dbColumns = new ArrayList(); // DatabaseColumn objects
+    ArrayList<TableColumn> result = new ArrayList<TableColumn>(); // TableColumn objects
+    ArrayList<DatabaseColumn> dbColumns = new ArrayList<DatabaseColumn>(); // DatabaseColumn objects
 
     // Instead of parsing the clause, we use a brutal force technique
     // and we try to directly identify every column name of each table.
@@ -247,7 +247,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
     for (int i = 0; i < aliasedFrom.size(); i++)
     {
       DatabaseTable t = ((AliasedDatabaseTable) aliasedFrom.get(i)).getTable();
-      ArrayList cols = t.getColumns();
+      ArrayList<?> cols = t.getColumns();
       int size = cols.size();
       for (int j = 0; j < size; j++)
       {
@@ -285,7 +285,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
    * 
    * @return an <code>ArrayList</code> value
    */
-  public ArrayList getValues()
+  public ArrayList<?> getValues()
   {
     return whereValues;
   }
@@ -376,7 +376,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
 
     if (schema == null)
     {
-      writeLockedTables = new TreeSet();
+      writeLockedTables = new TreeSet<String>();
       writeLockedTables.add(tableName);
       isParsed = true;
       return;
@@ -391,7 +391,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
       // Get the real name here (resolves case sentivity problems)
       tableName = t.getName();
 
-    writeLockedTables = new TreeSet();
+    writeLockedTables = new TreeSet<String>();
     writeLockedTables.add(tableName);
     addDependingTables(schema, writeLockedTables);
 
@@ -412,7 +412,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
             // Convert 'from' to an ArrayList of String objects instead of
             // AliasedTables objects
             int size = from.size();
-            ArrayList unaliased = new ArrayList(size);
+            ArrayList<Serializable> unaliased = new ArrayList<Serializable>(size);
             for (int i = 0; i < size; i++)
               unaliased.add(((AliasedDatabaseTable) from.get(i)).getTable()
                   .getName());
@@ -428,7 +428,7 @@ public class DeleteRequest extends AbstractWriteRequest implements Serializable
             // Convert 'from' to an ArrayList of String objects instead of
             // AliasedTables objects
             int size = from.size();
-            ArrayList unaliased = new ArrayList(size);
+            ArrayList<Serializable> unaliased = new ArrayList<Serializable>(size);
             for (int i = 0; i < size; i++)
               unaliased.add(((AliasedDatabaseTable) from.get(i)).getTable()
                   .getName());

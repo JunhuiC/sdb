@@ -113,9 +113,9 @@ public final class DatabaseBackendMetaData
    * @param arguments arguments to invoke the method
    */
   private void insertMetadataInContainer(DatabaseMetaData metaData,
-      String methodName, Class[] parametersType, Object[] arguments)
+      String methodName, Class<?>[] parametersType, Object[] arguments)
   {
-    Class metadataClass = metaData.getClass();
+    Class<? extends DatabaseMetaData> metadataClass = metaData.getClass();
     try
     {
       Method method = metadataClass.getMethod(methodName, parametersType);
@@ -176,7 +176,7 @@ public final class DatabaseBackendMetaData
    * @param result result of the method call
    */
   private void updateContainerInformation(String methodName,
-      Class[] parametersType, Object[] arguments, Object result)
+      Class<?>[] parametersType, Object[] arguments, Object result)
   {
     String key = MetadataContainer.getContainerKey(methodName, parametersType,
         arguments);

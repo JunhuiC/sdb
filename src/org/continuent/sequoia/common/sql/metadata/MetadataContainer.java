@@ -37,7 +37,7 @@ import org.continuent.sequoia.common.log.Trace;
  * @author <a href="mailto:Emmanuel.Cecchet@inria.fr">Emmanuel Cecchet </a>
  * @version 1.0
  */
-public final class MetadataContainer extends HashMap
+public final class MetadataContainer extends HashMap<Object, Object>
 {
   private static final long serialVersionUID = 564436668119294938L;
 
@@ -67,7 +67,7 @@ public final class MetadataContainer extends HashMap
   {
     if (keySet() == null)
       return container.keySet() == null;
-    Iterator keys = keySet().iterator();
+    Iterator<?> keys = keySet().iterator();
     boolean isCompatible = true;
     String key;
     Object value1;
@@ -104,7 +104,7 @@ public final class MetadataContainer extends HashMap
     if (keySet() == null)
       return "no metadata";
     StringBuffer buffer = new StringBuffer();
-    Iterator keys = keySet().iterator();
+    Iterator<?> keys = keySet().iterator();
     String element;
     while (keys.hasNext())
     {
@@ -134,7 +134,7 @@ public final class MetadataContainer extends HashMap
    * @return container key for the given method call
    */
   public static String getContainerKey(String methodName,
-      Class[] parametersType, Object[] arguments)
+      Class<?>[] parametersType, Object[] arguments)
   {
     if (parametersType == null)
     { // Function without parameters, just store the function name as the key
@@ -146,7 +146,7 @@ public final class MetadataContainer extends HashMap
       key.append('(');
       for (int i = 0; i < parametersType.length; i++)
       {
-        Class c = parametersType[i];
+        Class<?> c = parametersType[i];
         if (c != null)
           key.append(c.getName());
         else

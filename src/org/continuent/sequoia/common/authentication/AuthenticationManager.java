@@ -51,10 +51,10 @@ public class AuthenticationManager
    */
 
   /** <code>ArrayList</code> of <code>VirtualDatabaseUser</code> objects. */
-  private ArrayList virtualLogins;
+  private ArrayList<VirtualDatabaseUser> virtualLogins;
 
   /** <code>ArrayList</code> of <code>AdminUser</code> objects. */
-  private ArrayList adminUsers;
+  private ArrayList<AdminUser> adminUsers;
 
   /**
    * <code>HashMap</code> of <code>HashMap</code> of
@@ -62,7 +62,7 @@ public class AuthenticationManager
    * hashed by their virtual database login. A virtual user can have several
    * real logins, but has only one real login for a given backend.
    */
-  private HashMap   realLogins;
+  private HashMap<String, HashMap<String, DatabaseBackendUser>>   realLogins;
 
   /** Controls whether the transparent login feature is enabled. */
   private boolean   transparentLogin;
@@ -86,9 +86,9 @@ public class AuthenticationManager
    */
   public AuthenticationManager(boolean transparentLogin)
   {
-    virtualLogins = new ArrayList();
-    adminUsers = new ArrayList();
-    realLogins = new HashMap();
+    virtualLogins = new ArrayList<VirtualDatabaseUser>();
+    adminUsers = new ArrayList<AdminUser>();
+    realLogins = new HashMap<String, HashMap<String, DatabaseBackendUser>>();
     this.transparentLogin = transparentLogin;
   }
 
@@ -130,11 +130,11 @@ public class AuthenticationManager
    */
   public boolean isValidVirtualLogin(String vLogin)
   {
-    Iterator iter = virtualLogins.iterator();
+    Iterator<VirtualDatabaseUser> iter = virtualLogins.iterator();
     VirtualDatabaseUser u;
     while (iter.hasNext())
     {
-      u = (VirtualDatabaseUser) iter.next();
+      u = iter.next();
       if (u.getLogin().equals(vLogin))
       {
         return true;
@@ -193,16 +193,16 @@ public class AuthenticationManager
   public void addRealUser(String vLogin, DatabaseBackendUser rUser)
       throws AuthenticationManagerException
   {
-    HashMap list = (HashMap) realLogins.get(vLogin);
+    HashMap<String, DatabaseBackendUser> list = realLogins.get(vLogin);
     if (list == null)
     {
-      list = new HashMap();
+      list = new HashMap<String, DatabaseBackendUser>();
       list.put(rUser.getBackendName(), rUser);
       realLogins.put(vLogin, list);
     }
     else
     {
-      DatabaseBackendUser u = (DatabaseBackendUser) list.get(rUser
+      DatabaseBackendUser u = list.get(rUser
           .getBackendName());
       if (u != null)
         throw new AuthenticationManagerException(
@@ -229,13 +229,13 @@ public class AuthenticationManager
     if (list == null)
       return null;
     else
-      return (DatabaseBackendUser) ((HashMap) list).get(backendName);
+      return (DatabaseBackendUser) ((HashMap<?, ?>) list).get(backendName);
   }
 
   /**
    * @return Returns the realLogins.
    */
-  public HashMap getRealLogins()
+  public HashMap<String, HashMap<String, DatabaseBackendUser>> getRealLogins()
   {
     return realLogins;
   }
@@ -243,7 +243,7 @@ public class AuthenticationManager
   /**
    * @return Returns the virtualLogins.
    */
-  public ArrayList getVirtualLogins()
+  public ArrayList<VirtualDatabaseUser> getVirtualLogins()
   {
     return virtualLogins;
   }
@@ -256,11 +256,11 @@ public class AuthenticationManager
    */
   public String getVirtualPassword(String vLogin)
   {
-    Iterator iter = virtualLogins.iterator();
+    Iterator<VirtualDatabaseUser> iter = virtualLogins.iterator();
     VirtualDatabaseUser u;
     while (iter.hasNext())
     {
-      u = (VirtualDatabaseUser) iter.next();
+      u = iter.next();
       if (u.getLogin().equals(vLogin))
       {
         return u.getPassword();
@@ -284,7 +284,7 @@ public class AuthenticationManager
     info.append("<" + DatabasesXmlTags.ELT_Admin + ">");
     for (int i = 0; i < adminUsers.size(); i++)
     {
-      AdminUser vu = (AdminUser) adminUsers.get(i);
+      AdminUser vu = adminUsers.get(i);
       info.append(vu.getXml());
     }
     info.append("</" + DatabasesXmlTags.ELT_Admin + ">");
@@ -292,7 +292,7 @@ public class AuthenticationManager
     info.append("<" + DatabasesXmlTags.ELT_VirtualUsers + ">");
     for (int i = 0; i < virtualLogins.size(); i++)
     {
-      VirtualDatabaseUser vu = (VirtualDatabaseUser) virtualLogins.get(i);
+      VirtualDatabaseUser vu = virtualLogins.get(i);
       info.append(vu.getXml());
     }
     info.append("</" + DatabasesXmlTags.ELT_VirtualUsers + ">");
@@ -325,7 +325,7 @@ public class AuthenticationManager
   /**
    * @return Returns the adminUsers.
    */
-  public ArrayList getAdminUsers()
+  public ArrayList<AdminUser> getAdminUsers()
   {
     return adminUsers;
   }

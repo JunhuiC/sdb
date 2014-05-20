@@ -144,7 +144,7 @@ public interface DatabaseBackendMBean
    * @return <code>List</code> of <code>String</code> description of
    *         each request.
    */
-  List getPendingRequestsDescription(int count, boolean fromFirst,
+  List<?> getPendingRequestsDescription(int count, boolean fromFirst,
       boolean clone);
 
   /**
@@ -153,7 +153,7 @@ public interface DatabaseBackendMBean
    * @return <code>List</code> of <code>Long</code>, corresponding to
    *         active transaction identifier.
    */
-  List getActiveTransactions();
+  List<?> getActiveTransactions();
 
   /**
    * Gets the names of the tables. <b>NOTE</b>: The returned array will contain

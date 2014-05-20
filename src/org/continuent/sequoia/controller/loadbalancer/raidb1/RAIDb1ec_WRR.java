@@ -57,7 +57,7 @@ public class RAIDb1ec_WRR extends RAIDb1ec
    */
 
   // private int index; // index in the backend vector the Round-Robin
-  private HashMap weights;
+  private HashMap<String, Integer> weights;
 
   /*
    * Constructors

@@ -40,7 +40,7 @@ public class VirtualDatabaseConfigurationResponse
   private static final long serialVersionUID = -6800865688275066016L;
 
   private long              controllerId;
-  private List              additionalVdbUsers;
+  private List<?>              additionalVdbUsers;
 
   /**
    * Creates a new <code>VirtualDatabaseConfigurationResponse</code> object
@@ -53,7 +53,7 @@ public class VirtualDatabaseConfigurationResponse
    *          null otherwise.
    */
   public VirtualDatabaseConfigurationResponse(long controllerId,
-      List additionalVdbUsers)
+      List<?> additionalVdbUsers)
   {
     this.controllerId = controllerId;
     this.additionalVdbUsers = additionalVdbUsers;
@@ -66,7 +66,7 @@ public class VirtualDatabaseConfigurationResponse
    * @return a <code>List</code> of VirtualDatabaseUser objects or null if
    *         there are no additional vdb users.
    */
-  public List getAdditionalVdbUsers()
+  public List<?> getAdditionalVdbUsers()
   {
     return additionalVdbUsers;
   }

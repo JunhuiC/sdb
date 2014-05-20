@@ -508,8 +508,8 @@ public abstract class AbstractPostgreSQLBackuper extends AbstractBackuper
    */
   protected void printErrors()
   {
-    ArrayList errors = nativeCmdExec.getStderr();
-    Iterator it = errors.iterator();
+    ArrayList<?> errors = nativeCmdExec.getStderr();
+    Iterator<?> it = errors.iterator();
     while (it.hasNext())
     {
       String msg = (String) it.next();
@@ -523,8 +523,8 @@ public abstract class AbstractPostgreSQLBackuper extends AbstractBackuper
    */
   protected void printOutput()
   {
-    ArrayList errors = nativeCmdExec.getStderr();
-    Iterator it = errors.iterator();
+    ArrayList<?> errors = nativeCmdExec.getStderr();
+    Iterator<?> it = errors.iterator();
     while (it.hasNext())
     {
       String msg = (String) it.next();

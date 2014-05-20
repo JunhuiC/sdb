@@ -89,7 +89,7 @@ public abstract class AbstractDerbyBackuper implements Backuper
    *      java.lang.String, java.util.ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String derbyPath = getDerbyPath(backend, true);
 
@@ -125,7 +125,7 @@ public abstract class AbstractDerbyBackuper implements Backuper
    *      java.lang.String, java.util.ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String derbyPath = getDerbyPath(backend, false);
 

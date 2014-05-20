@@ -29,7 +29,6 @@ import org.continuent.sequoia.controller.core.ControllerConstants;
 import org.continuent.sequoia.controller.interceptors.InterceptorConfigurator;
 import org.continuent.sequoia.controller.interceptors.InterceptorException;
 import org.continuent.sequoia.controller.interceptors.RequestInterceptor;
-import org.omg.PortableInterceptor.Interceptor;
 
 /**
  * This class defines an InterceptorConfigurator that loads interceptors
@@ -67,8 +66,8 @@ public class ControllerPropertyInterceptorConfigurator
 {
   /** Logger instances. */
   static Trace logger = Trace.getLogger("org.continuent.sequoia.controller.core.Controller");
-  private Vector backendRequestInterceptors = new Vector();
-  private Vector frontendRequestInterceptors = new Vector();
+  private Vector<RequestInterceptor> backendRequestInterceptors = new Vector<RequestInterceptor>();
+  private Vector<RequestInterceptor> frontendRequestInterceptors = new Vector<RequestInterceptor>();
 
   /**
    * {@inheritDoc}
@@ -91,7 +90,7 @@ public class ControllerPropertyInterceptorConfigurator
    * {@inheritDoc}
    * @see org.continuent.sequoia.controller.interceptors.InterceptorConfigurator#getFrontendRequestInterceptors()
    */
-  public List getFrontendRequestInterceptors()
+  public List<RequestInterceptor> getFrontendRequestInterceptors()
   {
     return frontendRequestInterceptors;
   }
@@ -100,7 +99,7 @@ public class ControllerPropertyInterceptorConfigurator
    * {@inheritDoc}
    * @see org.continuent.sequoia.controller.interceptors.InterceptorConfigurator#getBackendRequestInterceptors()
    */
-  public List getBackendRequestInterceptors()
+  public List<RequestInterceptor> getBackendRequestInterceptors()
   {
     return backendRequestInterceptors;
   }
@@ -127,11 +126,11 @@ public class ControllerPropertyInterceptorConfigurator
     }
   }
   
-  private Vector loadInterceptorClasses(String interceptorList)
+  private Vector<RequestInterceptor> loadInterceptorClasses(String interceptorList)
       throws InterceptorException
   {
     // Create vector and see if we have work to do. 
-    Vector interceptors = new Vector();
+    Vector<RequestInterceptor> interceptors = new Vector<RequestInterceptor>();
     if (! "".equals(interceptorList))
     {
       String[] classNames = interceptorList.split(";");
@@ -142,7 +141,7 @@ public class ControllerPropertyInterceptorConfigurator
         {
           if (logger.isInfoEnabled())
             logger.info("Loading interceptor class: " + className);
-          Class interceptorClass = Class.forName(className);
+          Class<?> interceptorClass = Class.forName(className);
           RequestInterceptor interceptor = (RequestInterceptor) interceptorClass.newInstance();
           interceptors.add(interceptor);
         }

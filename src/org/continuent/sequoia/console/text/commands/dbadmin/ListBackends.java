@@ -53,7 +53,7 @@ public class ListBackends extends AbstractAdminCommand
   {
     VirtualDatabaseMBean db = jmxClient.getVirtualDatabaseProxy(dbName, user,
         password);
-    List backendNames = db.getAllBackendNames();
+    List<?> backendNames = db.getAllBackendNames();
     for (int i = 0; i < backendNames.size(); i++)
     {
       String backendName = (String) backendNames.get(i);

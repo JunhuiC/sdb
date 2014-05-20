@@ -67,7 +67,7 @@ public class ShowBackend extends AbstractAdminCommand
     String[] backendNames;
     if (("*").equals(commandText.trim())) //$NON-NLS-1$
     {
-      List backendNamesList = db.getAllBackendNames();
+      List<?> backendNamesList = db.getAllBackendNames();
       backendNames = (String[]) backendNamesList
           .toArray(new String[backendNamesList.size()]);
     }
@@ -77,7 +77,7 @@ public class ShowBackend extends AbstractAdminCommand
       backendNames = new String[]{backendName};
     }
 
-    ArrayList stats = new ArrayList();
+    ArrayList<BackendStatistics> stats = new ArrayList<BackendStatistics>();
     if (backendNames.length == 0)
     {
       console.printInfo(ConsoleTranslate
@@ -106,7 +106,7 @@ public class ShowBackend extends AbstractAdminCommand
     console.println(formattedBackends);
   }
 
-  private String[][] getBackendStatisticsAsStrings(ArrayList stats)
+  private String[][] getBackendStatisticsAsStrings(ArrayList<BackendStatistics> stats)
   {
     String[][] statsStr = new String[stats.size()][15];
     for (int i = 0; i < statsStr.length; i++)

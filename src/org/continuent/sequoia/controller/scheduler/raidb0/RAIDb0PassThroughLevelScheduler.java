@@ -59,7 +59,8 @@ public class RAIDb0PassThroughLevelScheduler extends AbstractScheduler
   /**
    * Creates a new Single Database Scheduler
    */
-  public RAIDb0PassThroughLevelScheduler()
+  @SuppressWarnings("deprecation")
+public RAIDb0PassThroughLevelScheduler()
   {
     super(RAIDbLevels.RAIDb0, ParsingGranularities.NO_PARSING);
   }

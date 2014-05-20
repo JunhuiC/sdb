@@ -63,8 +63,6 @@ public class CommitTask extends AbstractTask
   {
     super(nbToComplete, totalNb, tm.isPersistentConnection(), tm
         .getPersistentConnectionId());
-    if (tm == null)
-      throw new NullPointerException("Unexpected null metadata in BeginTask");
     this.tm = tm;
   }
 

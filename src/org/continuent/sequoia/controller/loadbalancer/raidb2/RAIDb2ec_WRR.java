@@ -56,7 +56,7 @@ public class RAIDb2ec_WRR extends RAIDb2ec
    * Request handling 4. Debug/Monitoring
    */
 
-  private HashMap backends;
+  private HashMap<?, ?> backends;
 
   /*
    * Constructors

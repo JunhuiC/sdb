@@ -40,7 +40,7 @@ public class GetMetadata extends DistributedVirtualDatabaseMessage
   private static final long serialVersionUID = -3691893740718177069L;
 
   private String            methodName;
-  private Class[]           argTypes;
+  private Class<?>[]           argTypes;
   private Object[]          args;
 
   /**
@@ -50,7 +50,7 @@ public class GetMetadata extends DistributedVirtualDatabaseMessage
    * @param argTypes array describing the types of method arguments.
    * @param args array of method arguments.
    */
-  public GetMetadata(String methodName, Class[] argTypes, Object[] args)
+  public GetMetadata(String methodName, Class<?>[] argTypes, Object[] args)
   {
     this.methodName = methodName;
     this.argTypes = argTypes;

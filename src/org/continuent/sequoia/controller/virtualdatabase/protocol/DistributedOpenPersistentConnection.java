@@ -90,7 +90,7 @@ public class DistributedOpenPersistentConnection
     if (!dvdb.isVirtualDatabaseStarted())
       return new VirtualDatabaseStartingException();
 
-    LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+    LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
     synchronized (totalOrderQueue)
     {
       totalOrderQueue.addLast(this);

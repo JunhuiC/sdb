@@ -89,7 +89,7 @@ public interface Backuper
    * @throws BackupException if the backup operation fails
    */
   Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException;
+      String dumpName, String path, ArrayList<?> tables) throws BackupException;
 
   /**
    * Restore a dump on a specific backend.
@@ -105,7 +105,7 @@ public interface Backuper
    * @throws BackupException if the restore operation failed
    */
   void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException;
+      String dumpName, String path, ArrayList<?> tables) throws BackupException;
 
   // 
   // Dump manipulation functions

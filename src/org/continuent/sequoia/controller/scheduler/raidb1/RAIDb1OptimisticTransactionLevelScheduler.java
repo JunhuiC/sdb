@@ -104,8 +104,8 @@ public class RAIDb1OptimisticTransactionLevelScheduler
     else
     { // Schema is updated, compute the diff !
       SchedulerDatabaseSchema newSchema = new SchedulerDatabaseSchema(dbs);
-      ArrayList tables = schedulerDatabaseSchema.getTables();
-      ArrayList newTables = newSchema.getTables();
+      ArrayList<?> tables = schedulerDatabaseSchema.getTables();
+      ArrayList<?> newTables = newSchema.getTables();
       if (newTables == null)
       { // New schema is empty (no backend is active anymore)
         logger.info("Removing all tables.");
@@ -212,8 +212,8 @@ public class RAIDb1OptimisticTransactionLevelScheduler
           long us = request.getTransactionId();
           if (owner != us)
           { // Parse all tables
-            ArrayList tables = schedulerDatabaseSchema.getTables();
-            ArrayList weAreblocking = new ArrayList();
+            ArrayList<?> tables = schedulerDatabaseSchema.getTables();
+            ArrayList<Object> weAreblocking = new ArrayList<Object>();
             int size = tables.size();
             for (int i = 0; i < size; i++)
             {
@@ -396,7 +396,7 @@ public class RAIDb1OptimisticTransactionLevelScheduler
    */
   private synchronized void releaseLocks(long transactionId)
   {
-    ArrayList tables = schedulerDatabaseSchema.getTables();
+    ArrayList<?> tables = schedulerDatabaseSchema.getTables();
     int size = tables.size();
     for (int i = 0; i < size; i++)
     {

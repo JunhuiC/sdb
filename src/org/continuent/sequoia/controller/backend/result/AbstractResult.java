@@ -42,7 +42,11 @@ import java.sql.SQLWarning;
  */
 public abstract class AbstractResult implements Serializable
 {
-  private SQLWarning statementWarnings = null;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2999308987898158691L;
+private SQLWarning statementWarnings = null;
 
   /**
    * Get the warning chain associated to the current result

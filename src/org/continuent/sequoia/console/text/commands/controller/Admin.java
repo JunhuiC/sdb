@@ -31,6 +31,7 @@ import org.continuent.sequoia.console.text.module.AbstractConsoleModule;
  * 
  * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk </a>
  * @version 1.0
+ * @param <E>
  */
 public class Admin extends ConsoleCommand
 {

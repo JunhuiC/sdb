@@ -65,7 +65,7 @@ public class DumpSchedulerQueues extends AbstractAdminCommand
 
     // active transactions
     TabularData transactions = ascMbean.getActiveTransactions();
-    List entries = JMXUtils.sortEntriesByKey(transactions, "tid");
+    List<?> entries = JMXUtils.sortEntriesByKey(transactions, "tid");
 
     console.println(ConsoleTranslate.get(
         "DumpSchedulerQueues.activeTransactions", entries.size()));

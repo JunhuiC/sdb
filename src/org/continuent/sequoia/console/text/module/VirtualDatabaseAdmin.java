@@ -31,6 +31,7 @@ import org.continuent.sequoia.common.jmx.mbeans.ControllerMBean;
 import org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean;
 import org.continuent.sequoia.console.text.Console;
 import org.continuent.sequoia.console.text.ConsoleException;
+import org.continuent.sequoia.console.text.commands.ConsoleCommand;
 
 /**
  * This is the Sequoia controller console virtual database administration
@@ -158,9 +159,9 @@ public class VirtualDatabaseAdmin extends AbstractConsoleModule
    * 
    * @return the set of expert commands
    */
-  private Set expertCommandsSet()
+  private Set<ConsoleCommand> expertCommandsSet()
   {
-    Set expertCmds = new HashSet();
+    Set<ConsoleCommand> expertCmds = new HashSet<ConsoleCommand>();
     String expertCommandsList = loadCommandsFromProperties("admin.expert");
     String[] expertCommands = parseCommands(expertCommandsList);
     addCommands(expertCommands, expertCmds);
@@ -175,9 +176,9 @@ public class VirtualDatabaseAdmin extends AbstractConsoleModule
    * 
    * @return the set of expert commands
    */
-  private Set debugCommandsSet()
+  private Set<ConsoleCommand> debugCommandsSet()
   {
-    Set debugCmds = new HashSet();
+    Set<ConsoleCommand> debugCmds = new HashSet<ConsoleCommand>();
     String debugCommandsList = loadCommandsFromProperties("admin.debug");
     String[] debugCommands = parseCommands(debugCommandsList);
     addCommands(debugCommands, debugCmds);

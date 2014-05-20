@@ -102,14 +102,9 @@ public class LongUTFDataOutputStream extends DataOutputStream
    */
   void writeUTF8(String s) throws IOException
   {
-    if (false) // old code (modified UTF-8). See SEQUOIA-133
-      super.writeUTF(s);
-    else
-    { // new code, real UTF8
-      CharBuffer cb = CharBuffer.wrap(s); // no copy; good.
+    CharBuffer cb = CharBuffer.wrap(s); // no copy; good.
       ByteBuffer bb = utf8enc.encode(cb);
       super.writeInt(bb.remaining());
       super.write(bb.array(), 0, bb.remaining()); // no copy either
-    }
   }
 }

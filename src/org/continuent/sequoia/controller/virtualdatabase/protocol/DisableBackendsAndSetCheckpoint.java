@@ -59,9 +59,9 @@ public class DisableBackendsAndSetCheckpoint
 {
   private static final long    serialVersionUID = 5296233035014770268L;
 
-  private ArrayList            backendInfos;
+  private ArrayList<?>            backendInfos;
   private String               checkpointName;
-  private transient LinkedList totalOrderQueue;
+  private transient LinkedList<Object> totalOrderQueue;
 
   /**
    * Creates a new <code>DisableBackendsAndSetCheckpoint</code> object
@@ -71,7 +71,7 @@ public class DisableBackendsAndSetCheckpoint
    * @param checkpointName name of the checkpoint to be set
    */
   public DisableBackendsAndSetCheckpoint(
-      ArrayList/* <BackendInfo> */backendInfos, String checkpointName)
+      ArrayList/* <BackendInfo> */<?> backendInfos, String checkpointName)
   {
     this.backendInfos = backendInfos;
     this.checkpointName = checkpointName;
@@ -142,7 +142,7 @@ public class DisableBackendsAndSetCheckpoint
       // Start disabling the backend locally
       if (dvdb.isLocalSender(sender))
       {
-        Iterator iter = backendInfos.iterator();
+        Iterator<?> iter = backendInfos.iterator();
         while (iter.hasNext())
         {
           BackendInfo backendInfo = (BackendInfo) iter.next();

@@ -70,7 +70,7 @@ public class DistributedRollbackToSavepoint
   public Object scheduleCommand(DistributedRequestManager drm)
       throws SQLException
   {
-    LinkedList totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
+    LinkedList<Object> totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
     if (totalOrderQueue != null)
     {
       synchronized (totalOrderQueue)

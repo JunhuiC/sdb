@@ -39,6 +39,7 @@ import org.continuent.sequoia.common.stream.DriverBufferedOutputStream;
  * 
  * @author <a href="mailto:gilles.rayrat@continuent.com">Gilles Rayrat</a>
  * @version 1.0
+ * @param <E>
  */
 public class SequoiaParameterMetaData
     implements
@@ -53,7 +54,8 @@ public class SequoiaParameterMetaData
    * exception if the driver threw it. This is read-only, no need for
    * synchronization.
    */
-  private ArrayList[]       data               = new ArrayList[8];
+//  private ArrayList<Object>[]       data               = (ArrayList<Object>[])new ArrayList[8];
+  private ArrayList<Object>[]       data               = null;  
   /** Number of objects in each vector */
   private int               numberOfParameters;
   // data types:
@@ -79,14 +81,14 @@ public class SequoiaParameterMetaData
   public SequoiaParameterMetaData(ParameterMetaData from) throws SQLException
   {
     numberOfParameters = from.getParameterCount();
-    data[nullable] = new ArrayList(numberOfParameters);
-    data[signed] = new ArrayList(numberOfParameters);
-    data[precision] = new ArrayList(numberOfParameters);
-    data[scale] = new ArrayList(numberOfParameters);
-    data[parameterType] = new ArrayList(numberOfParameters);
-    data[parameterTypeName] = new ArrayList(numberOfParameters);
-    data[parameterClassName] = new ArrayList(numberOfParameters);
-    data[parameterMode] = new ArrayList(numberOfParameters);
+    data[nullable] = new ArrayList<Object>(numberOfParameters);
+    data[signed] = new ArrayList<Object>(numberOfParameters);
+    data[precision] = new ArrayList<Object>(numberOfParameters);
+    data[scale] = new ArrayList<Object>(numberOfParameters);
+    data[parameterType] = new ArrayList<Object>(numberOfParameters);
+    data[parameterTypeName] = new ArrayList<Object>(numberOfParameters);
+    data[parameterClassName] = new ArrayList<Object>(numberOfParameters);
+    data[parameterMode] = new ArrayList<Object>(numberOfParameters);
     // we must be careful with indexes. Storage arrays start at zero whereas
     // jdbc starts at 1
     for (int i = 0; i < numberOfParameters; i++)
@@ -171,14 +173,14 @@ public class SequoiaParameterMetaData
       throws IOException
   {
     numberOfParameters = in.readInt();
-    data[nullable] = new ArrayList(numberOfParameters);
-    data[signed] = new ArrayList(numberOfParameters);
-    data[precision] = new ArrayList(numberOfParameters);
-    data[scale] = new ArrayList(numberOfParameters);
-    data[parameterType] = new ArrayList(numberOfParameters);
-    data[parameterTypeName] = new ArrayList(numberOfParameters);
-    data[parameterClassName] = new ArrayList(numberOfParameters);
-    data[parameterMode] = new ArrayList(numberOfParameters);
+    data[nullable] = new ArrayList<Object>(numberOfParameters);
+    data[signed] = new ArrayList<Object>(numberOfParameters);
+    data[precision] = new ArrayList<Object>(numberOfParameters);
+    data[scale] = new ArrayList<Object>(numberOfParameters);
+    data[parameterType] = new ArrayList<Object>(numberOfParameters);
+    data[parameterTypeName] = new ArrayList<Object>(numberOfParameters);
+    data[parameterClassName] = new ArrayList<Object>(numberOfParameters);
+    data[parameterMode] = new ArrayList<Object>(numberOfParameters);
     for (int i = 0; i < numberOfParameters; i++)
     {
       if (in.readBoolean())

@@ -144,6 +144,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author <a href="mailto:Nicolas.Modrzyk@inrialpes.fr">Nicolas Modrzyk </a>
  * @version 1.0
  */
+@SuppressWarnings("deprecation")
 public class DatabasesParser extends DefaultHandler
 {
 
@@ -167,7 +168,7 @@ public class DatabasesParser extends DefaultHandler
   private Controller                           controller;
 
   /** dbToPrepare is used if only a specified database has to be loaded */
-  private Hashtable                            dbToPrepare                     = null;
+  private Hashtable<String, String>                            dbToPrepare                     = null;
   /** setter for jumping from one VirtualDatabase definition to the next one */
   private boolean                              skipDatabase                    = false;
 
@@ -208,7 +209,7 @@ public class DatabasesParser extends DefaultHandler
 
   private CreateTablePolicy                    currentCreateTablePolicy;
   private CreateTableRule                      currentCreateTableRule;
-  private ArrayList                            backendNameList;
+  private ArrayList<String>                            backendNameList;
   private ErrorCheckingPolicy                  currentErrorCheckingPolicy;
 
   private int                                  currentNbOfConcurrentReads;
@@ -321,7 +322,7 @@ public class DatabasesParser extends DefaultHandler
 
       if (validator.getWarnings().size() > 0)
       {
-        ArrayList warnings = validator.getWarnings();
+        ArrayList<?> warnings = validator.getWarnings();
         for (int i = 0; i < warnings.size(); i++)
           logger.warn(Translate.get("virtualdatabase.xml.parsing.warning",
               warnings.get(i)));
@@ -333,7 +334,7 @@ public class DatabasesParser extends DefaultHandler
         logger.error(Translate
             .get("virtualdatabase.xml.document.not.validated"));
 
-      ArrayList errors = validator.getExceptions();
+      ArrayList<?> errors = validator.getExceptions();
       for (int i = 0; i < errors.size(); i++)
         logger.error(((Exception) errors.get(i)).getMessage());
 
@@ -406,7 +407,7 @@ public class DatabasesParser extends DefaultHandler
    */
   public void prepareDB(String virtualName, int autoLoad, String checkPoint)
   {
-    dbToPrepare = new Hashtable(3);
+    dbToPrepare = new Hashtable<String, String>(3);
     dbToPrepare.put("virtualName", virtualName);
     dbToPrepare.put("autoEnable", String.valueOf(autoLoad));
     dbToPrepare.put("checkPoint", checkPoint);
@@ -672,7 +673,7 @@ public class DatabasesParser extends DefaultHandler
     String functionsList = atts.getValue(DatabasesXmlTags.ATT_functionList);
     if (functionsList != null)
     {
-      List functionsToBroadcast = new ArrayList();
+      List<String> functionsToBroadcast = new ArrayList<String>();
       StringTokenizer st = new StringTokenizer(functionsList, ",");
       while (st.hasMoreTokens())
       {
@@ -986,7 +987,7 @@ public class DatabasesParser extends DefaultHandler
       {
         try
         {
-          ArrayList cols = currentTable.getColumns();
+          ArrayList<?> cols = currentTable.getColumns();
           if (cols == null)
             logger.warn(Translate.get("virtualdatabase.xml.table.no.column",
                 currentTable.getName()));
@@ -1174,7 +1175,7 @@ public class DatabasesParser extends DefaultHandler
     catch (Exception ee)
     {
     }
-    List backendNames = new ArrayList();
+    List<?> backendNames = new ArrayList<Object>();
     try
     {
       backendNames = vdb.getAllBackendNames();
@@ -2172,7 +2173,7 @@ public class DatabasesParser extends DefaultHandler
    */
   private void newEagerCaching(Attributes atts)
   {
-    Hashtable options = new Hashtable();
+    Hashtable<String, String> options = new Hashtable<String, String>();
     for (int i = 0; i < atts.getLength(); i++)
       options.put(atts.getQName(i), atts.getValue(i));
     currentResultCacheRule.setCacheBehavior(ResultCacheFactory
@@ -2187,7 +2188,7 @@ public class DatabasesParser extends DefaultHandler
    */
   private void newRelaxedCaching(Attributes atts)
   {
-    Hashtable options = new Hashtable();
+    Hashtable<String, String> options = new Hashtable<String, String>();
     for (int i = 0; i < atts.getLength(); i++)
       options.put(atts.getQName(i), atts.getValue(i));
     currentResultCacheRule
@@ -2797,7 +2798,7 @@ public class DatabasesParser extends DefaultHandler
     String tableName = atts.getValue(DatabasesXmlTags.ATT_tableName);
     String nbOfNodes = atts.getValue(DatabasesXmlTags.ATT_numberOfNodes);
     String policy = atts.getValue(DatabasesXmlTags.ATT_policy);
-    backendNameList = new ArrayList();
+    backendNameList = new ArrayList<String>();
     if (policy.equals(DatabasesXmlTags.VAL_random))
       currentCreateTableRule = new CreateTableRandom(backendNameList);
     else if (policy.equals(DatabasesXmlTags.VAL_roundRobin))

@@ -35,7 +35,7 @@ import org.continuent.sequoia.driver.connectpolicy.AbstractControllerConnectPoli
 public class SocketKillerCallBack implements ControllerStateChangedCallback
 {
   /** The list of controllers with their set of sockets */
-  Map                             controllersAndSockets;
+  Map<ControllerInfo, Set<Socket>>                             controllersAndSockets;
   /** Policy that created us, to tell about controller state changes */
   AbstractControllerConnectPolicy policy;
   /** Level of logging (logs are printed to stdout, see {@link SequoiaUrl}) */
@@ -44,20 +44,20 @@ public class SocketKillerCallBack implements ControllerStateChangedCallback
   public SocketKillerCallBack(AbstractControllerConnectPolicy policy,
       int logLevel)
   {
-    controllersAndSockets = new HashMap();
+    controllersAndSockets = new HashMap<ControllerInfo, Set<Socket>>();
     this.policy = policy;
     this.logLevel = logLevel;
   }
 
   public void registerSocket(ControllerInfo c, Socket s)
   {
-    Set sockets = null;
+    Set<Socket> sockets = null;
     synchronized (controllersAndSockets)
     {
       if (controllersAndSockets.containsKey(c))
-        sockets = (HashSet) controllersAndSockets.get(c);
+        sockets = (HashSet<Socket>) controllersAndSockets.get(c);
       else
-        sockets = new HashSet();
+        sockets = new HashSet<Socket>();
       sockets.add(s);
       controllersAndSockets.put(c, sockets);
     }
@@ -77,8 +77,8 @@ public class SocketKillerCallBack implements ControllerStateChangedCallback
           System.out.println(new Date() + " Controller " + ctrl
               + " down - shutting down connected sockets");
         }
-        Set sockets = (HashSet) controllersAndSockets.get(ctrl);
-        for (Iterator iter = sockets.iterator(); iter.hasNext();)
+        Set<?> sockets = (HashSet<?>) controllersAndSockets.get(ctrl);
+        for (Iterator<?> iter = sockets.iterator(); iter.hasNext();)
         {
           Socket s = (Socket) iter.next();
           if (s != null)

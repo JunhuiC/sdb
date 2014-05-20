@@ -76,11 +76,11 @@ public class InterceptorManager
       configurator.configure();
 
       // Initialize and add frontend request interceptors. 
-      List frontendList = configurator.getFrontendRequestInterceptors();
+      List<?> frontendList = configurator.getFrontendRequestInterceptors();
       frontendRequestInterceptors = initializeInterceptors(frontendList);
       
       // Initialize and add backend request interceptors. 
-      List backendList = configurator.getBackendRequestInterceptors();
+      List<?> backendList = configurator.getBackendRequestInterceptors();
       backendRequestInterceptors = initializeInterceptors(backendList);
     }
   }
@@ -92,11 +92,11 @@ public class InterceptorManager
    * @return Array of initialized interceptors
    * @throws InterceptorException Thrown if initialization fails
    */
-  protected RequestInterceptor[] initializeInterceptors(List interceptorList) 
+  protected RequestInterceptor[] initializeInterceptors(List<?> interceptorList) 
     throws InterceptorException
   {
-    Iterator iter = interceptorList.iterator();
-    Vector requestInterceptorList = new Vector();
+    Iterator<?> iter = interceptorList.iterator();
+    Vector<RequestInterceptor> requestInterceptorList = new Vector<RequestInterceptor>();
     while (iter.hasNext())
     {
       RequestInterceptor interceptor = (RequestInterceptor) iter.next();

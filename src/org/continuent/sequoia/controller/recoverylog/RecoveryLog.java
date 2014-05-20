@@ -566,8 +566,8 @@ public class RecoveryLog implements XmlComponent
             StringBuffer sb = new StringBuffer();
             sb.append("Checkpoint list...");
 
-            Map checkpoints = this.getCheckpoints();
-            Iterator checkPointIterator = checkpoints.keySet().iterator();
+            Map<String, String> checkpoints = this.getCheckpoints();
+            Iterator<String> checkPointIterator = checkpoints.keySet().iterator();
             while (checkPointIterator.hasNext())
             {
               String name = (String) checkPointIterator.next();
@@ -2301,7 +2301,7 @@ public class RecoveryLog implements XmlComponent
    * @throws SQLException if fails
    * @deprecated use getCheckpoint().values() instead
    */
-  public ArrayList getCheckpointNames() throws SQLException
+  public ArrayList<String> getCheckpointNames() throws SQLException
   {
     checkIfShuttingDown();
 
@@ -2319,7 +2319,7 @@ public class RecoveryLog implements XmlComponent
           "SELECT name from " + checkpointTableName
               + " ORDER BY log_id DESC, name DESC");
       ResultSet rs = stmt.executeQuery();
-      ArrayList list = new ArrayList();
+      ArrayList<String> list = new ArrayList<String>();
       while (rs.next())
       {
         list.add(rs.getString(1));
@@ -2356,7 +2356,7 @@ public class RecoveryLog implements XmlComponent
    * @throws SQLException if an error occurs while retrieving the checkpoints
    *           information from the checkpoint table
    */
-  Map/* <String, String> */getCheckpoints() throws SQLException
+  Map/* <String, String> */<String, String> getCheckpoints() throws SQLException
   {
     checkIfShuttingDown();
 
@@ -2370,7 +2370,7 @@ public class RecoveryLog implements XmlComponent
           "SELECT log_id, name from " + checkpointTableName
               + " ORDER BY log_id DESC");
       ResultSet rs = stmt.executeQuery();
-      Map checkpoints = new TreeMap();
+      Map<String, String> checkpoints = new TreeMap<String, String>();
       while (rs.next())
       {
         String name = rs.getString("name");
@@ -2419,7 +2419,7 @@ public class RecoveryLog implements XmlComponent
         {
           public Object run(ResultSet rs) throws SQLException
           {
-            ArrayList aliases = new ArrayList();
+            ArrayList<String> aliases = new ArrayList<String>();
             while (rs.next())
               aliases.add(rs.getString("name"));
             return aliases.toArray(new String[aliases.size()]);
@@ -2798,7 +2798,7 @@ public class RecoveryLog implements XmlComponent
    * @return an <code>ArrayList</code> of <code>DumpInfo</code> objects
    * @throws SQLException if a recovery log database access error occurs
    */
-  public ArrayList getDumpList() throws SQLException
+  public ArrayList<DumpInfo> getDumpList() throws SQLException
   {
     checkIfShuttingDown();
 
@@ -2811,7 +2811,7 @@ public class RecoveryLog implements XmlComponent
       stmt = getDatabaseConnection().prepareStatement(
           "SELECT * FROM " + dumpTableName + " ORDER BY dump_date DESC");
       ResultSet rs = stmt.executeQuery();
-      ArrayList list = new ArrayList();
+      ArrayList<DumpInfo> list = new ArrayList<DumpInfo>();
       while (rs.next())
       {
         list
@@ -3361,7 +3361,7 @@ public class RecoveryLog implements XmlComponent
     {
       stmt = getDatabaseConnection().createStatement();
       rs = stmt.executeQuery("select * from " + logTableName);
-      ArrayList list = new ArrayList();
+      ArrayList<String[]> list = new ArrayList<String[]>();
       while (rs.next())
       {
         // 3: Query 2: User 1: ID 4: TID
@@ -3491,7 +3491,7 @@ public class RecoveryLog implements XmlComponent
       rs = stmt.executeQuery("select * from " + logTableName
           + " where log_id >= " + from);
       int columnCount = rs.getMetaData().getColumnCount();
-      List logEntries = new ArrayList();
+      List<String[]> logEntries = new ArrayList<String[]>();
       while (rs.next())
       {
         String[] logEntry = new String[columnCount];
@@ -3539,7 +3539,7 @@ public class RecoveryLog implements XmlComponent
       rs = stmt.executeQuery("select * from " + logTableName
           + " where transaction_id = " + tid);
       int columnCount = rs.getMetaData().getColumnCount();
-      List logEntries = new ArrayList();
+      List<String[]> logEntries = new ArrayList<String[]>();
       while (rs.next())
       {
         String[] logEntry = new String[columnCount];

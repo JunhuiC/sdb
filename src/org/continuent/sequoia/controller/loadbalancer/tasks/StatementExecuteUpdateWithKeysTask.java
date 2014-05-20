@@ -56,7 +56,7 @@ public class StatementExecuteUpdateWithKeysTask extends AbstractTask
   /**
    * results : store results from all the backends
    */
-  private Map                  results       = null;
+  private Map<BackendWorkerThread, GeneratedKeysResult>                  results       = null;
   /**
    * result : this is the result for the first backend to succeed
    */
@@ -81,7 +81,7 @@ public class StatementExecuteUpdateWithKeysTask extends AbstractTask
         .getPersistentConnectionId());
     this.request = request;
     this.metadataCache = metadataCache;
-    this.results = new HashMap();
+    this.results = new HashMap<BackendWorkerThread, GeneratedKeysResult>();
   }
 
   /**

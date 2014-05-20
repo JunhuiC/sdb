@@ -58,8 +58,8 @@ public class XmlValidator extends DefaultHandler
   private boolean   isXmlValid = false;
   private boolean   isDtdValid = false;
   private String    xmlContent;
-  private ArrayList errors;
-  private ArrayList warnings;
+  private ArrayList<Exception> errors;
+  private ArrayList<SAXParseException> warnings;
 
   /**
    * Allow to use the xml validator as an external program
@@ -122,7 +122,7 @@ public class XmlValidator extends DefaultHandler
 
     if (validator.getLastException() != null)
     {
-      ArrayList errors = validator.getExceptions();
+      ArrayList<Exception> errors = validator.getExceptions();
       for (int i = 0; i < errors.size(); i++)
         System.out.println("\t(parsing error):"
             + ((Exception) errors.get(i)).getMessage());
@@ -180,8 +180,8 @@ public class XmlValidator extends DefaultHandler
   {
     System.setProperty("org.xml.sax.driver",
         "org.apache.crimson.parser.XMLReaderImpl");
-    errors = new ArrayList();
-    warnings = new ArrayList();
+    errors = new ArrayList<Exception>();
+    warnings = new ArrayList<SAXParseException>();
     try
     {
       // Store dtd reference
@@ -306,7 +306,7 @@ public class XmlValidator extends DefaultHandler
    * 
    * @return an <code>ArrayList</code> of <code>Exception</code>
    */
-  public ArrayList getExceptions()
+  public ArrayList<Exception> getExceptions()
   {
     return errors;
   }
@@ -410,7 +410,7 @@ public class XmlValidator extends DefaultHandler
   /**
    * @return Returns the warnings.
    */
-  public ArrayList getWarnings()
+  public ArrayList<SAXParseException> getWarnings()
   {
     return warnings;
   }

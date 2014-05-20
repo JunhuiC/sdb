@@ -58,7 +58,7 @@ public class Restore extends AbstractAdminCommand
   {
     String dumpName = null;
     String backendName = null;
-    ArrayList tables = null;
+    ArrayList<String> tables = null;
     StringTokenizer st = new StringTokenizer(commandText.trim());
 
     try
@@ -67,7 +67,7 @@ public class Restore extends AbstractAdminCommand
       dumpName = st.nextToken();
       if (st.hasMoreTokens())
       {
-        tables = new ArrayList();
+        tables = new ArrayList<String>();
         while (st.hasMoreTokens())
         {
           tables.add(st.nextToken());

@@ -51,7 +51,7 @@ public class SequoiaUrl
   private String                          databaseName;
   private ControllerInfo[]                controllerList;
   /** This includes parameters parsed from the url */
-  private final HashMap                   parameters;
+  private final HashMap<Object, Object>                   parameters;
   private AbstractControllerConnectPolicy controllerConnectPolicy;
 
   /**
@@ -89,7 +89,7 @@ public class SequoiaUrl
     this.driver = driver;
     this.url = url;
 
-    parameters = new HashMap();
+    parameters = new HashMap<Object, Object>();
     // Initialize parameters
     parameters.putAll(props);
     // Parse URL now, will override any parameter defined as a property
@@ -180,7 +180,7 @@ public class SequoiaUrl
    * 
    * @return Returns the parameters and their value in a Hasmap.
    */
-  public HashMap getParameters()
+  public HashMap<Object, Object> getParameters()
   {
     return parameters;
   }
@@ -350,13 +350,13 @@ public class SequoiaUrl
    * @return a Hashmap of param name=>value possibly empty
    * @throws SQLException if an error occurs
    */
-  private HashMap parseUrlParams(String urlString) throws SQLException
+  private HashMap<String, String> parseUrlParams(String urlString) throws SQLException
   {
-    HashMap props = parseUrlParams(urlString, '?', "&", "=");
+    HashMap<String, String> props = parseUrlParams(urlString, '?', "&", "=");
     if (props == null)
       props = parseUrlParams(urlString, ';', ";", "=");
     if (props == null)
-      props = new HashMap();
+      props = new HashMap<String, String>();
 
     return props;
   }
@@ -373,7 +373,7 @@ public class SequoiaUrl
    * @return HashMap of ParameterName=>Value
    * @throws SQLException if an error occurs
    */
-  private HashMap parseUrlParams(String urlString, char beginMarker,
+  private HashMap<String, String> parseUrlParams(String urlString, char beginMarker,
       String parameterSeparator, String equal) throws SQLException
   {
     int questionMark = urlString.indexOf(beginMarker);
@@ -381,7 +381,7 @@ public class SequoiaUrl
       return null;
     else
     {
-      HashMap props = new HashMap();
+      HashMap<String, String> props = new HashMap<String, String>();
       String params = urlString.substring(questionMark + 1);
       StringTokenizer st1 = new StringTokenizer(params, parameterSeparator);
       while (st1.hasMoreTokens())
@@ -580,7 +580,7 @@ public class SequoiaUrl
       String password) throws SQLException
   {
     Properties properties = new Properties();
-    for (Iterator iter = getParameters().keySet().iterator(); iter.hasNext();)
+    for (Iterator<Object> iter = getParameters().keySet().iterator(); iter.hasNext();)
     {
       String key = (String) iter.next();
       properties.setProperty(key, (String) getParameters().get(key));

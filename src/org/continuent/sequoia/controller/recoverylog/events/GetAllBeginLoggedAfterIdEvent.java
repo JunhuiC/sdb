@@ -42,7 +42,7 @@ public class GetAllBeginLoggedAfterIdEvent implements LogEvent
 
   private String       logTableName;
   private long         checkpointId;
-  private List         beginList        = null;
+  private List<Long>         beginList        = null;
   private SQLException catchedException = null;
   private String       logTableSqlColumnName;
 
@@ -84,7 +84,7 @@ public class GetAllBeginLoggedAfterIdEvent implements LogEvent
       stmt.setLong(1, checkpointId);
       stmt.setString(2, "begin");
       rs = stmt.executeQuery();
-      beginList = new ArrayList();
+      beginList = new ArrayList<Long>();
       while (rs.next())
         beginList.add(new Long(rs.getLong(1)));
     }
@@ -134,7 +134,7 @@ public class GetAllBeginLoggedAfterIdEvent implements LogEvent
    * @return begin list
    * @throws SQLException if an error occured
    */
-  public List getBeginList() throws SQLException
+  public List<Long> getBeginList() throws SQLException
   {
     if (beginList == null)
       throw catchedException;

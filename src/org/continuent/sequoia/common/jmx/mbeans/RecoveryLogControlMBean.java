@@ -111,5 +111,5 @@ public interface RecoveryLogControlMBean
    * @return an ordered <code>Map&lt;String, String&gt;</code> where the keys
    *         are the checkpoint names and the values are the log IDs
    */
-  Map/* <String, String> */getCheckpoints();
+  Map/* <String, String> */<?, ?> getCheckpoints();
 }

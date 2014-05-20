@@ -37,14 +37,14 @@ public class ExecuteResult extends AbstractResult implements Serializable
 {
   private static final long serialVersionUID = 3303766819336440504L;
 
-  private LinkedList        results;
+  private LinkedList<Serializable>        results;
 
   /**
    * Creates a new <code>ExecuteResult</code> object
    */
   public ExecuteResult()
   {
-    results = new LinkedList();
+    results = new LinkedList<Serializable>();
   }
 
   /**
@@ -73,7 +73,7 @@ public class ExecuteResult extends AbstractResult implements Serializable
    * 
    * @return Returns the results.
    */
-  public final List getResults()
+  public final List<Serializable> getResults()
   {
     return results;
   }

@@ -936,7 +936,7 @@ public class PreparedStatement extends Statement
         return super.execute(sql, compileParameters(false));
       }
       int result = executeUpdate();
-      resultList = new LinkedList();
+      resultList = new LinkedList<Object>();
       resultList.add(new Integer(result));
       resultListIterator = resultList.iterator();
       return getMoreResults();
@@ -985,7 +985,7 @@ public class PreparedStatement extends Statement
   public synchronized void addBatch() throws SQLException
   {
     if (batch == null)
-      batch = new Vector();
+      batch = new Vector<Object>();
     batch.addElement(new BatchElement(sql, compileParameters(false)));
   }
 

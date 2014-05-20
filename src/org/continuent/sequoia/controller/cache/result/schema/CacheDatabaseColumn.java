@@ -44,7 +44,7 @@ import org.continuent.sequoia.controller.requests.SelectRequest;
 public class CacheDatabaseColumn
 {
   private String    name;
-  private ArrayList cacheEntries;
+  private ArrayList<AbstractResultCacheEntry> cacheEntries;
 
   /**
    * Creates a new <code>CacheDatabaseColumn</code> instance.
@@ -54,7 +54,7 @@ public class CacheDatabaseColumn
   public CacheDatabaseColumn(String name)
   {
     this.name = name;
-    cacheEntries = new ArrayList();
+    cacheEntries = new ArrayList<AbstractResultCacheEntry>();
   }
 
   /**
@@ -116,7 +116,7 @@ public class CacheDatabaseColumn
    */
   public synchronized void invalidateAll()
   {
-    for (Iterator i = cacheEntries.iterator(); i.hasNext();)
+    for (Iterator<AbstractResultCacheEntry> i = cacheEntries.iterator(); i.hasNext();)
     {
       AbstractResultCacheEntry entry = (AbstractResultCacheEntry) i.next();
       entry.invalidate();
@@ -159,7 +159,7 @@ public class CacheDatabaseColumn
    *          values.
    */
   public synchronized void invalidateAllUniqueWithValuesAndAllNonUnique(
-      String val, ArrayList columns, ArrayList values)
+      String val, ArrayList<?> columns, ArrayList<?> values)
   {
     // Do not try to optimize by moving cacheEntries.size()
     // out of the for statement
@@ -169,7 +169,7 @@ public class CacheDatabaseColumn
           .get(i);
       if (ce.getRequest().getCacheAbility() == RequestType.UNIQUE_CACHEABLE)
       {
-        Hashtable queryValues;
+        Hashtable<?, ?> queryValues;
         String value, v;
         SelectRequest query;
         int size, j;
@@ -185,7 +185,7 @@ public class CacheDatabaseColumn
           // Check if the values associated with the other columns are equal.
           size = values.size();
           j = 0;
-          for (Iterator it = columns.iterator(); it.hasNext() && (j < size); j++)
+          for (Iterator<?> it = columns.iterator(); it.hasNext() && (j < size); j++)
           {
             CacheDatabaseColumn cdc = (CacheDatabaseColumn) it.next();
             if (!this.equals(cdc))

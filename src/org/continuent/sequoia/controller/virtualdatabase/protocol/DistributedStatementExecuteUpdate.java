@@ -60,7 +60,7 @@ public class DistributedStatementExecuteUpdate extends DistributedRequest
   public Object scheduleRequest(DistributedRequestManager drm)
       throws SQLException
   {
-    LinkedList totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
+    LinkedList<Object> totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
     synchronized (totalOrderQueue)
     {
       totalOrderQueue.addLast(request);

@@ -22,7 +22,6 @@
 package org.continuent.sequoia.controller.requestmanager.distributed;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -32,13 +31,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.continuent.hedera.adapters.MulticastRequestAdapter;
 import org.continuent.sequoia.common.exceptions.VirtualDatabaseException;
 import org.continuent.sequoia.common.log.Trace;
 import org.continuent.sequoia.controller.requestmanager.TransactionMetaData;
 import org.continuent.sequoia.controller.requests.AbstractRequest;
 import org.continuent.sequoia.controller.virtualdatabase.DistributedVirtualDatabase;
-import org.continuent.sequoia.controller.virtualdatabase.protocol.FlushGroupCommunicationMessages;
 
 /**
  * This class defines a ControllerFailureCleanupThread
@@ -48,13 +45,13 @@ import org.continuent.sequoia.controller.virtualdatabase.protocol.FlushGroupComm
  */
 public class ControllerFailureCleanupThread extends Thread
 {
-  private Hashtable                  cleanupThreadsList;
+  private Hashtable<?, ?>                  cleanupThreadsList;
   private DistributedVirtualDatabase dvdb;
   private DistributedRequestManager  drm;
   private long                       failedControllerId;
   private long                       failoverTimeoutInMs;
-  private List                       persistentConnectionsToRecover;
-  private List                       transactionsToRecover;
+  private List<Long>                       persistentConnectionsToRecover;
+  private List<Long>                       transactionsToRecover;
   private Trace                      logger = Trace
                                                 .getLogger("org.continuent.sequoia.controller.requestmanager.cleanup");
 
@@ -71,7 +68,7 @@ public class ControllerFailureCleanupThread extends Thread
   public ControllerFailureCleanupThread(
       DistributedVirtualDatabase distributedVirtualDatabase,
       long failedControllerId, long failoverTimeoutInMs,
-      Hashtable cleanupThreads, HashMap writesFlushed)
+      Hashtable<?, ?> cleanupThreads, HashMap<?, ?> writesFlushed)
   {
     super("ControllerFailureCleanupThread for controller " + failedControllerId);
     this.dvdb = distributedVirtualDatabase;
@@ -200,15 +197,15 @@ public class ControllerFailureCleanupThread extends Thread
    */
   private void rollbackInactiveTransactions(Long controllerIdKey)
   {
-    List transactionsRecovered = dvdb.getTransactionsRecovered(controllerIdKey);
-    Map readRequests = drm.getScheduler().getActiveReadRequests();
-    Map writeRequests = drm.getScheduler().getActiveWriteRequests();
+    List<?> transactionsRecovered = dvdb.getTransactionsRecovered(controllerIdKey);
+    Map<?, ?> readRequests = drm.getScheduler().getActiveReadRequests();
+    Map<?, ?> writeRequests = drm.getScheduler().getActiveWriteRequests();
     while (!transactionsToRecover.isEmpty())
     {
       int waitingForCompletion = 0;
       // Iterate on the list of active transactions (based on scheduler
       // knowledge) that were started by the failed controller.
-      for (Iterator iter = transactionsToRecover.iterator(); iter.hasNext();)
+      for (Iterator<Long> iter = transactionsToRecover.iterator(); iter.hasNext();)
       {
         Long lTid = (Long) iter.next();
 
@@ -288,11 +285,11 @@ public class ControllerFailureCleanupThread extends Thread
    * @param map map of Long(transaction id) -> AbstractRequest
    * @return true if a request in the map matches the transaction id
    */
-  private boolean hasRequestForTransaction(long transactionId, Map map)
+  private boolean hasRequestForTransaction(long transactionId, Map<?, ?> map)
   {
     synchronized (map)
     {
-      for (Iterator iter = map.values().iterator(); iter.hasNext();)
+      for (Iterator<?> iter = map.values().iterator(); iter.hasNext();)
       {
         AbstractRequest request = (AbstractRequest) iter.next();
         if (transactionId == request.getTransactionId())
@@ -323,9 +320,9 @@ public class ControllerFailureCleanupThread extends Thread
 
   private void closeRemainingPersistentConnections(Long controllerId)
   {
-    List persistentConnectionsRecovered = dvdb
+    List<?> persistentConnectionsRecovered = dvdb
         .getControllerPersistentConnectionsRecovered(controllerId);
-    for (Iterator iter = persistentConnectionsToRecover.iterator(); iter
+    for (Iterator<Long> iter = persistentConnectionsToRecover.iterator(); iter
         .hasNext();)
     {
       Long lConnectionId = (Long) iter.next();
@@ -350,11 +347,11 @@ public class ControllerFailureCleanupThread extends Thread
    * 
    * @param map the map to parse
    */
-  private void getTransactionAndPersistentConnectionsFromRequests(Map map)
+  private void getTransactionAndPersistentConnectionsFromRequests(Map<?, ?> map)
   {
     synchronized (map)
     {
-      for (Iterator iter = map.keySet().iterator(); iter.hasNext();)
+      for (Iterator<?> iter = map.keySet().iterator(); iter.hasNext();)
       {
         Long lTid = (Long) iter.next();
         if ((lTid.longValue() & DistributedRequestManager.CONTROLLER_ID_BIT_MASK) == failedControllerId)
@@ -393,12 +390,12 @@ public class ControllerFailureCleanupThread extends Thread
     }
   }
 
-  private List parsePersistentConnections(Map map)
+  private List<Long> parsePersistentConnections(Map<?, ?> map)
   {
-    LinkedList result = new LinkedList();
+    LinkedList<Long> result = new LinkedList<Long>();
     synchronized (map)
     {
-      for (Iterator iter = map.keySet().iterator(); iter.hasNext();)
+      for (Iterator<?> iter = map.keySet().iterator(); iter.hasNext();)
       {
         Long persistentConnectionId = (Long) iter.next();
         if ((persistentConnectionId.longValue() & DistributedRequestManager.CONTROLLER_ID_BIT_MASK) == failedControllerId)
@@ -418,9 +415,9 @@ public class ControllerFailureCleanupThread extends Thread
    * @param list transaction metadata list to parse
    * @return sublist containing ids matching failedControllerId
    */
-  private List parseTransactionMetadataListForControllerId(Collection list)
+  private List<Long> parseTransactionMetadataListForControllerId(Collection<?> list)
   {
-    LinkedList result = new LinkedList();
+    LinkedList<Long> result = new LinkedList<Long>();
     synchronized (list)
     {
       boolean retry = true;
@@ -428,7 +425,7 @@ public class ControllerFailureCleanupThread extends Thread
       {
         try
         {
-          for (Iterator iter = list.iterator(); iter.hasNext();)
+          for (Iterator<?> iter = list.iterator(); iter.hasNext();)
           {
             TransactionMetaData tm = (TransactionMetaData) iter.next();
             if ((tm.getTransactionId() & DistributedRequestManager.CONTROLLER_ID_BIT_MASK) == failedControllerId)

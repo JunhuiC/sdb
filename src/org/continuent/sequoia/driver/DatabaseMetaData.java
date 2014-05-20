@@ -50,7 +50,7 @@ public class DatabaseMetaData implements java.sql.DatabaseMetaData
   /**
    * ("getXXX(Y,Z,...)", value) hash table of the metadata queries.
    */
-  private HashMap    metadataContainer;
+  private HashMap<String, Object>    metadataContainer;
 
   /**
    * Creates a new <code>DatabaseMetaData</code> instance.
@@ -60,7 +60,7 @@ public class DatabaseMetaData implements java.sql.DatabaseMetaData
   public DatabaseMetaData(Connection conn)
   {
     this.connection = conn;
-    metadataContainer = new HashMap();
+    metadataContainer = new HashMap<String, Object>();
   }
 
   /**
@@ -76,7 +76,7 @@ public class DatabaseMetaData implements java.sql.DatabaseMetaData
    * @return the value returned by the given method
    * @throws SQLException if the connection fails
    */
-  private Object getMetadata(String methodName, Class[] parametersType,
+  private Object getMetadata(String methodName, Class<?>[] parametersType,
       Object[] arguments, boolean allowsNull) throws SQLException
   {
     String key = MetadataContainer.getContainerKey(methodName, parametersType,

@@ -84,13 +84,13 @@ public class RecoverThread extends Thread
    * a List&lt;Long&gt; of persistent connection IDs that are re-opened during
    * recovery
    */
-  private List              persistentConnections;
+  private List<Long>              persistentConnections;
 
   /**
    * HashMap of transaction IDs which are replayed during recovery (key is
    * transaction id, value is login)
    */
-  private HashMap           tids;
+  private HashMap<Long, AbstractRequest>           tids;
 
   /**
    * The scheduler used to suspend writes during the recovery process
@@ -129,8 +129,8 @@ public class RecoverThread extends Thread
     this.checkpointName = checkpointName;
     this.isWrite = isWrite;
     this.recoveryBatchSize = recoveryLog.getRecoveryBatchSize();
-    tids = new HashMap();
-    persistentConnections = new ArrayList();
+    tids = new HashMap<Long, AbstractRequest>();
+    persistentConnections = new ArrayList<Long>();
     recoveryProcessInterrupted = Boolean.FALSE;
   }
 
@@ -187,7 +187,7 @@ public class RecoverThread extends Thread
 
       // Play write queries from the recovery log until the last entry or the
       // first executing entry
-      LinkedList pendingRecoveryTasks = new LinkedList();
+      LinkedList<RecoveryTask> pendingRecoveryTasks = new LinkedList<RecoveryTask>();
       try
       {
         logIdx = recover(logIdx, pendingRecoveryTasks);
@@ -351,7 +351,7 @@ public class RecoverThread extends Thread
    * @see #startRecovery()
    * @see #endRecovery()
    */
-  private long recover(long logIdx, LinkedList pendingRecoveryTasks)
+  private long recover(long logIdx, LinkedList<RecoveryTask> pendingRecoveryTasks)
       throws SQLException, EndOfRecoveryLogException
   {
     RecoveryTask recoveryTask = null;
@@ -498,7 +498,7 @@ public class RecoverThread extends Thread
       {
         // Now let's check which tasks have completed and remove them from the
         // pending queue.
-        for (Iterator iter = pendingRecoveryTasks.iterator(); iter.hasNext();)
+        for (Iterator<RecoveryTask> iter = pendingRecoveryTasks.iterator(); iter.hasNext();)
         {
           recoveryTask = (RecoveryTask) iter.next();
           abstractTask = recoveryTask.getTask();
@@ -578,7 +578,7 @@ public class RecoverThread extends Thread
    *          executing tasks
    * @throws SQLException if a failure occurs
    */
-  private void waitForAllTasksCompletion(LinkedList pendingRecoveryTasks)
+  private void waitForAllTasksCompletion(LinkedList<RecoveryTask> pendingRecoveryTasks)
       throws SQLException
   {
     RecoveryTask recoveryTask;

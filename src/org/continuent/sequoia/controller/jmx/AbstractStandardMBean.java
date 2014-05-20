@@ -62,7 +62,7 @@ public abstract class AbstractStandardMBean extends StandardMBean
    *           JMX design patterns for Management Interfaces, or if this does
    *           not implement the specified interface.
    */
-  public AbstractStandardMBean(Class mbeanInterface)
+  public AbstractStandardMBean(Class<?> mbeanInterface)
       throws NotCompliantMBeanException
   {
     super(mbeanInterface);

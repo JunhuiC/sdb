@@ -339,7 +339,7 @@ public abstract class RequestFactory
    * @return
    */
   public abstract boolean checkIfSelectRequiresBroadcast(String sqlQuery,
-      List functionsList);
+      List<?> functionsList);
 
   /**
    * isAlter checks if the provided query matches with an ALTER statement.

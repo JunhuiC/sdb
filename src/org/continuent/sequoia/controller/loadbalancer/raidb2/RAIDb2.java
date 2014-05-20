@@ -234,7 +234,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(request, String
         .valueOf(request.getId()));
 
-    List writeList = new ArrayList();
+    List<DatabaseBackend> writeList = new ArrayList<DatabaseBackend>();
 
     if (request.isCreate())
     {
@@ -305,9 +305,9 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
   // FIXME why don't we just iterate on the enabledBackends list (assuming we
   // acquire/release the read lock)?
   // TODO should be moved to VirtualDatabase
-  private List getBackendsWithTable(String tableName, int nbOfThreads)
+  private List<DatabaseBackend> getBackendsWithTable(String tableName, int nbOfThreads)
   {
-    List backendsWithTable = new ArrayList();
+    List<DatabaseBackend> backendsWithTable = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend b = (DatabaseBackend) enabledBackends.get(i);
@@ -329,10 +329,10 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
   // FIXME why don't we just iterate on the enabledBackends list (assuming we
   // acquire/release the read lock)?
   // TODO should be moved to VirtualDatabase
-  private List getBackendsWithStartedTransaction(Long tid, int nbOfThreads)
+  private List<DatabaseBackend> getBackendsWithStartedTransaction(Long tid, int nbOfThreads)
   {
     // Build the list of backends that need to commit this transaction
-    List backendsWithStartedTransaction = new ArrayList(nbOfThreads);
+    List<DatabaseBackend> backendsWithStartedTransaction = new ArrayList<DatabaseBackend>(nbOfThreads);
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -355,10 +355,10 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
   // FIXME why don't we just iterate on the enabledBackends list (assuming we
   // acquire/release the read lock)?
   // TODO should be moved to VirtualDatabase
-  private List getBackendsWithStoredProcedure(String procedureName,
+  private List<DatabaseBackend> getBackendsWithStoredProcedure(String procedureName,
       int nbOfParameters, int nbOfThreads)
   {
-    List backendsWithStoredProcedure = new ArrayList(nbOfThreads);
+    List<DatabaseBackend> backendsWithStoredProcedure = new ArrayList<DatabaseBackend>(nbOfThreads);
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend b = (DatabaseBackend) enabledBackends.get(i);
@@ -379,7 +379,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
    *           according to the create table policy
    */
   // TODO should be moved to VirtualDatabase
-  private List getBackendsForCreateTableRequest(String tableName)
+  private List<DatabaseBackend> getBackendsForCreateTableRequest(String tableName)
       throws CreateTableException
   {
     // Choose the backend according to the defined policy
@@ -886,7 +886,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
             + " in callStoredProcedure");
     }
 
-    List backendList = getBackendsWithStoredProcedure(proc.getProcedureKey(),
+    List<DatabaseBackend> backendList = getBackendsWithStoredProcedure(proc.getProcedureKey(),
         proc.getNbOfParameters(), nbOfThreads);
 
     if (backendList.size() == 0)
@@ -943,7 +943,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
     if (task.getSuccess() == 0)
     {
       // All backends that executed the query failed
-      List exceptions = task.getExceptions();
+      List<?> exceptions = task.getExceptions();
       if (exceptions == null)
         throw new AllBackendsFailedException(Translate.get(
             "loadbalancer.request.failed.all", new Object[]{request.getType(),
@@ -1367,7 +1367,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(totalOrderCommit,
         "commit " + tid);
 
-    List commitList = getBackendsWithStartedTransaction(new Long(tid),
+    List<DatabaseBackend> commitList = getBackendsWithStartedTransaction(new Long(tid),
         nbOfThreads);
 
     int nbOfThreadsToCommit = commitList.size();
@@ -1430,7 +1430,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
         "rollback " + tid);
 
     // Build the list of backends that need to rollback this transaction
-    List rollbackList = getBackendsWithStartedTransaction(new Long(tid),
+    List<DatabaseBackend> rollbackList = getBackendsWithStartedTransaction(new Long(tid),
         nbOfThreads);
 
     int nbOfThreadsToRollback = rollbackList.size();
@@ -1493,7 +1493,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
         "rollback " + savepointName + " " + tid);
 
     // Build the list of backends that need to rollback this transaction
-    List rollbackList = getBackendsWithStartedTransaction(new Long(tid),
+    List<DatabaseBackend> rollbackList = getBackendsWithStartedTransaction(new Long(tid),
         nbOfThreads);
 
     int nbOfThreadsToRollback = rollbackList.size();
@@ -1555,7 +1555,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
         "release savepoint " + savepointName + " " + tid);
 
     // Build the list of backends that need to rollback this transaction
-    List savepointList = getBackendsWithStartedTransaction(new Long(tid),
+    List<DatabaseBackend> savepointList = getBackendsWithStartedTransaction(new Long(tid),
         nbOfThreads);
 
     int nbOfSavepoints = savepointList.size();
@@ -1673,7 +1673,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.commit.all.failed", tid));
@@ -1714,7 +1714,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.rollback.all.failed", tid));
@@ -1760,7 +1760,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.rollbacksavepoint.all.failed", savepoint, String
@@ -1809,7 +1809,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.releasesavepoint.all.failed", savepoint, String
@@ -1857,7 +1857,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.setsavepoint.all.failed", savepoint, String
@@ -1888,7 +1888,7 @@ public abstract class RAIDb2 extends AbstractLoadBalancer
    *          total order queue
    */
   private void atomicTaskPostInQueueAndReleaseLock(AbstractRequest request,
-      AbstractTask task, List writeList, boolean removeFromTotalOrderQueue)
+      AbstractTask task, List<DatabaseBackend> writeList, boolean removeFromTotalOrderQueue)
   {
     synchronized (enabledBackends)
     {

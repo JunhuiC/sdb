@@ -130,7 +130,7 @@ public class DumpRecoveryLog extends AbstractAdminCommand
     // zap sql params column - which can be huge - if not printing
     // verbose (default)
     if (!verbose) {
-        List l = new ArrayList(Arrays.asList(headers));
+        List<String> l = new ArrayList<String>(Arrays.asList(headers));
         l.remove(3); // this is the sql params column
         headers = (String[]) l.toArray(new String[l.size()]);
     }
@@ -147,7 +147,7 @@ public class DumpRecoveryLog extends AbstractAdminCommand
     long lastIndex = 0;
     while (!logEntries.isEmpty())
     {
-      List entries = JMXUtils.sortEntriesByKey(logEntries, idKey);
+      List<?> entries = JMXUtils.sortEntriesByKey(logEntries, idKey);
       lastIndex = getIndexOfLastEntry(entries, idKey);
       if (lastIndex > max)
       {
@@ -167,9 +167,9 @@ public class DumpRecoveryLog extends AbstractAdminCommand
   /*
    * Remove all entries whose indexes are greater than the index parameter
    */
-  private void removeAfterIndex(List entries, long index, String idKey)
+  private void removeAfterIndex(List<?> entries, long index, String idKey)
   {
-    Iterator iter = entries.iterator();
+    Iterator<?> iter = entries.iterator();
     while (iter.hasNext())
     {
       CompositeData data = (CompositeData) iter.next();
@@ -215,7 +215,7 @@ public class DumpRecoveryLog extends AbstractAdminCommand
    * @param idKey the key corresponding to the id of the index
    * @return the index of the last entry in the <code>entries</code> List
    */
-  private static int getIndexOfLastEntry(List entries, String idKey)
+  private static int getIndexOfLastEntry(List<?> entries, String idKey)
   {
     CompositeData data = (CompositeData) entries.get(entries.size() - 1);
     String idStr = (String) data.get(idKey);

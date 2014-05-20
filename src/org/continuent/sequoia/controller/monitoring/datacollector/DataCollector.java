@@ -191,7 +191,7 @@ public class DataCollector extends AbstractStandardMBean
       String msg = Translate.get("virtualdatabase.fail.read.lock", e);
       throw new DataCollectorException(msg);
     }
-    ArrayList backends = vdb.getBackends();
+    ArrayList<?> backends = vdb.getBackends();
     int backendListSize = backends.size();
     String[][] data = new String[backendListSize][];
     for (int i = 0; i < backendListSize; i++)
@@ -292,7 +292,7 @@ public class DataCollector extends AbstractStandardMBean
       throws DataCollectorException
   {
     VirtualDatabase vdb = getVirtualDatabase(virtualDatabasename);
-    ArrayList activeThreads = vdb.getActiveThreads();
+    ArrayList<?> activeThreads = vdb.getActiveThreads();
     int size = activeThreads.size();
     String[][] data = new String[size][];
     for (int i = 0; i < size; i++)
@@ -358,7 +358,7 @@ public class DataCollector extends AbstractStandardMBean
    */
   public String[][] retrieveVirtualDatabasesData()
   {
-    ArrayList dbs = controller.getVirtualDatabases();
+    ArrayList<?> dbs = controller.getVirtualDatabases();
     int size = dbs.size();
     String[][] data = new String[size][4];
     VirtualDatabase db;

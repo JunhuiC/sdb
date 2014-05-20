@@ -171,7 +171,7 @@ public class FailFastPoolConnectionManager
       }
       else
       {
-        freeConnections.addLast(newConnection);
+        freeConnections.addLast((PooledConnection) newConnection);
         if (logger.isDebugEnabled())
           logger.debug(Translate.get("connection.replaced.success", c
               .toString()));

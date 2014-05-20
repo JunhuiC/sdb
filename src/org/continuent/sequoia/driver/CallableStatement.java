@@ -53,7 +53,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.continuent.sequoia.common.exceptions.NotImplementedException;
 import org.continuent.sequoia.common.protocol.PreparedStatementSerialization;
 import org.continuent.sequoia.common.sql.Request;
 import org.continuent.sequoia.common.sql.RequestWithResultSetParameters;
@@ -97,11 +96,11 @@ public class CallableStatement extends PreparedStatement
       java.sql.CallableStatement
 {
   // Values returned by out parameters
-  private HashMap outParameters             = null;
+  private HashMap<?, ?> outParameters             = null;
   // Out and named parameter types set by the application
-  private HashMap outAndNamedParameterTypes = null;
+  private HashMap<String, Object> outAndNamedParameterTypes = null;
   // Named parameter returned values
-  private HashMap namedParameterValues      = null;
+  private HashMap<?, ?> namedParameterValues      = null;
   private int     lastOutParameterIndex     = -1;
 
   /**
@@ -134,7 +133,7 @@ public class CallableStatement extends PreparedStatement
     
     // Append named parameters but reuse sbuf set by super.compileParameters()
     // for more efficiency
-    for (Iterator iter = outAndNamedParameterTypes.values().iterator(); iter
+    for (Iterator<?> iter = outAndNamedParameterTypes.values().iterator(); iter
         .hasNext();)
     {
       String namedParam = (String) iter.next();
@@ -146,7 +145,8 @@ public class CallableStatement extends PreparedStatement
   /**
    * @see org.continuent.sequoia.driver.PreparedStatement#execute()
    */
-  public boolean execute() throws SQLException
+  @SuppressWarnings("unchecked")
+public boolean execute() throws SQLException
   {
     if (isClosed())
     {
@@ -157,11 +157,11 @@ public class CallableStatement extends PreparedStatement
     setReadRequestParameters(proc);
     ResultAndWarnings result = connection.callableStatementExecute(proc);
     warnings = result.getStatementWarnings();
-    List resultWithParameters = result.getResultList();
-    resultList = (LinkedList) resultWithParameters.get(0);
+    List<?> resultWithParameters = result.getResultList();
+    resultList = (LinkedList<Object>) resultWithParameters.get(0);
     resultListIterator = resultList.iterator();
-    outParameters = (HashMap) resultWithParameters.get(1);
-    namedParameterValues = (HashMap) resultWithParameters.get(2);
+    outParameters = (HashMap<?, ?>) resultWithParameters.get(1);
+    namedParameterValues = (HashMap<?, ?>) resultWithParameters.get(2);
 
     return getMoreResults();
   }
@@ -199,13 +199,13 @@ public class CallableStatement extends PreparedStatement
             .callableStatementExecuteUpdate(proc);
         if (result.getStatementWarnings() != null)
           addWarningTo(result.getStatementWarnings(), allWarnings);
-        List resultWithParameters = result.getResultList();
+        List<?> resultWithParameters = result.getResultList();
         nbsRowsUpdated[i] = ((Integer) resultWithParameters.get(0)).intValue();
         // Not sure what to do with OUT and named parameters. Just keep them in
         // case someone wants to access the ones returned by the last executed
         // statement.
-        outParameters = (HashMap) resultWithParameters.get(1);
-        namedParameterValues = (HashMap) resultWithParameters.get(2);
+        outParameters = (HashMap<?, ?>) resultWithParameters.get(1);
+        namedParameterValues = (HashMap<?, ?>) resultWithParameters.get(2);
       }
       // make one chain with all generated warnings
       warnings = allWarnings;
@@ -250,10 +250,10 @@ public class CallableStatement extends PreparedStatement
     setReadRequestParameters(proc);
     ResultAndWarnings res = connection.callableStatementExecuteQuery(proc);
     warnings = res.getStatementWarnings();
-    List resultWithParameters = res.getResultList();
+    List<?> resultWithParameters = res.getResultList();
     result = (ResultSet) resultWithParameters.get(0);
-    outParameters = (HashMap) resultWithParameters.get(1);
-    namedParameterValues = (HashMap) resultWithParameters.get(2);
+    outParameters = (HashMap<?, ?>) resultWithParameters.get(1);
+    namedParameterValues = (HashMap<?, ?>) resultWithParameters.get(2);
     if (result instanceof DriverResultSet)
       ((DriverResultSet) result).setStatement(this);
     return result;
@@ -277,10 +277,10 @@ public class CallableStatement extends PreparedStatement
         timeout);
     ResultAndWarnings result = connection.callableStatementExecuteUpdate(proc);
     this.warnings = result.getStatementWarnings();
-    List resultWithParameters = result.getResultList();
+    List<?> resultWithParameters = result.getResultList();
     updateCount = ((Integer) resultWithParameters.get(0)).intValue();
-    outParameters = (HashMap) resultWithParameters.get(1);
-    namedParameterValues = (HashMap) resultWithParameters.get(2);
+    outParameters = (HashMap<?, ?>) resultWithParameters.get(1);
+    namedParameterValues = (HashMap<?, ?>) resultWithParameters.get(2);
 
     return updateCount;
   }
@@ -1172,7 +1172,7 @@ public class CallableStatement extends PreparedStatement
       String paramValue)
   {
     if (outAndNamedParameterTypes == null)
-      outAndNamedParameterTypes = new HashMap();
+      outAndNamedParameterTypes = new HashMap<String, Object>();
 
     /**
      * insert TAGS so the controller can parse and "unset" the request using
@@ -1197,7 +1197,7 @@ public class CallableStatement extends PreparedStatement
       String param)
   {
     if (outAndNamedParameterTypes == null)
-      outAndNamedParameterTypes = new HashMap();
+      outAndNamedParameterTypes = new HashMap<String, Object>();
 
     /**
      * insert TAGS so the controller can parse and "unset" the request using

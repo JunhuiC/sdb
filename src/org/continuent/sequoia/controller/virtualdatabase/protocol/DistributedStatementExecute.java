@@ -62,7 +62,7 @@ public class DistributedStatementExecute extends DistributedRequest
       throws SQLException
   {
     // Create a fake stored procedure
-    LinkedList totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
+    LinkedList<Object> totalOrderQueue = drm.getVirtualDatabase().getTotalOrderQueue();
     synchronized (totalOrderQueue)
     {
       totalOrderQueue.addLast(request);

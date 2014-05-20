@@ -54,7 +54,7 @@ public class VirtualDatabaseConsole extends AbstractConsoleModule
    * contains a hash of <String, SavePoint> to handle savepoints (used by
    * SetSavePoint and Rollback commands)
    */
-  private Hashtable           savePoints                 = new Hashtable();
+  private Hashtable<String, Savepoint>           savePoints                 = new Hashtable<String, Savepoint>();
 
   /** Default query timeout. */
   private int                 timeout                    = 0;

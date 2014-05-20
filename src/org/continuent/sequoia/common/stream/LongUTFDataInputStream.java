@@ -84,16 +84,11 @@ public class LongUTFDataInputStream extends DataInputStream
    */
   String readUTF8() throws IOException
   {
-    if (false) // old code (modified UTF-8). See SEQUOIA-133
-      return super.readUTF();
-    else
-    { // new code, real UTF8
-      int len = super.readInt();
+    int len = super.readInt();
       byte[] b = new byte[len];
       super.readFully(b);
       ByteBuffer bb = ByteBuffer.wrap(b); // no copy, nice.
       CharBuffer cb = utf8dec.decode(bb);
       return cb.toString();
-    }
   }
 }

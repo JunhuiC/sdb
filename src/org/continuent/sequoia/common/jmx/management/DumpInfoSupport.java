@@ -50,7 +50,7 @@ public class DumpInfoSupport
     "backendName",
     "tables"
   };
-  private static final OpenType[]    TYPES  = new OpenType[] {
+  private static final OpenType<?>[]    TYPES  = new OpenType[] {
     SimpleType.STRING,
     SimpleType.DATE,
     SimpleType.STRING,

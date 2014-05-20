@@ -73,7 +73,7 @@ public class VariablePoolConnectionManager
   private int                         waitTimeout;
 
   /** Stores the time on which connections have been released. */
-  private LinkedList                  releaseTimes;
+  private LinkedList<Long>                  releaseTimes;
 
   /** Allow to remove idle connections in the pool. */
   private RemoveIdleConnectionsThread removeIdleConnectionsThread;
@@ -232,8 +232,8 @@ public class VariablePoolConnectionManager
 
         // Intialize release time for the initial connections if an idleTimeout
         // is set
-        releaseTimes = new LinkedList();
-        Iterator it = freeConnections.iterator();
+        releaseTimes = new LinkedList<Long>();
+        Iterator<PooledConnection> it = freeConnections.iterator();
         Long currentTime = new Long(System.currentTimeMillis());
         while (it.hasNext())
         {

@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import org.continuent.sequoia.common.log.Trace;
 import org.continuent.sequoia.controller.requests.AbstractRequest;
 
+
 /**
  * This class defines a RequestResultFailoverCache.<br>
  * <br>
@@ -62,15 +63,15 @@ public class RequestResultFailoverCache implements Runnable
 
   // Request result cache
   // request ID -> result
-  private Map               requestIdResult        = new HashMap();
+  private Map<Long, CachedResult>               requestIdResult        = new HashMap<Long, CachedResult>();
 
   // Transaction ID to request ID mapping
   // transaction ID -> request ID
-  private Map               transactionIdRequestId = new HashMap();
+  private Map<Long, Long>               transactionIdRequestId = new HashMap<Long, Long>();
 
   // Connection ID to request ID mapping
   // connection ID -> request ID
-  private Map               connectionIdRequestId  = new HashMap();
+  private Map<Long, Long>               connectionIdRequestId  = new HashMap<Long, Long>();
 
   private boolean           isKilled               = false;
 
@@ -255,10 +256,10 @@ public class RequestResultFailoverCache implements Runnable
       long currentTimeMillis = System.currentTimeMillis();
 
       // Remove expired entries from the cache (iterate over request IDs)
-      for (Iterator iter = requestIdResult.entrySet().iterator(); iter
+      for (Iterator<?> iter = requestIdResult.entrySet().iterator(); iter
           .hasNext();)
       {
-        CachedResult cachedResult = (CachedResult) ((Entry) iter.next())
+        CachedResult cachedResult = (CachedResult) ((Entry<?, ?>) iter.next())
             .getValue();
         if ((currentTimeMillis > cachedResult.getExpirationDate()))
         {
@@ -270,10 +271,10 @@ public class RequestResultFailoverCache implements Runnable
       }
 
       // Iterate over transaction IDs
-      for (Iterator iter = transactionIdRequestId.entrySet().iterator(); iter
+      for (Iterator<?> iter = transactionIdRequestId.entrySet().iterator(); iter
           .hasNext();)
       {
-        Entry entry = (Entry) iter.next();
+        Entry<?, ?> entry = (Entry<?, ?>) iter.next();
         if (requestIdResult.get(entry.getValue()) == null)
         { // No more in the cache, the transaction has completed
           iter.remove();
@@ -284,10 +285,10 @@ public class RequestResultFailoverCache implements Runnable
       }
 
       // Iterate over connection IDs
-      for (Iterator iter = connectionIdRequestId.entrySet().iterator(); iter
+      for (Iterator<?> iter = connectionIdRequestId.entrySet().iterator(); iter
           .hasNext();)
       {
-        Entry entry = (Entry) iter.next();
+        Entry<?, ?> entry = (Entry<?, ?>) iter.next();
         if (requestIdResult.get(entry.getValue()) == null)
         { // No more in the cache, the connection is closed
           iter.remove();

@@ -68,7 +68,8 @@ public class RAIDb2PassThroughScheduler extends AbstractScheduler
    * 
    * @param vdb the virtual database we belong to
    */
-  public RAIDb2PassThroughScheduler(VirtualDatabase vdb)
+  @SuppressWarnings("deprecation")
+public RAIDb2PassThroughScheduler(VirtualDatabase vdb)
   {
     super(RAIDbLevels.RAIDb2, ParsingGranularities.NO_PARSING);
   }

@@ -75,11 +75,6 @@ public class LoggingOutputStream extends OutputStream
    */
   protected Priority            priority;
 
-  private LoggingOutputStream()
-  {
-    // illegal
-  }
-
   /**
    * Creates the LoggingOutputStream to flush to the given Category.
    * 

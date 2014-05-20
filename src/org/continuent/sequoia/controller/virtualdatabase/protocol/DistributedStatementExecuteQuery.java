@@ -60,7 +60,7 @@ public class DistributedStatementExecuteQuery extends DistributedRequest
   {
     if (((SelectRequest) request).isMustBroadcast())
     { // Total order queue is only needed for broadcasted select statements
-      LinkedList totalOrderQueue = drm.getVirtualDatabase()
+      LinkedList<Object> totalOrderQueue = drm.getVirtualDatabase()
           .getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {

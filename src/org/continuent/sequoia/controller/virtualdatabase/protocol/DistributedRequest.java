@@ -45,7 +45,11 @@ import org.continuent.sequoia.controller.virtualdatabase.DistributedVirtualDatab
 public abstract class DistributedRequest
     extends DistributedVirtualDatabaseMessage
 {
-  protected AbstractRequest request;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5341860189747169818L;
+protected AbstractRequest request;
 
   /**
    * Builds a new <code>DistributedRequest</code> object.

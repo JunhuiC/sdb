@@ -96,7 +96,7 @@ public class ControllerPingSender extends Thread
     {
       try
       {
-        for (Iterator it = controllers.getControllerIterator(); it.hasNext();)
+        for (Iterator<?> it = controllers.getControllerIterator(); it.hasNext();)
         {
           ControllerInfo ctrl = (ControllerInfo) it.next();
           sendPingTo(ctrl);

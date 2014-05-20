@@ -45,6 +45,7 @@ import com.sun.net.ssl.TrustManagerFactory;
  * @author <a href="mailto:marc.wick@monte-bre.ch">Marc Wick </a>
  * @version 1.0
  */
+@SuppressWarnings("deprecation")
 public class SocketFactoryFactory
 {
 

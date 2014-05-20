@@ -117,10 +117,10 @@ public class OctopusBackuper implements Backuper
   private static final String[] MSSQL          = {"microsoft", "microsoft",
       "MSQL", "jdbc:microsoft:sqlserver://"    };
 
-  static final Hashtable        TYPES;
+  static final Hashtable<String, String[]>        TYPES;
   static
   {
-    TYPES = new Hashtable();
+    TYPES = new Hashtable<String, String[]>();
     TYPES.put(HSQL[DB_NAME], HSQL);
     TYPES.put(CSV[DB_NAME], CSV);
     TYPES.put(MYSQL[DB_NAME], MYSQL);
@@ -158,7 +158,7 @@ public class OctopusBackuper implements Backuper
    *      java.lang.String, java.util.ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     logger.info(Translate.get("backup.manager.backuping.backend", new String[]{
         backend.getName(), dumpName}));
@@ -269,7 +269,7 @@ public class OctopusBackuper implements Backuper
    *      java.lang.String, java.util.ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     logger.info(Translate.get("backup.manager.restoring.backend", new String[]{
         backend.getName(), dumpName}));
@@ -464,7 +464,7 @@ public class OctopusBackuper implements Backuper
    * @throws OctopusException if octopus fails
    */
   private void launchOctopus(String octopusDir, String dumpName,
-      ArrayList tables) throws OctopusException
+      ArrayList<?> tables) throws OctopusException
   {
     try
     {
@@ -524,7 +524,7 @@ public class OctopusBackuper implements Backuper
     FileManagement.deleteDir(toRemove);
   }
 
-  private String[] convertTablesToArray(ArrayList tablesList)
+  private String[] convertTablesToArray(ArrayList<?> tablesList)
   {
     int length = tablesList.size();
     String[] result = new String[length];
@@ -581,7 +581,8 @@ public class OctopusBackuper implements Backuper
     return octopusDir + File.separator + "LoaderJob.olj";
   }
 
-  private PrintStream redirectOutputStream()
+  @SuppressWarnings("deprecation")
+private PrintStream redirectOutputStream()
   {
     PrintStream previousOut = System.out;
     System.setOut(new PrintStream(new LoggingOutputStream(Category

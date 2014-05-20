@@ -55,7 +55,7 @@ public class ControllerServerThread extends Thread
   /** Thread that responds to client pings */
   private PingResponder pingResponder;
   /** Pending queue of client (driver) socket connections */
-  protected ArrayList   controllerServerThreadPendingQueue = new ArrayList();
+  protected ArrayList<Socket>   controllerServerThreadPendingQueue = new ArrayList<Socket>();
   /**
    * Number of idle <code>ControllerWorkerThread</code>. Access to this
    * variable must be synchronized using pendingQueue.

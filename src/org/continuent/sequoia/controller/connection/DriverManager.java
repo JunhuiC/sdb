@@ -58,13 +58,13 @@ public class DriverManager
   /**
    * Driver class names read from default drivers, without driverPath
    */
-  private static Set defaultDrivers = new HashSet();
+  private static Set<String> defaultDrivers = new HashSet<String>();
 
   /**
    * We keep a reference to already loaded named drivers. Each named driver has
    * been loaded with a separate classloader.
    */
-  private static Map namedDrivers   = new HashMap();
+  private static Map<String, Driver> namedDrivers   = new HashMap<String, Driver>();
 
   /**
    * Attempts to establish a connection to the given database URL. The
@@ -107,11 +107,6 @@ public class DriverManager
         }
         catch (ClassNotFoundException e)
         {
-          if (driverClassName == null)
-          {
-            throw new SQLException(
-                "could not load driver as no class name is specified ");
-          }
           try
           {
             driverPathName = getDriversDir().getAbsolutePath();
@@ -280,7 +275,7 @@ public class DriverManager
     Class.forName(java.sql.DriverManager.class.getName(), true, loader);
 
     // load class
-    Class driverClass = Class.forName(driverClassName, true, loader);
+    Class<?> driverClass = Class.forName(driverClassName, true, loader);
 
     if (logger.isDebugEnabled())
       logger.debug(Translate.get("backend.driver.loaded", driverClassName));

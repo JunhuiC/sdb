@@ -155,7 +155,7 @@ public class ControllerParser extends DefaultHandler
 
       if (validator.getWarnings().size() > 0)
       {
-        ArrayList warnings = validator.getWarnings();
+        ArrayList<?> warnings = validator.getWarnings();
         for (int i = 0; i < warnings.size(); i++)
           logger.warn(Translate.get("virtualdatabase.xml.parsing.warning",
               warnings.get(i)));
@@ -166,7 +166,7 @@ public class ControllerParser extends DefaultHandler
       if (!validator.isXmlValid())
         logger.error(Translate.get("controller.xml.document.not.validated"));
 
-      ArrayList errors = validator.getExceptions();
+      ArrayList<?> errors = validator.getExceptions();
       for (int i = 0; i < errors.size(); i++)
         logger.error(((Exception) errors.get(i)).getMessage());
 
@@ -601,7 +601,8 @@ public class ControllerParser extends DefaultHandler
    * @param atts the parser attributes
    * @throws SAXException if an error occurs
    */
-  private void configureVirtualDatabase(Attributes atts) throws SAXException
+  @SuppressWarnings("deprecation")
+private void configureVirtualDatabase(Attributes atts) throws SAXException
   {
     String checkPoint = atts
         .getValue(ControllerXmlTags.ATT_VIRTUAL_DATABASE_CHECKPOINT);

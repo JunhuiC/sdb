@@ -43,7 +43,7 @@ public class BackendStatus extends DistributedVirtualDatabaseMessage
 {
   private static final long serialVersionUID = -537987250588460222L;
 
-  private List             /* <BackendInfo> */backendList;
+  private List             /* <BackendInfo> */<BackendInfo> backendList;
   private long              controllerId;
 
   /**
@@ -53,7 +53,7 @@ public class BackendStatus extends DistributedVirtualDatabaseMessage
    * @param controllerId the sending controller identifier
    * @see org.continuent.sequoia.common.jmx.management.BackendInfo
    */
-  public BackendStatus(List/* <BackendInfo> */ backends, long controllerId)
+  public BackendStatus(List/* <BackendInfo> */<BackendInfo> backends, long controllerId)
   {
     backendList = backends;
     this.controllerId = controllerId;
@@ -64,7 +64,7 @@ public class BackendStatus extends DistributedVirtualDatabaseMessage
    * 
    * @return a List&lt;BackendInfo&gt; of the remote controller BackendInfo
    */
-  public List/* <BackendInfo> */ getBackendInfos()
+  public List/* <BackendInfo> */<BackendInfo> getBackendInfos()
   {
     return backendList;
   }
@@ -98,7 +98,7 @@ public class BackendStatus extends DistributedVirtualDatabaseMessage
       Object handleMessageSingleThreadedResult)
   {
     // Update backend list from sender
-    List remoteBackends = BackendInfo.toDatabaseBackends(backendList);
+    List<DatabaseBackend> remoteBackends = BackendInfo.toDatabaseBackends(backendList);
     dvdb.addRemoteControllerId(sender, controllerId);
     dvdb.addBackendPerController(sender, remoteBackends);
     return new BackendStatus(

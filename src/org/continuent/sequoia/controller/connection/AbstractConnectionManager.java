@@ -97,13 +97,13 @@ public abstract class AbstractConnectionManager
   protected boolean                               isShutdown;
 
   /** Hastable of connections associated to a transaction (tid->Connection) */
-  private transient Hashtable                     connectionForTransaction;
+  private transient Hashtable<Long, PooledConnection>                     connectionForTransaction;
 
   /**
    * Hashtable&lt;Long, PooledConnection&gt; which associates a persistent
    * connection id (encapsulated in a Long) with a PooledConnection.
    */
-  protected transient Hashtable                   persistentConnections;
+  protected transient Hashtable<Long, PooledConnection>                   persistentConnections;
 
   /** Virtual Login used this connection manager */
   private String                                  vLogin;
@@ -113,12 +113,12 @@ public abstract class AbstractConnectionManager
   /**
    * Stores the time on which persistent connections have been last used.
    */
-  protected LinkedList                            persistentConnectionsIdleTime;
+  protected LinkedList<Long>                            persistentConnectionsIdleTime;
 
   /**
    * Stack of idle persistent connections
    */
-  protected LinkedList                            idlePersistentConnections;
+  protected LinkedList<PooledConnection>                            idlePersistentConnections;
 
   /**
    * Allow to check idle persistent connections against the backend.
@@ -187,15 +187,15 @@ public abstract class AbstractConnectionManager
     this.rPassword = rPassword;
     this.driverPath = driverPath;
     this.driverClassName = driverClassName;
-    connectionForTransaction = new Hashtable();
-    persistentConnections = new Hashtable();
+    connectionForTransaction = new Hashtable<Long, PooledConnection>();
+    persistentConnections = new Hashtable<Long, PooledConnection>();
 
     // Get the IDLE_PERSISTENT_CONNECTION_PING_INTERVAL and convert it in ms
     idlePersistentConnectionPingInterval = ControllerConstants.IDLE_PERSISTENT_CONNECTION_PING_INTERVAL * 1000;
     if (idlePersistentConnectionPingInterval > 0)
     {
-      this.idlePersistentConnections = new LinkedList();
-      this.persistentConnectionsIdleTime = new LinkedList();
+      this.idlePersistentConnections = new LinkedList<PooledConnection>();
+      this.persistentConnectionsIdleTime = new LinkedList<Long>();
     }
 
   }

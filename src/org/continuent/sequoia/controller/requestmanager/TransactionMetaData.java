@@ -59,7 +59,7 @@ public class TransactionMetaData implements Serializable
   /** Recovery log id of the last commit/rollback operation on this transaction */
   private transient long    logId;
   /** Map of Lists of locksMap taken by this task, indexed by backend */
-  private transient Map     locksMap                  = new HashMap();
+  private transient Map<DatabaseBackend, LinkedList<TransactionLogicalLock>>     locksMap                  = new HashMap<DatabaseBackend, LinkedList<TransactionLogicalLock>>();
   private transient boolean altersAggregateList       = false;
   private transient boolean altersDatabaseCatalog     = false;
   private transient boolean altersDatabaseSchema      = false;
@@ -104,10 +104,10 @@ public class TransactionMetaData implements Serializable
   public synchronized void addAcquiredLock(DatabaseBackend backend,
       TransactionLogicalLock lock)
   {
-    LinkedList acquiredLocks = (LinkedList) locksMap.get(backend);
+    LinkedList<TransactionLogicalLock> acquiredLocks = locksMap.get(backend);
     if (acquiredLocks == null)
     {
-      acquiredLocks = new LinkedList();
+      acquiredLocks = new LinkedList<TransactionLogicalLock>();
       locksMap.put(backend, acquiredLocks);
     }
     acquiredLocks.add(lock);
@@ -120,12 +120,12 @@ public class TransactionMetaData implements Serializable
    * @param backend backend acquiring the locks
    * @param locks the locks that have been acquired
    */
-  public synchronized void addAcquiredLocks(DatabaseBackend backend, List locks)
+  public synchronized void addAcquiredLocks(DatabaseBackend backend, List<TransactionLogicalLock> locks)
   {
-    LinkedList acquiredLocks = (LinkedList) locksMap.get(backend);
+    LinkedList<TransactionLogicalLock> acquiredLocks = locksMap.get(backend);
     if (acquiredLocks == null)
     {
-      acquiredLocks = new LinkedList();
+      acquiredLocks = new LinkedList<TransactionLogicalLock>();
       locksMap.put(backend, acquiredLocks);
     }
     acquiredLocks.addAll(locks);
@@ -228,9 +228,9 @@ public class TransactionMetaData implements Serializable
    * @param backend backend for which we want to retrieve to set of locks
    * @return the list of acquired locks for the given backend
    */
-  public List getAcquiredLocks(DatabaseBackend backend)
+  public List<?> getAcquiredLocks(DatabaseBackend backend)
   {
-    return (List) locksMap.get(backend);
+    return locksMap.get(backend);
   }
 
   /**
@@ -344,9 +344,9 @@ public class TransactionMetaData implements Serializable
    * @param backend backend which locks should be removed
    * @return the lock list or null if no lock were found for this backend
    */
-  public List removeBackendLocks(DatabaseBackend backend)
+  public List<?> removeBackendLocks(DatabaseBackend backend)
   {
-    return (List) locksMap.remove(backend);
+    return locksMap.remove(backend);
   }
 
   /**

@@ -100,7 +100,7 @@ public class PostgreSQLSplitPlainTextBackuper
    *      String, String, String, String, ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     // Parse the URL for the connection information
     String url = backend.getURL();
@@ -169,7 +169,7 @@ public class PostgreSQLSplitPlainTextBackuper
    *      String, String, String, String, ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     // Parse the URL for the connection information
     String url = backend.getURL();

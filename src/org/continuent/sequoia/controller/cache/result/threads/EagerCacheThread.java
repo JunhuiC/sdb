@@ -79,7 +79,7 @@ public final class EagerCacheThread extends Thread
     long now;
     long sleep;
     // Keep trace of relaxed cache entries to delete
-    ArrayList toRemoveFromEagerCache = new ArrayList();
+    ArrayList<ResultCacheEntryEager> toRemoveFromEagerCache = new ArrayList<ResultCacheEntryEager>();
     while (!isKilled)
     {
       synchronized (this)
@@ -96,7 +96,7 @@ public final class EagerCacheThread extends Thread
           else
           { // Look for first deadline
             now = System.currentTimeMillis();
-            for (Iterator iter = cache.getEagerCache().iterator(); iter
+            for (Iterator<?> iter = cache.getEagerCache().iterator(); iter
                 .hasNext();)
             {
               entry = (ResultCacheEntryEager) iter.next();

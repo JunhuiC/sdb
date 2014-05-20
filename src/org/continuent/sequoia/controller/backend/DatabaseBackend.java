@@ -162,10 +162,10 @@ public final class DatabaseBackend implements XmlComponent
   private boolean                        schemaIsDirty            = true;
 
   /** Connection managers for this backend. */
-  private transient Map                  connectionManagers;
+  private transient Map<String, AbstractConnectionManager>                  connectionManagers;
 
   /** List of persistent connections active for this backend (<persistentConnectionId,PooledConnection>) */
-  private Map                            persistentConnections;
+  private Map<Long, PooledConnection>                            persistentConnections;
 
   /** Logger instance. */
   protected transient Trace              logger;
@@ -174,22 +174,22 @@ public final class DatabaseBackend implements XmlComponent
    * ArrayList&lt;Long&gt; of active transactions on this backend (as opposed to
    * the transactions started on the virtual database managing this backend).
    */
-  private transient ArrayList            activeTransactions       = new ArrayList();
+  private transient ArrayList<Long>            activeTransactions       = new ArrayList<Long>();
 
   /** List of savepoints for each transaction */
-  private transient Map                  savepoints               = new HashMap();
+  private transient Map<Long, List<Savepoint>>                  savepoints               = new HashMap<Long, List<Savepoint>>();
 
   /** List of pending requests. */
-  private transient Vector               pendingRequests          = new Vector();
+  private transient Vector<AbstractRequest>               pendingRequests          = new Vector<AbstractRequest>();
 
   /** List of pending tasks. */
-  private transient Vector               pendingTasks             = new Vector();
+  private transient Vector<AbstractTask>               pendingTasks             = new Vector<AbstractTask>();
 
   /** Task queues to handle writes in RAIDb-1 or RAIDb-2 */
   private transient BackendTaskQueues    taskQueues               = null;
   /** List of BackendWorkerThread to execute write queries in RAIDb-1 or RAIDb-2 */
   private int                            nbOfWorkerThreads        = 5;
-  private ArrayList                      workerThreads            = null;
+  private ArrayList<BackendWorkerThread>                      workerThreads            = null;
   private final Object                   workerThreadSync         = new Object();
 
   /** Monitoring Values */
@@ -199,13 +199,13 @@ public final class DatabaseBackend implements XmlComponent
   private int                            totalTransactions;
 
   /** List of <code>AbstractRewritingRule</code> objects. */
-  private ArrayList                      rewritingRules;
+  private ArrayList<AbstractRewritingRule>                      rewritingRules;
 
   /** For metadata information generation */
   private int                            dynamicPrecision;
   private boolean                        gatherSystemTables       = false;
   private DatabaseProcedureSemantic      defaultStoredProcedureSemantic;
-  private HashMap                        storedProcedureSemantics = new HashMap();
+  private HashMap<String, DatabaseProcedureSemantic>                        storedProcedureSemantics = new HashMap<String, DatabaseProcedureSemantic>();
 
   private String                         schemaName               = null;
 
@@ -226,8 +226,6 @@ public final class DatabaseBackend implements XmlComponent
   private NotificationBroadcasterSupport notificationBroadcaster;
 
   private int                            notificationSequence     = 0;
-
-  private int                            totalTasks;
 
   private AbstractConnectionManager      defaultConnectionManager = null;
 
@@ -291,8 +289,8 @@ public final class DatabaseBackend implements XmlComponent
     this.virtualDatabaseName = vdbName;
     this.connectionTestStatement = connectionTestStatement;
     this.nbOfWorkerThreads = nbOfWorkerThreads;
-    this.connectionManagers = new HashMap();
-    this.persistentConnections = new HashMap();
+    this.connectionManagers = new HashMap<String, AbstractConnectionManager>();
+    this.persistentConnections = new HashMap<Long, PooledConnection>();
     this.driverCompliance = ControllerConstants.CONTROLLER_FACTORY
         .getDriverComplianceFactory().createDriverCompliance(logger);
     totalRequest = 0;
@@ -318,7 +316,7 @@ public final class DatabaseBackend implements XmlComponent
       SAXReader reader = new SAXReader();
       Document document = reader.read(sreader);
       Element root = document.getRootElement();
-      Iterator iter1 = root.elementIterator();
+      Iterator<?> iter1 = root.elementIterator();
       while (iter1.hasNext())
       {
         Element elem = (Element) iter1.next();
@@ -327,7 +325,7 @@ public final class DatabaseBackend implements XmlComponent
           String vuser = elem.valueOf("@" + DatabasesXmlTags.ATT_vLogin);
           String rlogin = elem.valueOf("@" + DatabasesXmlTags.ATT_rLogin);
           String rpassword = elem.valueOf("@" + DatabasesXmlTags.ATT_rPassword);
-          Iterator iter2 = elem.elementIterator();
+          Iterator<?> iter2 = elem.elementIterator();
           while (iter2.hasNext())
           {
             Element connectionManager = (Element) iter2.next();
@@ -436,7 +434,7 @@ public final class DatabaseBackend implements XmlComponent
    * @return <code>DatabaseBackend</code> instance
    * @throws Exception if cannot proceed the copy
    */
-  public DatabaseBackend copy(String newName, Map parameters) throws Exception
+  public DatabaseBackend copy(String newName, Map<?, ?> parameters) throws Exception
   {
     // Get the parameters from the backend if they are not specified, or take
     // them from the map of parameters otherwise.
@@ -477,8 +475,8 @@ public final class DatabaseBackend implements XmlComponent
     newBackend.rewritingRules = this.rewritingRules;
 
     // Set Connection managers
-    Map fromConnectionManagers = this.connectionManagers;
-    Iterator iter = fromConnectionManagers.keySet().iterator();
+    Map<String, AbstractConnectionManager> fromConnectionManagers = this.connectionManagers;
+    Iterator<String> iter = fromConnectionManagers.keySet().iterator();
 
     String vlogin = null;
     AbstractConnectionManager connectionManager;
@@ -601,7 +599,7 @@ public final class DatabaseBackend implements XmlComponent
           new String[]{name, url}));
 
     AbstractConnectionManager connectionManager;
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     connectionManager = (AbstractConnectionManager) iter.next();
 
     try
@@ -643,7 +641,7 @@ public final class DatabaseBackend implements XmlComponent
           name, url}));
 
     AbstractConnectionManager connectionManager;
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     while (iter.hasNext())
     {
       connectionManager = (AbstractConnectionManager) iter.next();
@@ -673,7 +671,7 @@ public final class DatabaseBackend implements XmlComponent
           name, url}));
 
     AbstractConnectionManager connectionManager;
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     while (iter.hasNext())
     {
       connectionManager = (AbstractConnectionManager) iter.next();
@@ -689,7 +687,7 @@ public final class DatabaseBackend implements XmlComponent
   public void flagAllConnectionsForRenewal()
   {
     AbstractConnectionManager connectionManager;
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     while (iter.hasNext())
     {
       connectionManager = (AbstractConnectionManager) iter.next();
@@ -984,7 +982,7 @@ public final class DatabaseBackend implements XmlComponent
    */
   public synchronized void shutdownConnectionManagers()
   {
-    for (Iterator iter = connectionManagers.values().iterator(); iter.hasNext();)
+    for (Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator(); iter.hasNext();)
     {
       AbstractConnectionManager cm = (AbstractConnectionManager) iter.next();
       if (cm.isInitialized())
@@ -1008,10 +1006,10 @@ public final class DatabaseBackend implements XmlComponent
   {
     synchronized (savepoints)
     {
-      List savepointList = (List) savepoints.get(tid);
+      List<Savepoint> savepointList = (List<Savepoint>) savepoints.get(tid);
       if (savepointList == null)
       { // Lazy list creation
-        savepointList = new ArrayList();
+        savepointList = new ArrayList<Savepoint>();
         savepoints.put(tid, savepointList);
       }
       savepointList.add(savepoint);
@@ -1032,11 +1030,11 @@ public final class DatabaseBackend implements XmlComponent
   {
     synchronized (savepoints)
     {
-      List savepointList = (List) savepoints.get(tid);
+      List<?> savepointList = (List<?>) savepoints.get(tid);
       if (savepointList == null)
         return null; // No checkpoint for that transaction
 
-      Iterator i = savepointList.iterator();
+      Iterator<?> i = savepointList.iterator();
       while (i.hasNext())
       {
         try
@@ -1082,7 +1080,7 @@ public final class DatabaseBackend implements XmlComponent
   {
     synchronized (savepoints)
     {
-      List savepointList = (List) savepoints.get(tid);
+      List<?> savepointList = (List<?>) savepoints.get(tid);
       if (savepointList == null)
         logger.error("No savepoints found for transaction " + tid);
       else
@@ -1434,7 +1432,7 @@ public final class DatabaseBackend implements XmlComponent
     if (connectionManagers.isEmpty())
       throw new SQLException(Translate.get("backend.null.connection.manager",
           new String[]{name, url}));
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     while (iter.hasNext())
     {
       if (!((AbstractConnectionManager) iter.next()).isInitialized())
@@ -1460,7 +1458,7 @@ public final class DatabaseBackend implements XmlComponent
             new String[]{name, url}));
 
       AbstractConnectionManager connectionManager;
-      Iterator iter = connectionManagers.values().iterator();
+      Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
       connectionManager = (AbstractConnectionManager) iter.next();
 
       con = connectionManager.getConnectionFromDriver();
@@ -1798,7 +1796,8 @@ public final class DatabaseBackend implements XmlComponent
    *          if not applicable)
    * @return true if compatible, false otherwise
    */
-  public synchronized boolean checkDatabaseSchema(Connection c)
+  @SuppressWarnings("unchecked")
+public synchronized boolean checkDatabaseSchema(Connection c)
   {
     if (logger.isDebugEnabled())
       logger.debug(Translate.get("backend.dynamic.schema",
@@ -1809,7 +1808,7 @@ public final class DatabaseBackend implements XmlComponent
     if (c == null)
     {
       AbstractConnectionManager connectionMananger;
-      Iterator iter = connectionManagers.values().iterator();
+      Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
       while (iter.hasNext())
       {
         connectionMananger = (AbstractConnectionManager) iter.next();
@@ -1888,7 +1887,7 @@ public final class DatabaseBackend implements XmlComponent
 
       if (defaultStoredProcedureSemantic != null)
       { // Apply default semantic to all stored procedures
-        for (Iterator iterator = schema.getProcedures().values().iterator(); iterator
+        for (Iterator<?> iterator = schema.getProcedures().values().iterator(); iterator
             .hasNext();)
         {
           DatabaseProcedure proc = (DatabaseProcedure) iterator.next();
@@ -1898,7 +1897,7 @@ public final class DatabaseBackend implements XmlComponent
       }
 
       // Apply specific stored procedure information
-      for (Iterator iterator = storedProcedureSemantics.keySet().iterator(); iterator
+      for (Iterator<String> iterator = storedProcedureSemantics.keySet().iterator(); iterator
           .hasNext();)
       {
         String procedureKey = (String) iterator.next();
@@ -1918,7 +1917,8 @@ public final class DatabaseBackend implements XmlComponent
           int paramCount = Integer.valueOf(
               procedureKey.substring(parenthesis + 1, procedureKey.indexOf(")",
                   parenthesis))).intValue();
-          ArrayList params = new ArrayList(paramCount);
+          @SuppressWarnings("rawtypes")
+		ArrayList params = new ArrayList(paramCount);
           for (int i = 0; i < paramCount; i++)
             params.add("Param" + i);
           proc.setParameters(params);
@@ -1953,7 +1953,7 @@ public final class DatabaseBackend implements XmlComponent
   public MetadataContainer getDatabaseStaticMetadata()
   {
     AbstractConnectionManager connectionMananger;
-    Iterator iter = connectionManagers.values().iterator();
+    Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
     if (iter.hasNext())
     {
       connectionMananger = (AbstractConnectionManager) iter.next();
@@ -2023,7 +2023,7 @@ public final class DatabaseBackend implements XmlComponent
    * @see org.continuent.sequoia.common.sql.schema.DatabaseSchema#addTable(DatabaseTable)
    * @return <code>Collection</code> of <code>DatabaseTable</code>
    */
-  public Collection getTables()
+  public Collection<? extends Object> getTables()
   {
     DatabaseSchema schemaPtr = getDatabaseSchema();
     if (schemaPtr == null)
@@ -2059,7 +2059,7 @@ public final class DatabaseBackend implements XmlComponent
    *          <code>String</code>) to look for
    * @return <code>true</code> if all the tables are found
    */
-  public boolean hasTables(Collection tables)
+  public boolean hasTables(Collection<?> tables)
   {
     DatabaseSchema schemaPtr = getDatabaseSchema();
     if (schemaPtr == null)
@@ -2068,7 +2068,7 @@ public final class DatabaseBackend implements XmlComponent
     if (tables == null)
       throw new IllegalArgumentException(Translate.get("backend.null.tables"));
 
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       if (!schemaPtr.hasTable((String) iter.next()))
         return false;
@@ -2292,7 +2292,7 @@ public final class DatabaseBackend implements XmlComponent
                */
               if (t.getDependingTables() != null)
               {
-                for (Iterator i = t.getDependingTables().iterator(); i
+                for (Iterator<?> i = t.getDependingTables().iterator(); i
                     .hasNext();)
                 {
                   String rtn = (String) i.next();
@@ -2331,9 +2331,9 @@ public final class DatabaseBackend implements XmlComponent
         if (dbs != null)
         {
           // DatabaseTable t = dbs.getTable(request.getTableName());
-          SortedSet tablesToRemove = ((DropRequest) request).getTablesToDrop();
+          SortedSet<?> tablesToRemove = ((DropRequest) request).getTablesToDrop();
           if (tablesToRemove != null)
-            for (Iterator iter = tablesToRemove.iterator(); iter.hasNext();)
+            for (Iterator<?> iter = tablesToRemove.iterator(); iter.hasNext();)
             {
               String tableToRemove = (String) iter.next();
               DatabaseTable t = dbs.getTable(tableToRemove);
@@ -2382,7 +2382,7 @@ public final class DatabaseBackend implements XmlComponent
   public void addRewritingRule(AbstractRewritingRule rule)
   {
     if (rewritingRules == null)
-      rewritingRules = new ArrayList();
+      rewritingRules = new ArrayList<AbstractRewritingRule>();
     if (logger.isDebugEnabled())
       logger.debug(Translate.get("backend.rewriting.rule.add", new String[]{
           rule.getQueryPattern(), rule.getRewrite()}));
@@ -2466,7 +2466,6 @@ public final class DatabaseBackend implements XmlComponent
   {
     synchronized (pendingTasks)
     {
-      totalTasks++;
       pendingTasks.add(task);
     }
   }
@@ -2482,7 +2481,7 @@ public final class DatabaseBackend implements XmlComponent
   {
     synchronized (pendingTasks)
     {
-      for (Iterator iter = pendingTasks.iterator(); iter.hasNext();)
+      for (Iterator<AbstractTask> iter = pendingTasks.iterator(); iter.hasNext();)
       {
         AbstractTask task = (AbstractTask) iter.next();
 
@@ -2516,7 +2515,7 @@ public final class DatabaseBackend implements XmlComponent
   /**
    * @return Returns the activeTransactions.
    */
-  public ArrayList getActiveTransactions()
+  public ArrayList<Long> getActiveTransactions()
   {
     return activeTransactions;
   }
@@ -2617,7 +2616,7 @@ public final class DatabaseBackend implements XmlComponent
    * @return <code>Vector</code> of <code>AbstractRequests</code> or
    *         <code>AbstractTask</code> objects
    */
-  public Vector getPendingRequests()
+  public Vector<AbstractRequest> getPendingRequests()
   {
     return pendingRequests;
   }
@@ -2632,12 +2631,12 @@ public final class DatabaseBackend implements XmlComponent
    * @return <code>ArrayList</code> of <code>String</code> description of
    *         each request.
    */
-  public ArrayList getPendingRequestsDescription(int count, boolean fromFirst,
+  public ArrayList<String> getPendingRequestsDescription(int count, boolean fromFirst,
       boolean clone)
   {
     int size = pendingRequests.size();
     int limit = (count == 0 || count > size) ? size : Math.min(size, count);
-    ArrayList list = new ArrayList(limit);
+    ArrayList<String> list = new ArrayList<String>(limit);
     int start = (fromFirst) ? 0 : Math.min(limit - count, 0);
     if (!clone)
     {
@@ -2650,7 +2649,8 @@ public final class DatabaseBackend implements XmlComponent
     }
     else
     {
-      Vector cloneVector = (Vector) pendingRequests.clone();
+      @SuppressWarnings("unchecked")
+	Vector<AbstractRequest> cloneVector = (Vector<AbstractRequest>) pendingRequests.clone();
       for (int i = start; i < limit; i++)
         list.add(cloneVector.get(i).toString());
       return list;
@@ -2666,7 +2666,7 @@ public final class DatabaseBackend implements XmlComponent
   public long getTotalActiveConnections()
   {
     int activeConnections = 0;
-    Iterator iter = connectionManagers.keySet().iterator();
+    Iterator<String> iter = connectionManagers.keySet().iterator();
     while (iter.hasNext())
       activeConnections += ((AbstractConnectionManager) connectionManagers
           .get(iter.next())).getCurrentNumberOfConnections();
@@ -2889,7 +2889,7 @@ public final class DatabaseBackend implements XmlComponent
       if (connectionManagers.isEmpty() == false)
       {
         AbstractConnectionManager connectionManager;
-        Iterator iter = connectionManagers.values().iterator();
+        Iterator<AbstractConnectionManager> iter = connectionManagers.values().iterator();
         while (iter.hasNext())
         {
           connectionManager = (AbstractConnectionManager) iter.next();
@@ -3022,7 +3022,7 @@ public final class DatabaseBackend implements XmlComponent
                 String.valueOf(nbOfWorkerThreads), name}));
 
       if (workerThreads == null)
-        workerThreads = new ArrayList();
+        workerThreads = new ArrayList<BackendWorkerThread>();
       // Create worker threads
       for (int i = 0; i < nbOfWorkerThreads; i++)
       {
@@ -3071,7 +3071,7 @@ public final class DatabaseBackend implements XmlComponent
 
       if (wait)
         // Wait for thread termination
-        for (Iterator iter = workerThreads.iterator(); iter.hasNext();)
+        for (Iterator<BackendWorkerThread> iter = workerThreads.iterator(); iter.hasNext();)
         {
           BackendWorkerThread thread = (BackendWorkerThread) iter.next();
           if (thread != Thread.currentThread())
@@ -3123,15 +3123,15 @@ public final class DatabaseBackend implements XmlComponent
    *         if the list of backends was <code>null</code>
    * @see BackendInfo#toDatabaseBackends(List)
    */
-  public static/* <BackendInfo> */List toBackendInfos(
-  /* <DatabaseBackend> */List backends)
+  public static/* <BackendInfo> */List<BackendInfo> toBackendInfos(
+  /* <DatabaseBackend> */List<?> backends)
   {
     if (backends == null)
     {
-      return new ArrayList();
+      return new ArrayList<BackendInfo>();
     }
-    List backendInfos = new ArrayList(backends.size());
-    for (Iterator iter = backends.iterator(); iter.hasNext();)
+    List<BackendInfo> backendInfos = new ArrayList<BackendInfo>(backends.size());
+    for (Iterator<?> iter = backends.iterator(); iter.hasNext();)
     {
       DatabaseBackend backend = (DatabaseBackend) iter.next();
       BackendInfo backendInfo = new BackendInfo(backend);

@@ -153,7 +153,7 @@ public class SequoiaRequestFactory extends RequestFactory
    *      java.util.List)
    */
   public boolean checkIfSelectRequiresBroadcast(String sqlQuery,
-      List functionsList)
+      List<?> functionsList)
   {
     return false;
   }

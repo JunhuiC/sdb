@@ -42,7 +42,7 @@ public class ResultAndWarnings
   private SQLWarning statementWarnings = null;
 
   private int        updateCount       = -1;
-  private List       resultList        = null;
+  private List<?>       resultList        = null;
 
   /**
    * Constructs a <code>ResultAndWarning</code> that will hold an updateCount
@@ -72,7 +72,7 @@ public class ResultAndWarnings
    * @see Connection#statementExecute(org.continuent.sequoia.common.sql.RequestWithResultSetParameters)
    * @see Connection#callableStatementExecute(org.continuent.sequoia.common.sql.RequestWithResultSetParameters)
    */
-  ResultAndWarnings(List reslist, SQLWarning warns)
+  ResultAndWarnings(List<?> reslist, SQLWarning warns)
   {
     statementWarnings = warns;
     resultList = reslist;
@@ -106,7 +106,7 @@ public class ResultAndWarnings
    * 
    * @return the resultList value
    */
-  List getResultList()
+  List<?> getResultList()
   {
     return resultList;
   }

@@ -65,8 +65,8 @@ public class ControllerShutdownHook extends Thread {
     logger.info(msg);
 	  
     // Shut down all virtual databases, safely.
-    ArrayList databases = controller.getVirtualDatabases();
-    for (Iterator i = databases.iterator(); i.hasNext();) {
+    ArrayList<?> databases = controller.getVirtualDatabases();
+    for (Iterator<?> i = databases.iterator(); i.hasNext();) {
       VirtualDatabase db = (VirtualDatabase)i.next();
       if (!db.isShuttingDown())
         db.shutdown(Constants.SHUTDOWN_SAFE);

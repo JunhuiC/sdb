@@ -60,7 +60,7 @@ public class RAIDb1OptimisticQueryLevelScheduler extends AbstractScheduler
   // 5. Debug/Monitoring
   //
 
-  private HashSet completedWrites = new HashSet(); // set of tids
+  private HashSet<Long> completedWrites = new HashSet<Long>(); // set of tids
 
   //
   // Constructor

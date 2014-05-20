@@ -43,7 +43,11 @@ public abstract class DistributedTransactionMarker
     extends DistributedVirtualDatabaseMessage
 {
 
-  protected long transactionId;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5734357535156217196L;
+protected long transactionId;
 
   /**
    * Creates a new <code>DistributedTransactionMarker</code> object

@@ -155,14 +155,14 @@ public class RAIDb0 extends AbstractLoadBalancer
     try
     {
       ControllerResultSet rs = null;
-      Collection fromTables = request.getFrom();
+      Collection<?> fromTables = request.getFrom();
 
       if (fromTables == null)
         throw new SQLException(Translate.get("loadbalancer.from.not.found",
             request.getSqlShortForm(vdb.getSqlShortFormLength())));
 
       // Find the backend that has the needed tables
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
       int enabledBackends = 0;
 
@@ -193,7 +193,7 @@ public class RAIDb0 extends AbstractLoadBalancer
       {
         logger.debug("Backend " + backend.getName()
             + " has all tables which are:");
-        for (Iterator iter = fromTables.iterator(); iter.hasNext();)
+        for (Iterator<?> iter = fromTables.iterator(); iter.hasNext();)
           logger.debug(iter.next());
       }
 
@@ -275,7 +275,7 @@ public class RAIDb0 extends AbstractLoadBalancer
                 .getSqlShortForm(vdb.getSqlShortFormLength())));
 
       // Find the backend that has the needed table
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       DatabaseBackend backend = null;
@@ -288,7 +288,7 @@ public class RAIDb0 extends AbstractLoadBalancer
           rule = createTablePolicy.getDefaultRule();
 
         // Ask the rule to pickup a backend
-        ArrayList choosen;
+        ArrayList<?> choosen;
         try
         {
           choosen = rule.getBackends(backends);
@@ -497,7 +497,7 @@ public class RAIDb0 extends AbstractLoadBalancer
                 .getSqlShortForm(vdb.getSqlShortFormLength())));
 
       // Find the backend that has the needed table
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       DatabaseBackend backend = null;
@@ -510,7 +510,7 @@ public class RAIDb0 extends AbstractLoadBalancer
           rule = createTablePolicy.getDefaultRule();
 
         // Ask the rule to pickup a backend
-        ArrayList choosen;
+        ArrayList<?> choosen;
         try
         {
           choosen = rule.getBackends(backends);
@@ -1251,7 +1251,7 @@ public class RAIDb0 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to commit this transaction
-    ArrayList commitList = new ArrayList(nbOfThreads);
+    ArrayList<DatabaseBackend> commitList = new ArrayList<DatabaseBackend>(nbOfThreads);
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1294,7 +1294,7 @@ public class RAIDb0 extends AbstractLoadBalancer
         if (recoveryLog != null)
           recoveryLog.logRequestCompletion(logId, false, 0);
 
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.commit.all.failed", tid));
@@ -1333,7 +1333,7 @@ public class RAIDb0 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList rollbackList = new ArrayList();
+    ArrayList<DatabaseBackend> rollbackList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1376,7 +1376,7 @@ public class RAIDb0 extends AbstractLoadBalancer
         if (recoveryLog != null)
           recoveryLog.logRequestCompletion(logId, false, 0);
 
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.rollback.all.failed", tid));
@@ -1417,7 +1417,7 @@ public class RAIDb0 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList rollbackList = new ArrayList();
+    ArrayList<DatabaseBackend> rollbackList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1460,7 +1460,7 @@ public class RAIDb0 extends AbstractLoadBalancer
         if (recoveryLog != null)
           recoveryLog.logRequestCompletion(logId, false, 0);
 
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.rollbacksavepoint.all.failed", new String[]{
@@ -1504,7 +1504,7 @@ public class RAIDb0 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList savepointList = new ArrayList();
+    ArrayList<DatabaseBackend> savepointList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1547,7 +1547,7 @@ public class RAIDb0 extends AbstractLoadBalancer
         if (recoveryLog != null)
           recoveryLog.logRequestCompletion(logId, false, 0);
 
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.releasesavepoint.all.failed", new String[]{
@@ -1590,7 +1590,7 @@ public class RAIDb0 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList savepointList = new ArrayList();
+    ArrayList<DatabaseBackend> savepointList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1633,7 +1633,7 @@ public class RAIDb0 extends AbstractLoadBalancer
         if (recoveryLog != null)
           recoveryLog.logRequestCompletion(logId, false, 0);
 
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.setsavepoint.all.failed", new String[]{

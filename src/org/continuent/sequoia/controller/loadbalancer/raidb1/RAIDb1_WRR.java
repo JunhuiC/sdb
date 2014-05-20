@@ -73,7 +73,7 @@ public class RAIDb1_WRR extends RAIDb1
   // 4. Debug/Monitoring
   //
 
-  private HashMap weights = new HashMap();
+  private HashMap<String, Integer> weights = new HashMap<String, Integer>();
   private int     currentWeight;
 
   /*
@@ -179,7 +179,7 @@ public class RAIDb1_WRR extends RAIDb1
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)

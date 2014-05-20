@@ -216,7 +216,7 @@ public class InsertRequest extends AbstractWriteRequest implements Serializable
     if (schema == null)
     {
       // Lock this table in write
-      writeLockedTables = new TreeSet();
+      writeLockedTables = new TreeSet<String>();
       writeLockedTables.add(insertTable);
       isParsed = true;
       // and stop parsing
@@ -231,7 +231,7 @@ public class InsertRequest extends AbstractWriteRequest implements Serializable
       tableName = t.getName();
 
     // Lock this table in write
-    writeLockedTables = new TreeSet();
+    writeLockedTables = new TreeSet<String>();
     writeLockedTables.add(tableName);
     addDependingTables(schema, writeLockedTables);
 
@@ -246,7 +246,7 @@ public class InsertRequest extends AbstractWriteRequest implements Serializable
         // get all column names
         StringTokenizer columnTokens = new StringTokenizer(strColumns, ",");
 
-        this.columns = new ArrayList();
+        this.columns = new ArrayList<TableColumn>();
         DatabaseColumn col = null;
         while (columnTokens.hasMoreTokens())
         {
@@ -267,8 +267,8 @@ public class InsertRequest extends AbstractWriteRequest implements Serializable
       else
       {
         // All columns are affected
-        this.columns = new ArrayList();
-        ArrayList cols = t.getColumns();
+        this.columns = new ArrayList<TableColumn>();
+        ArrayList<?> cols = t.getColumns();
         int size = cols.size();
         for (int j = 0; j < size; j++)
         {

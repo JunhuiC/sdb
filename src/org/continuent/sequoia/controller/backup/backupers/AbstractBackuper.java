@@ -35,7 +35,7 @@ import org.continuent.sequoia.controller.backup.DumpTransferInfo;
  */
 public abstract class AbstractBackuper implements Backuper
 {
-  protected HashMap optionsMap    = new HashMap();
+  protected HashMap<String, String> optionsMap    = new HashMap<String, String>();
   protected String  optionsString = null;
 
   /**

@@ -41,8 +41,8 @@ import org.continuent.sequoia.controller.requests.AbstractRequest;
  */
 public class SQLMonitoring extends Monitoring
 {
-  private Hashtable    statList;     // SQL query -> Stat
-  private ArrayList    ruleList;
+  private Hashtable<String, Stats>    statList;     // SQL query -> Stat
+  private ArrayList<SQLMonitoringRule>    ruleList;
   private boolean      defaultRule;
 
   private static Trace logger = null;
@@ -54,8 +54,8 @@ public class SQLMonitoring extends Monitoring
    */
   public SQLMonitoring(String vdbName)
   {
-    statList = new Hashtable();
-    ruleList = new ArrayList();
+    statList = new Hashtable<String, Stats>();
+    ruleList = new ArrayList<SQLMonitoringRule>();
     logger = Trace.getLogger("org.continuent.sequoia.controller.monitoring."
         + vdbName);
     setActive(true);
@@ -161,10 +161,10 @@ public class SQLMonitoring extends Monitoring
    */
   public String[][] getAllStatsInformation()
   {
-    Collection values = statList.values();
+    Collection<Stats> values = statList.values();
     String[][] result = new String[values.size()][];
     int i = 0;
-    for (Iterator iter = values.iterator(); iter.hasNext(); i++)
+    for (Iterator<Stats> iter = values.iterator(); iter.hasNext(); i++)
     {
       Stats stat = (Stats) iter.next();
       result[i] = stat.toStringTable();
@@ -179,7 +179,7 @@ public class SQLMonitoring extends Monitoring
   {
     if (logger.isInfoEnabled())
     {
-      for (Iterator iter = statList.values().iterator(); iter.hasNext();)
+      for (Iterator<Stats> iter = statList.values().iterator(); iter.hasNext();)
       {
         Stats stat = (Stats) iter.next();
         logger.info(stat.singleLineDisplay());
@@ -253,7 +253,7 @@ public class SQLMonitoring extends Monitoring
   /**
    * @return Returns the ruleList.
    */
-  public ArrayList getRuleList()
+  public ArrayList<SQLMonitoringRule> getRuleList()
   {
     return ruleList;
   }

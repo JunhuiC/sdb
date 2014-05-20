@@ -52,8 +52,8 @@ public class NativeCommandExec
                                                    .getName());
 
   // Output from most recent command execution.
-  ArrayList                stdout;
-  ArrayList                stderr;
+  ArrayList<?>                stdout;
+  ArrayList<?>                stderr;
 
   // Defines a class to hold native commands, be they array or a simple string.
   class NativeCommand
@@ -121,7 +121,7 @@ public class NativeCommandExec
    * 
    * @return stdout contents (may be truncated)
    */
-  public ArrayList getStdout()
+  public ArrayList<?> getStdout()
   {
     return stdout;
   }
@@ -131,7 +131,7 @@ public class NativeCommandExec
    * 
    * @return stderr contents (may be truncated)
    */
-  public ArrayList getStderr()
+  public ArrayList<?> getStderr()
   {
     return stderr;
   }
@@ -141,8 +141,8 @@ public class NativeCommandExec
    */
   public void initOutput()
   {
-    stdout = new ArrayList();
-    stderr = new ArrayList();
+    stdout = new ArrayList<Object>();
+    stderr = new ArrayList<Object>();
   }
 
   /**
@@ -497,7 +497,7 @@ public class NativeCommandExec
    * @param name Output type e.g., stdout or stderr
    * @param outArray List of lines of output
    */
-  protected void log(String name, ArrayList outArray)
+  protected void log(String name, ArrayList<?> outArray)
   {
     StringWriter sw = new StringWriter();
     BufferedWriter writer = new BufferedWriter(sw);

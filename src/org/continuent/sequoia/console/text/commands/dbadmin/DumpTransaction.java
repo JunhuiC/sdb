@@ -67,7 +67,7 @@ public class DumpTransaction extends AbstractAdminCommand
       return;
     }
 
-    List entries = JMXUtils.sortEntriesByKey(logEntries, idKey);
+    List<?> entries = JMXUtils.sortEntriesByKey(logEntries, idKey);
     String[][] entriesStr = JMXUtils.from(entries, headers);
     console.println(TableFormatter.format(headers, entriesStr, true));
 

@@ -55,7 +55,7 @@ public class RAIDb2ec_RR extends RAIDb2ec
    * Request handling 4. Debug/Monitoring
    */
 
-  private Vector backends;
+  private Vector<?> backends;
 
   /*
    * Constructors

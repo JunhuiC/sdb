@@ -61,7 +61,7 @@ public class FlushGroupCommunicationMessages
   public Object handleMessageSingleThreaded(DistributedVirtualDatabase dvdb,
       Member sender)
   {
-    LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+    LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
     synchronized (totalOrderQueue)
     {
       totalOrderQueue.addLast(this);

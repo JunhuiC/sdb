@@ -67,7 +67,8 @@ public class SingleDBPessimisticTransactionLevelScheduler
   /**
    * Creates a new Pessimistic Transaction Level Scheduler
    */
-  public SingleDBPessimisticTransactionLevelScheduler()
+  @SuppressWarnings("deprecation")
+public SingleDBPessimisticTransactionLevelScheduler()
   {
     super(RAIDbLevels.SingleDB, ParsingGranularities.NO_PARSING);
   }

@@ -36,7 +36,11 @@ import org.continuent.sequoia.common.exceptions.DataCollectorException;
  */
 public abstract class AbstractDataCollector implements Serializable
 {
-  protected transient Object controller;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2560371706584192457L;
+protected transient Object controller;
 
   /**
    * This is used on the controller side to collect information

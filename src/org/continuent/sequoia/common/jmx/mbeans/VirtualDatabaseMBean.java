@@ -40,6 +40,7 @@ import org.continuent.sequoia.common.jmx.monitoring.backend.BackendStatistics;
  * @author <A href="mailto:Nicolas.Modrzyk@inrialpes.fr">Nicolas Modrzyk </a>
  * @author <A href="mailto:Stephane.Giron@continuent.com">Stephane Giron </a>
  * @version 1.0
+ * @param <E>
  */
 public interface VirtualDatabaseMBean
 {
@@ -139,7 +140,7 @@ public interface VirtualDatabaseMBean
    *         database backend names
    * @throws VirtualDatabaseException if an error occurs
    */
-  List getAllBackendNames() throws VirtualDatabaseException;
+  List<?> getAllBackendNames() throws VirtualDatabaseException;
 
   /**
    * Add an additionnal backend to the virtual database with connection managers
@@ -152,7 +153,7 @@ public interface VirtualDatabaseMBean
    * @throws VirtualDatabaseException if cannot replicate backend
    */
   void replicateBackend(String backendName, String newBackendName,
-      Map parameters) throws VirtualDatabaseException;
+      Map<?, ?> parameters) throws VirtualDatabaseException;
 
   /**
    * Transfer the backend to the destinated controller. Note that this does
@@ -249,7 +250,7 @@ public interface VirtualDatabaseMBean
    */
   void backupBackend(String backendName, String login, String password,
       String dumpName, String backuperName, String path, boolean force,
-      ArrayList tables) throws VirtualDatabaseException;
+      ArrayList<?> tables) throws VirtualDatabaseException;
 
   /**
    * This is backupBackend(force=true).
@@ -260,7 +261,7 @@ public interface VirtualDatabaseMBean
    * @deprecated use method with explicit option force.
    */
   void backupBackend(String backendName, String login, String password,
-      String dumpName, String backuperName, String path, ArrayList tables)
+      String dumpName, String backuperName, String path, ArrayList<?> tables)
       throws VirtualDatabaseException;
 
   /**
@@ -324,7 +325,7 @@ public interface VirtualDatabaseMBean
    * @throws VirtualDatabaseException if the restore operation failed
    */
   void restoreDumpOnBackend(String databaseBackendName, String login,
-      String password, String dumpName, ArrayList tables)
+      String password, String dumpName, ArrayList<?> tables)
       throws VirtualDatabaseException;
 
   /**

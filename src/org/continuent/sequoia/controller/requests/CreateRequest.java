@@ -62,7 +62,7 @@ public class CreateRequest extends AbstractWriteRequest implements Serializable
    * List of tables used to fill the created table in case of create query
    * containing a select.
    */
-  protected transient Collection    fromTables                = null;
+  protected transient Collection<?>    fromTables                = null;
 
   // Be conservative, if we cannot parse the query, assumes it invalidates
   // everything
@@ -210,7 +210,7 @@ public class CreateRequest extends AbstractWriteRequest implements Serializable
    * 
    * @return <code>Collection</code> of tables
    */
-  public Collection getFromTables()
+  public Collection<?> getFromTables()
   {
     return fromTables;
   }
@@ -365,7 +365,7 @@ public class CreateRequest extends AbstractWriteRequest implements Serializable
         // no parenthesis found
         table = new DatabaseTable(sql.trim());
         if (granularity > ParsingGranularities.TABLE)
-          columns = new ArrayList();
+          columns = new ArrayList<TableColumn>();
         isParsed = true;
         return;
       }
@@ -384,7 +384,7 @@ public class CreateRequest extends AbstractWriteRequest implements Serializable
       // Get the column names
       if (granularity > ParsingGranularities.TABLE)
       {
-        columns = new ArrayList();
+        columns = new ArrayList<TableColumn>();
         sql = sql.substring(openParenthesisIdx + 1, closeParenthesisIdx).trim();
         StringTokenizer columnTokens = new StringTokenizer(sql, ",");
         String word;

@@ -46,7 +46,7 @@ public class CreateTablePolicy implements XmlComponent
   public static final int ALL         = 2;
 
   /** List of backends to wait for. */
-  private HashMap         ruleList    = new HashMap();
+  private HashMap<String, CreateTableRule>         ruleList    = new HashMap<String, CreateTableRule>();
 
   /**
    * Adds a rule to this policy. <br>
@@ -65,7 +65,7 @@ public class CreateTablePolicy implements XmlComponent
    * 
    * @return Hashmap
    */
-  public HashMap getRuleList()
+  public HashMap<String, CreateTableRule> getRuleList()
   {
     return ruleList;
   }
@@ -123,7 +123,7 @@ public class CreateTablePolicy implements XmlComponent
   public String getXml()
   {
     StringBuffer info = new StringBuffer();
-    for (Iterator iterator = ruleList.keySet().iterator(); iterator.hasNext();)
+    for (Iterator<String> iterator = ruleList.keySet().iterator(); iterator.hasNext();)
       info.append(((CreateTableRule) ruleList.get(iterator.next())).getXml());
     return info.toString();
   }

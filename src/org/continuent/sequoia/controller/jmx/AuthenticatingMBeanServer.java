@@ -104,8 +104,8 @@ public class AuthenticatingMBeanServer extends ChainedMBeanServer
       }
       else
       {
-        Set principals = subject.getPrincipals(AbstractDatabaseUser.class);
-        for (Iterator it = principals.iterator(); it.hasNext();)
+        Set<AbstractDatabaseUser> principals = subject.getPrincipals(AbstractDatabaseUser.class);
+        for (Iterator<AbstractDatabaseUser> it = principals.iterator(); it.hasNext();)
         {
           AbstractDatabaseUser user = (AbstractDatabaseUser) it.next();
           username = user.getName();
@@ -180,16 +180,16 @@ public class AuthenticatingMBeanServer extends ChainedMBeanServer
 
   private static Object[] cleanO(Object[] params)
   {
-    List o = Arrays.asList(params);
+    List<Object> o = Arrays.asList(params);
     o = o.subList(2, o.size());
-    return (new ArrayList(o).toArray());
+    return (new ArrayList<Object>(o).toArray());
   }
 
   private static String[] cleanS(String[] params)
   {
-    List o = Arrays.asList(params);
+    List<String> o = Arrays.asList(params);
     o = o.subList(2, o.size());
     String[] s = new String[o.size()];
-    return (String[]) new ArrayList(o).toArray(s);
+    return (String[]) new ArrayList<String>(o).toArray(s);
   }
 }

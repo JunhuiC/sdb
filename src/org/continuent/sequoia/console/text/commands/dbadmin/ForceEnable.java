@@ -66,7 +66,7 @@ public class ForceEnable extends AbstractAdminCommand
 
     if (("*").equals(commandText.trim())) //$NON-NLS-1$
     {
-      List backendNamesList = vjdc.getAllBackendNames();
+      List<?> backendNamesList = vjdc.getAllBackendNames();
       backendNames = (String[]) backendNamesList
           .toArray(new String[backendNamesList.size()]);
     }

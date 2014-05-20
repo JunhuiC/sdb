@@ -58,7 +58,7 @@ public abstract class AbstractConsoleModule
 {
   Console                     console;
 
-  TreeSet                     commands;
+  TreeSet<ConsoleCommand>                     commands;
 
   boolean                     quit                            = false;
 
@@ -77,7 +77,7 @@ public abstract class AbstractConsoleModule
   public AbstractConsoleModule(Console console)
   {
     this.console = console;
-    this.commands = new TreeSet();
+    this.commands = new TreeSet<ConsoleCommand>();
     commands.add(new Help(this));
     commands.add(new History(this));
     commands.add(new Quit(this));
@@ -126,16 +126,16 @@ public abstract class AbstractConsoleModule
    *          to instantiate
    * @param commands Set where the commands are added
    */
-  protected void addCommands(String[] commandClasses, Set commands)
+  protected void addCommands(String[] commandClasses, Set<ConsoleCommand> commands)
   {
     for (int i = 0; i < commandClasses.length; i++)
     {
       String commandClass = commandClasses[i].trim();
-      Class clazz;
+      Class<?> clazz;
       try
       {
         clazz = Class.forName(commandClass);
-        Constructor constructor;
+        Constructor<?> constructor;
         try
         {
           constructor = clazz.getConstructor(new Class[]{this.getClass()});
@@ -194,22 +194,22 @@ public abstract class AbstractConsoleModule
    */
   protected void loadCompletor()
   {
-    List completors = new LinkedList();
+    List<Completor> completors = new LinkedList<Completor>();
     int size = commands.size();
     if (size > 0)
     {
-      TreeSet set = new TreeSet();
-      Iterator it = commands.iterator();
+      TreeSet<String> set = new TreeSet<String>();
+      Iterator<ConsoleCommand> it = commands.iterator();
       while (it.hasNext())
       {
-        set.add(((ConsoleCommand) it.next()).getCommandName());
+        set.add(it.next().getCommandName());
       }
-      completors.add(new SimpleCompletor((String[]) set
+      completors.add(new SimpleCompletor(set
           .toArray(new String[size])));
     }
     completors.add(new FileNameCompletor());
 
-    Completor[] completorsArray = (Completor[]) completors
+    Completor[] completorsArray = completors
         .toArray(new Completor[completors.size()]);
     consoleCompletor = new ArgumentCompletor(completorsArray,
         new CommandDelimiter());
@@ -241,10 +241,10 @@ public abstract class AbstractConsoleModule
     console.println(ConsoleTranslate.get("module.commands.available",
         getDescriptionString()));
     ConsoleCommand command;
-    Iterator it = commands.iterator();
+    Iterator<ConsoleCommand> it = commands.iterator();
     while (it.hasNext())
     {
-      command = (ConsoleCommand) it.next();
+      command = it.next();
       console.println(command.getCommandName() + " "
           + command.getCommandParameters());
       console.println("   " + command.getCommandDescription());
@@ -267,7 +267,7 @@ public abstract class AbstractConsoleModule
    * 
    * @return <code>TreeSet</code> of commands (commandName|commandObject)
    */
-  public TreeSet getCommands()
+  public TreeSet<ConsoleCommand> getCommands()
   {
     return commands;
   }
@@ -298,7 +298,7 @@ public abstract class AbstractConsoleModule
     while (!quit)
     {
 
-      Hashtable hashCommands = getHashCommands();
+      Hashtable<String, ConsoleCommand> hashCommands = getHashCommands();
       try
       {
         String commandLine = console.readLine(getPromptString());
@@ -343,14 +343,14 @@ public abstract class AbstractConsoleModule
    * 
    * @return <code>Hashtable</code> list of <code>String</code> objects
    */
-  public final Hashtable getHashCommands()
+  public final Hashtable<String, ConsoleCommand> getHashCommands()
   {
-    Hashtable hashCommands = new Hashtable();
+    Hashtable<String, ConsoleCommand> hashCommands = new Hashtable<String, ConsoleCommand>();
     ConsoleCommand consoleCommand;
-    Iterator it = commands.iterator();
+    Iterator<ConsoleCommand> it = commands.iterator();
     while (it.hasNext())
     {
-      consoleCommand = (ConsoleCommand) it.next();
+      consoleCommand = it.next();
       hashCommands.put(consoleCommand.getCommandName(), consoleCommand);
     }
     return hashCommands;
@@ -363,7 +363,7 @@ public abstract class AbstractConsoleModule
    * @param hashCommands the list of commands available for this module
    * @throws Exception if fails *
    */
-  public final void handleCommandLine(String commandLine, Hashtable hashCommands)
+  public final void handleCommandLine(String commandLine, Hashtable<String, ConsoleCommand> hashCommands)
       throws Exception
   {
     StringTokenizer st = new StringTokenizer(commandLine);
@@ -394,12 +394,12 @@ public abstract class AbstractConsoleModule
    *         if there is no matching
    */
   public ConsoleCommand findConsoleCommand(String commandLine,
-      Hashtable hashCommands)
+      Hashtable<String, ConsoleCommand> hashCommands)
   {
     ConsoleCommand foundCommand = null;
-    for (Iterator iter = hashCommands.entrySet().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = hashCommands.entrySet().iterator(); iter.hasNext();)
     {
-      Map.Entry commandEntry = (Map.Entry) iter.next();
+      Map.Entry<?,?> commandEntry = (Map.Entry<?,?>) iter.next();
       String commandName = (String) commandEntry.getKey();
       if (commandLine.startsWith(commandName))
       {
@@ -473,9 +473,9 @@ public abstract class AbstractConsoleModule
     private boolean isACompleteCommand(String input)
     {
       boolean foundCompleteCommand = false;
-      for (Iterator iter = commands.iterator(); iter.hasNext();)
+      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();)
       {
-        ConsoleCommand command = (ConsoleCommand) iter.next();
+        ConsoleCommand command = iter.next();
         if (input.equals(command.getCommandName()))
         {
           foundCompleteCommand = !otherCommandsStartWith(command
@@ -487,9 +487,9 @@ public abstract class AbstractConsoleModule
 
     private boolean otherCommandsStartWith(String commandName)
     {
-      for (Iterator iter = commands.iterator(); iter.hasNext();)
+      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();)
       {
-        ConsoleCommand command = (ConsoleCommand) iter.next();
+        ConsoleCommand command = iter.next();
         if (command.getCommandName().startsWith(commandName)
             && !command.getCommandName().equals(commandName))
         {

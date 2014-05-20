@@ -40,12 +40,12 @@ public class DatabaseProcedureSemantic
   /**
    * Sorted list of table names that are referenced by this procedure.
    */
-  private SortedSet writeTables          = null;
+  private SortedSet<String> writeTables          = null;
 
   /**
    * If this procedure references other procedures, we will set them here.
    */
-  private SortedSet proceduresReferenced = null;
+  private SortedSet<String> proceduresReferenced = null;
 
   /**
    * The following attributes are meant to communicate some information about
@@ -132,7 +132,7 @@ public class DatabaseProcedureSemantic
   public void addWriteTable(String tableName)
   {
     if (writeTables == null)
-      writeTables = new TreeSet();
+      writeTables = new TreeSet<String>();
 
     writeTables.add(tableName);
   }
@@ -146,7 +146,7 @@ public class DatabaseProcedureSemantic
   public void addProcedureRef(String procKey)
   {
     if (proceduresReferenced == null)
-      proceduresReferenced = new TreeSet();
+      proceduresReferenced = new TreeSet<String>();
 
     proceduresReferenced.add(procKey);
   }
@@ -157,7 +157,7 @@ public class DatabaseProcedureSemantic
    * 
    * @return Returns the procedures referenced.
    */
-  public SortedSet getProceduresReferenced()
+  public SortedSet<String> getProceduresReferenced()
   {
     return proceduresReferenced;
   }
@@ -167,7 +167,7 @@ public class DatabaseProcedureSemantic
    * 
    * @return Returns the name of updated tables.
    */
-  public SortedSet getWriteTables()
+  public SortedSet<String> getWriteTables()
   {
     return writeTables;
   }

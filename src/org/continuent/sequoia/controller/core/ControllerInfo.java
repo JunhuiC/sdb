@@ -19,7 +19,7 @@ import org.continuent.sequoia.common.util.Constants;
 public class ControllerInfo
 {
 
-  private static Map getManifestHeaders()
+  private static Map<?, ?> getManifestHeaders()
   {
     // akward way to retrieve the manifest file of the
     // jar containing the ControllerInfo class
@@ -32,14 +32,14 @@ public class ControllerInfo
       conn = (JarURLConnection) url.openConnection();
       if (conn == null)
       {
-        return new HashMap();
+        return new HashMap<Object, Object>();
       }
       Manifest manifest = conn.getManifest();
       return manifest.getMainAttributes();
     }
     catch (IOException e)
     {
-      return new HashMap();
+      return new HashMap<Object, Object>();
     }
   }
 
@@ -53,7 +53,7 @@ public class ControllerInfo
   {
     out.println("Controller name:    " + ControllerConstants.PRODUCT_NAME);
     out.println("Controller version: " + Constants.VERSION);
-    Map headers = getManifestHeaders();
+    Map<?, ?> headers = getManifestHeaders();
     if (headers.containsKey(new Attributes.Name("Build-Number")))
     {
       out.println("Build Number:       "

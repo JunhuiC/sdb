@@ -123,7 +123,7 @@ public class ControllerWatcher extends Thread
   private void processAnswers() throws IOException
   {
     long timeAnswerWasReceived = System.currentTimeMillis();
-    for (Iterator i = selector.selectedKeys().iterator(); i.hasNext();)
+    for (Iterator<?> i = selector.selectedKeys().iterator(); i.hasNext();)
     {
       // Retrieve the next key and remove it from the set
       SelectionKey sk = (SelectionKey) i.next();

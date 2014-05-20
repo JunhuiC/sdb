@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
 import org.continuent.sequoia.common.exceptions.NoMoreControllerException;
 import org.continuent.sequoia.driver.ControllerInfo;
 import org.continuent.sequoia.driver.SequoiaUrl;
-import org.continuent.sequoia.driver.connectpolicy.AbstractControllerConnectPolicy.ControllerAndVdbState;
+//import org.continuent.sequoia.driver.connectpolicy.AbstractControllerConnectPolicy.ControllerAndVdbState;
 
 /**
  * This class defines a PreferredListConnectPolicy
@@ -41,8 +41,8 @@ public class PreferredListConnectPolicy extends AbstractControllerConnectPolicy
 {
   private int       index = -1;
   private int       preferredIndex = -1;
-  private ArrayList preferredControllers;
-  private ArrayList originalPreferredControllers;
+  private ArrayList<ControllerInfo> preferredControllers;
+  private ArrayList<ControllerInfo> originalPreferredControllers;
 
   /**
    * Creates a new <code>PreferredListConnectPolicy</code> object
@@ -67,7 +67,7 @@ public class PreferredListConnectPolicy extends AbstractControllerConnectPolicy
     StringTokenizer controllers = new StringTokenizer(preferredControllerList,
         ",", true);
     int tokenNumber = controllers.countTokens();
-    preferredControllers = new ArrayList(tokenNumber - 1);
+    preferredControllers = new ArrayList<ControllerInfo>(tokenNumber - 1);
     int i = 0;
     String s;
     boolean lastTokenWasComma = false;
@@ -117,7 +117,7 @@ public class PreferredListConnectPolicy extends AbstractControllerConnectPolicy
     }
     // make a copy of the preferred controllers to be able to find them back
     // (see controllerUp())
-    originalPreferredControllers = new ArrayList(preferredControllers);
+    originalPreferredControllers = new ArrayList<ControllerInfo>(preferredControllers);
   }
 
   /**

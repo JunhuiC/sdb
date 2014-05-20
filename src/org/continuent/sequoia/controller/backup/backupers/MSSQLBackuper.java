@@ -79,14 +79,14 @@ public class MSSQLBackuper extends AbstractBackuper
                                                            .getLogger(MSSQLBackuper.class
                                                                .getName());
 
-  private ArrayList           errors;
+  private ArrayList<?>           errors;
 
   /**
    * Creates a new <code>MSSQLBackuper</code> object
    */
   public MSSQLBackuper()
   {
-    errors = new ArrayList();
+    errors = new ArrayList<Object>();
   }
 
   /**
@@ -103,7 +103,7 @@ public class MSSQLBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String url = backend.getURL();
 
@@ -203,7 +203,7 @@ public class MSSQLBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     String url = backend.getURL();
 
@@ -489,7 +489,7 @@ public class MSSQLBackuper extends AbstractBackuper
 
   protected void printErrors()
   {
-    Iterator it = errors.iterator();
+    Iterator<?> it = errors.iterator();
     while (it.hasNext())
     {
       logger.info(it.next());

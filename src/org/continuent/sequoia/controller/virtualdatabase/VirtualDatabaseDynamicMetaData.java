@@ -123,7 +123,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String.class};
       Object[] args = {connContext, catalog, schemaPattern, typeNamePattern,
           attributeNamePattern};
@@ -135,7 +135,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getAttributesFields, data);
     return rs;
   }
@@ -154,7 +154,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getAttributes(catalog, schemaPattern, typeNamePattern,
           attributeNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[21];
@@ -227,7 +227,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, int.class, boolean.class};
       Object[] args = {connContext, catalog, schema, table, new Integer(scope),
           Boolean.valueOf(nullable)};
@@ -239,7 +239,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(
         getBestRowIdentifierAndVersionColumnsFields, data);
     return rs;
@@ -260,7 +260,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getBestRowIdentifier(catalog, schema, table, scope,
           nullable);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[8];
@@ -305,10 +305,10 @@ public class VirtualDatabaseDynamicMetaData
    * @param list of virtual database from the controller
    * @return <code>ResultSet</code> with list of catalogs
    */
-  public ControllerResultSet getCatalogs(ArrayList list)
+  public ControllerResultSet getCatalogs(ArrayList<?> list)
   {
     int size = list.size();
-    ArrayList data = new ArrayList(size);
+    ArrayList<Object[]> data = new ArrayList<Object[]>(size);
     for (int i = 0; i < size; i++)
     {
       Object[] row = new Object[1];
@@ -340,7 +340,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String.class};
       Object[] args = {connContext, catalog, schema, table, columnNamePattern};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -364,11 +364,11 @@ public class VirtualDatabaseDynamicMetaData
     if (dbTable == null)
       throw new SQLException("Unable to find table " + table);
 
-    ArrayList columns = dbTable.getColumns();
+    ArrayList<?> columns = dbTable.getColumns();
     int size = columns.size();
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
 
-    ArrayList virtualLogins = manager.getVirtualLogins();
+    ArrayList<?> virtualLogins = manager.getVirtualLogins();
     int vsize = virtualLogins.size();
     VirtualDatabaseUser vu;
 
@@ -419,7 +419,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getColumnPrivileges(catalog, schema, table,
           columnNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[8];
@@ -469,7 +469,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String.class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern,
           columnNamePattern};
@@ -493,10 +493,10 @@ public class VirtualDatabaseDynamicMetaData
       columnNamePattern = "%"; // if null is passed then
 
     // Build the ResultSet
-    Collection tables = dbs.getTables().values();
-    ArrayList data = new ArrayList(tables.size());
+    Collection<?> tables = dbs.getTables().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(tables.size());
 
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       DatabaseTable t = (DatabaseTable) iter.next();
 
@@ -504,7 +504,7 @@ public class VirtualDatabaseDynamicMetaData
       {
         if (logger.isDebugEnabled())
           logger.debug("Found table " + t.getName());
-        ArrayList columns = t.getColumns();
+        ArrayList<?> columns = t.getColumns();
         for (int j = 0; j < columns.size(); j++)
         {
           DatabaseColumn c = (DatabaseColumn) columns.get(j);
@@ -559,7 +559,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getColumns(catalog, schemaPattern, tableNamePattern,
           columnNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[22];
@@ -646,7 +646,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String.class, String.class, String.class};
       Object[] args = {connContext, primaryCatalog, primarySchema,
           primaryTable, foreignCatalog, foreignSchema, foreignTable};
@@ -658,7 +658,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(
         getCrossReferenceOrImportExportedKeysFields, data);
     return rs;
@@ -680,7 +680,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getCrossReference(primaryCatalog, primarySchema,
           primaryTable, foreignCatalog, foreignSchema, foreignTable);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[14];
@@ -744,7 +744,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schema, table};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -755,7 +755,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(
         getCrossReferenceOrImportExportedKeysFields, data);
     return rs;
@@ -773,7 +773,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getExportedKeys(catalog, schema, table);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[14];
@@ -837,7 +837,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schema, table};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -848,7 +848,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(
         getCrossReferenceOrImportExportedKeysFields, data);
     return rs;
@@ -866,7 +866,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getImportedKeys(catalog, schema, table);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[14];
@@ -932,7 +932,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, boolean.class, boolean.class};
       Object[] args = {connContext, catalog, schema, table,
           Boolean.valueOf(unique), Boolean.valueOf(approximate)};
@@ -943,7 +943,7 @@ public class VirtualDatabaseDynamicMetaData
     }
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getIndexInfoFields, data);
     return rs;
   }
@@ -963,7 +963,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getIndexInfo(catalog, schema, table, unique,
           approximate);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[13];
@@ -1032,7 +1032,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schema, table};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -1052,15 +1052,15 @@ public class VirtualDatabaseDynamicMetaData
     // select all tables
 
     // Build the ResultSet
-    Collection tables = dbs.getTables().values();
-    ArrayList data = new ArrayList(tables.size());
+    Collection<?> tables = dbs.getTables().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(tables.size());
 
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       DatabaseTable t = (DatabaseTable) iter.next();
       if (table.equals("%") || table.equals(t.getName()))
       {
-        ArrayList columns = t.getColumns();
+        ArrayList<?> columns = t.getColumns();
         for (int j = 0; j < columns.size(); j++)
         {
           DatabaseColumn c = (DatabaseColumn) columns.get(j);
@@ -1101,7 +1101,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet pks = m.getPrimaryKeys(catalog, schema, table);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (pks.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[6];
@@ -1145,7 +1145,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String.class};
       Object[] args = {connContext, catalog, schemaPattern,
           procedureNamePattern, columnNamePattern};
@@ -1166,10 +1166,10 @@ public class VirtualDatabaseDynamicMetaData
       columnNamePattern = "%";
 
     // Build the ResultSet
-    Collection procedures = dbs.getProcedures().values();
-    ArrayList data = new ArrayList(procedures.size());
+    Collection<?> procedures = dbs.getProcedures().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(procedures.size());
 
-    for (Iterator iter = procedures.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = procedures.iterator(); iter.hasNext();)
     {
       DatabaseProcedure sp = (DatabaseProcedure) iter.next();
       if (procedureNamePattern.equals("%")
@@ -1178,7 +1178,7 @@ public class VirtualDatabaseDynamicMetaData
         if (logger.isDebugEnabled())
           logger.debug("Found matching procedure " + sp.getName());
 
-        ArrayList params = sp.getParameters();
+        ArrayList<?> params = sp.getParameters();
         int sizep = params.size();
         DatabaseProcedureParameter param;
         for (int k = 0; k < sizep; k++)
@@ -1232,7 +1232,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getColumns(catalog, schemaPattern,
           procedureNamePattern, columnNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[13];
@@ -1297,7 +1297,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schemaPattern,
           procedureNamePattern};
@@ -1316,10 +1316,10 @@ public class VirtualDatabaseDynamicMetaData
     // select all procedures
 
     // Build the ResultSet
-    Collection procedures = dbs.getProcedures().values();
-    ArrayList data = new ArrayList(procedures.size());
+    Collection<?> procedures = dbs.getProcedures().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(procedures.size());
 
-    for (Iterator iter = procedures.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = procedures.iterator(); iter.hasNext();)
     {
       DatabaseProcedure sp = (DatabaseProcedure) iter.next();
       if (procedureNamePattern.equals("%")
@@ -1357,7 +1357,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getProcedures(catalog, schemaPattern,
           procedureNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[8];
@@ -1412,7 +1412,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class};
+      Class<?>[] argTypes = {ConnectionContext.class};
       Object[] args = {connContext};
       ControllerResultSet crs = getMetaDataFromRemoteController("doGetSchemas",
           argTypes, args);
@@ -1423,7 +1423,7 @@ public class VirtualDatabaseDynamicMetaData
     Object[] row = new Object[2];
     row[0] = vdbName; // TABLE_SCHEM
     row[1] = null; // TABLE_CATALOG
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     data.add(row);
     return new ControllerResultSet(getSchemasFields, data);
   }
@@ -1440,7 +1440,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getSchemas();
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[2];
@@ -1502,7 +1502,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -1513,7 +1513,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getSuperTablesFields, data);
     return rs;
   }
@@ -1532,7 +1532,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getSuperTables(catalog, schemaPattern,
           tableNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[4];
@@ -1588,7 +1588,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -1599,7 +1599,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getSuperTypesFields, data);
     return rs;
   }
@@ -1618,7 +1618,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m
           .getSuperTypes(catalog, schemaPattern, tableNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[5];
@@ -1675,7 +1675,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -1695,13 +1695,13 @@ public class VirtualDatabaseDynamicMetaData
       // if null is passed then select all tables
       tableNamePattern = "%";
 
-    ArrayList virtualLogins = manager.getVirtualLogins();
+    ArrayList<?> virtualLogins = manager.getVirtualLogins();
     int vsize = virtualLogins.size();
     VirtualDatabaseUser vu;
 
-    Collection tables = dbs.getTables().values();
-    ArrayList data = new ArrayList(tables.size());
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    Collection<?> tables = dbs.getTables().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(tables.size());
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       DatabaseTable t = (DatabaseTable) iter.next();
       if (tableNamePattern.equals("%") || tableNamePattern.equals(t.getName()))
@@ -1745,7 +1745,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getTablePrivileges(catalog, schemaPattern,
           tableNamePattern);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[7];
@@ -1804,7 +1804,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, String[].class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern,
           types};
@@ -1824,10 +1824,10 @@ public class VirtualDatabaseDynamicMetaData
       tableNamePattern = "%";
 
     // Build the ResultSet
-    Collection tables = dbs.getTables().values();
-    ArrayList data = new ArrayList(tables.size());
+    Collection<?> tables = dbs.getTables().values();
+    ArrayList<Object[]> data = new ArrayList<Object[]>(tables.size());
 
-    for (Iterator iter = tables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = tables.iterator(); iter.hasNext();)
     {
       DatabaseTable t = (DatabaseTable) iter.next();
       if (tableNamePattern.equals("%")
@@ -1867,7 +1867,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getTables(catalog, schemaPattern, tableNamePattern,
           types);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[10];
@@ -1939,7 +1939,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class};
+      Class<?>[] argTypes = {ConnectionContext.class};
       Object[] args = {connContext};
       ControllerResultSet crs = getMetaDataFromRemoteController(
           "doGetTableTypes", argTypes, args);
@@ -1947,7 +1947,7 @@ public class VirtualDatabaseDynamicMetaData
         return crs;
     }
 
-    ArrayList list = new ArrayList(1);
+    ArrayList<Object[]> list = new ArrayList<Object[]>(1);
     Object[] row = new Object[1];
     row[0] = "TABLE"; // TABLE_TYPE
     list.add(row);
@@ -1967,7 +1967,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getTableTypes();
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[1];
@@ -2017,7 +2017,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class};
+      Class<?>[] argTypes = {ConnectionContext.class};
       Object[] args = {connContext};
       ControllerResultSet crs = getMetaDataFromRemoteController(
           "doGetTypeInfo", argTypes, args);
@@ -2027,7 +2027,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getTypeInfoFields, data);
     return rs;
   }
@@ -2044,7 +2044,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getTypeInfo();
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[18];
@@ -2114,7 +2114,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class, int[].class};
       Object[] args = {connContext, catalog, schemaPattern, tableNamePattern,
           types};
@@ -2126,7 +2126,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(getUDTsFields, data);
     return rs;
   }
@@ -2145,7 +2145,7 @@ public class VirtualDatabaseDynamicMetaData
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getUDTs(catalog, schemaPattern, tableNamePattern,
           types);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[7];
@@ -2212,7 +2212,7 @@ public class VirtualDatabaseDynamicMetaData
     catch (NoMoreBackendException ignore)
     {
       // No backend is available, try getting metadata from a remote controller
-      Class[] argTypes = {ConnectionContext.class, String.class, String.class,
+      Class<?>[] argTypes = {ConnectionContext.class, String.class, String.class,
           String.class};
       Object[] args = {connContext, catalog, schema, table};
       ControllerResultSet crs = getMetaDataFromRemoteController(
@@ -2223,7 +2223,7 @@ public class VirtualDatabaseDynamicMetaData
 
     // Feature not supported in RAIDb-0 and RAIDb-2, return an empty ResultSet
 
-    ArrayList data = new ArrayList();
+    ArrayList<Object[]> data = new ArrayList<Object[]>();
     ControllerResultSet rs = new ControllerResultSet(
         getBestRowIdentifierAndVersionColumnsFields, data);
     return rs;
@@ -2241,7 +2241,7 @@ public class VirtualDatabaseDynamicMetaData
       info = getMetaDataFromFirstAvailableBackend(connContext);
       DatabaseMetaData m = info.getDatabaseMetaData();
       ResultSet cols = m.getVersionColumns(catalog, schema, table);
-      ArrayList data = new ArrayList();
+      ArrayList<Object[]> data = new ArrayList<Object[]>();
       while (cols.next())
       { // Unroll the loop for comments (and speed?)
         Object[] row = new Object[8];
@@ -2364,7 +2364,7 @@ public class VirtualDatabaseDynamicMetaData
   }
 
   private ControllerResultSet getMetaDataFromRemoteController(
-      String methodName, Class[] argTypes, Object[] args) throws SQLException
+      String methodName, Class<?>[] argTypes, Object[] args) throws SQLException
   {
     // If vdb is NOT distributed return null, else try remote controllers
     if (!vdb.isDistributed())
@@ -2381,12 +2381,12 @@ public class VirtualDatabaseDynamicMetaData
               dvdb.getMessageTimeouts()
                   .getVirtualDatabaseConfigurationTimeout());
 
-      Map results = rspList.getResults();
+      Map<?, ?> results = rspList.getResults();
       if (results.size() == 0)
         if (logger.isWarnEnabled())
           logger
               .warn("No response while getting metadata from remote controller");
-      for (Iterator iter = results.values().iterator(); iter.hasNext();)
+      for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
       {
         Object response = iter.next();
         if (response instanceof ControllerException)

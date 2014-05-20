@@ -44,9 +44,9 @@ public class ParsingCache
 {
   private static Trace   logger = Trace.getLogger(ParsingCache.class.getName());
   // SQL -> parsed request
-  private Hashtable      cache;
+  private Hashtable<String, AbstractRequest>      cache;
   // SQL -> CurrentlyParsingEntry
-  private Hashtable      currentlyParsing;
+  private Hashtable<String, CurrentlyParsingEntry>      currentlyParsing;
   private RequestManager requestManager;
   private int            granularity;
   private int            maxNbOfEntries;
@@ -111,8 +111,8 @@ public class ParsingCache
    */
   public ParsingCache(int size, boolean backgroundParsing)
   {
-    cache = new Hashtable(size == 0 ? 10000 : size);
-    currentlyParsing = new Hashtable();
+    cache = new Hashtable<String, AbstractRequest>(size == 0 ? 10000 : size);
+    currentlyParsing = new Hashtable<String, CurrentlyParsingEntry>();
     if (size < 0)
       throw new RuntimeException(Translate.get("cache.parsing.invalid.size",
           size));

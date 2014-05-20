@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+//import org.continuent.sequoia.common.locks.TransactionLogicalLock.WaitingListElement;
+//import org.continuent.sequoia.common.locks.TransactionLogicalLock.WaitingListElement;
 import org.continuent.sequoia.controller.requests.AbstractRequest;
 
 /**
@@ -44,7 +46,7 @@ public class TransactionLogicalLock
   private long       locker;
 
   /** <code>ArrayList</code> of <code>WaitingListElement</code>. */
-  private LinkedList waitingList = new LinkedList();
+  private LinkedList<WaitingListElement> waitingList = new LinkedList<WaitingListElement>();
 
   /**
    * The element stored in the waiting list is the waiting request and the
@@ -168,7 +170,7 @@ public class TransactionLogicalLock
    */
   public synchronized boolean isWaiting(long transactionId)
   {
-    for (Iterator iter = waitingList.iterator(); iter.hasNext();)
+    for (Iterator<WaitingListElement> iter = waitingList.iterator(); iter.hasNext();)
     {
       WaitingListElement e = (WaitingListElement) iter.next();
       if (e.getTransactionId() == transactionId)
@@ -197,7 +199,7 @@ public class TransactionLogicalLock
       }
 
       // We were in the waiting list, remove ourselves from the list
-      for (Iterator iter = waitingList.iterator(); iter.hasNext();)
+      for (Iterator<WaitingListElement> iter = waitingList.iterator(); iter.hasNext();)
       {
         WaitingListElement e = (WaitingListElement) iter.next();
         if (e.getTransactionId() == transactionId)
@@ -225,7 +227,7 @@ public class TransactionLogicalLock
    * 
    * @return list of <code>WaitingListElement</code> type objects.
    */
-  public List getWaitingList()
+  public List<WaitingListElement> getWaitingList()
   {
     return waitingList;
   }

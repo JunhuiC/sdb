@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+
 /**
  * Provides a list of controllers and maintains their state (up or down),
  * launching appropriatly methods from callback given callback instance.<br>
@@ -64,16 +65,6 @@ public class WatchedControllers
       lastTimeSeen = newTime;
     }
 
-    public int getIndex()
-    {
-      return index;
-    }
-
-    public void setIndex(int idx)
-    {
-      index = idx;
-    }
-
     public boolean isUp()
     {
       return respondsToPings;
@@ -100,7 +91,7 @@ public class WatchedControllers
   // insertions and suppressions
   // The list will be heavily accessed for searches given a ControllerInfo
   // (see setControllerResponsed), that's why we use a hash map
-  final HashMap                  allControllersAndStates;
+  final HashMap<ControllerInfo, ControllerIndexAndState>                  allControllersAndStates;
 
   /**
    * Delay after which a controller will be considered as failing if it did not
@@ -129,7 +120,7 @@ public class WatchedControllers
     int numberOfControllers = 0; // if caller wants to add controllers later
     if (controllers != null)
       numberOfControllers = controllers.length;
-    allControllersAndStates = new HashMap(numberOfControllers);
+    allControllersAndStates = new HashMap<ControllerInfo, ControllerIndexAndState>(numberOfControllers);
     // we are inside a contructor, so we can safely operate on the
     // list without worrying of concurrent modifications
     for (int i = 0; i < numberOfControllers; i++)
@@ -184,7 +175,7 @@ public class WatchedControllers
    */
   public void lookForDeadControllers(long currentTime)
   {
-    for (Iterator iter = getControllerIterator(); iter.hasNext();)
+    for (Iterator<ControllerInfo> iter = getControllerIterator(); iter.hasNext();)
     {
       ControllerInfo ctrl = (ControllerInfo) iter.next();
       ControllerIndexAndState state = (ControllerIndexAndState) allControllersAndStates
@@ -220,22 +211,23 @@ public class WatchedControllers
    * Creates a copy of the controller hashmap keys and returns a iterator on it.
    * This way, the iterator will not be affected by hashmap operations
    */
-  public final Iterator getControllerIterator()
+  public final Iterator<ControllerInfo> getControllerIterator()
   {
-    HashMap copy = getControllersClone();
-    return (new HashSet(copy.keySet())).iterator();
+    HashMap<ControllerInfo, ControllerIndexAndState> copy = getControllersClone();
+    return (new HashSet<ControllerInfo>(copy.keySet())).iterator();
   }
 
   /**
    * Creates and returns a copy of the controller hashmap member variable for
    * thread-safe read operations purpose.
    */
-  private HashMap getControllersClone()
+  @SuppressWarnings("unchecked")
+private HashMap<ControllerInfo, ControllerIndexAndState> getControllersClone()
   {
-    HashMap copy = null;
+    HashMap<ControllerInfo, ControllerIndexAndState> copy = null;
     synchronized (allControllersAndStates)
     {
-      copy = (HashMap) (allControllersAndStates).clone();
+      copy = (HashMap<ControllerInfo, ControllerIndexAndState>) (allControllersAndStates).clone();
     }
     return copy;
   }
@@ -309,7 +301,7 @@ public class WatchedControllers
   {
     StringBuffer result = new StringBuffer("{");
 
-    Iterator ctrls = getControllerIterator();
+    Iterator<ControllerInfo> ctrls = getControllerIterator();
     if (ctrls.hasNext())
       result.append(ctrls.next());
       

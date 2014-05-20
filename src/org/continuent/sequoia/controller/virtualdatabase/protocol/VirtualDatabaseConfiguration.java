@@ -54,10 +54,10 @@ public class VirtualDatabaseConfiguration
   private String            controllerJmxName;
   private String            vdbName;
   private String            groupName        = null;
-  private ArrayList         vLogins;
+  private ArrayList<?>         vLogins;
   private int               schedulerRAIDbLevel;
   private int               loadBalancerRAIDbLevel;
-  private List             /* <BackendInfo> */backendInfos;
+  private List             /* <BackendInfo> */<?> backendInfos;
 
   // Jmx Information
   private String            rmiHostname;
@@ -100,7 +100,7 @@ public class VirtualDatabaseConfiguration
         .getRAIDbLevel();
     this.backendInfos = DatabaseBackend.toBackendInfos(dvdb.getBackends());
 
-    List connectors = RmiConnector.getRmiConnectors();
+    List<?> connectors = RmiConnector.getRmiConnectors();
     if (connectors.size() > 0)
     {
       RmiConnector rmi = (RmiConnector) connectors.get(0);
@@ -248,7 +248,7 @@ public class VirtualDatabaseConfiguration
             .warn(
                 Translate
                     .get("virtualdatabase.distributed.configuration.checking.mismatch.vlogins"));
-        List additionalVdbUsers = new ArrayList(localDvdb
+        List<?> additionalVdbUsers = new ArrayList<Object>(localDvdb
             .getAuthenticationManager().getVirtualLogins());
         additionalVdbUsers.removeAll(vLogins);
         ret[0] = Boolean.TRUE;
@@ -298,7 +298,7 @@ public class VirtualDatabaseConfiguration
     {
       // Failure
       return new VirtualDatabaseConfigurationResponse(
-          DistributedVirtualDatabase.INCOMPATIBLE_CONFIGURATION, (List) ret[1]);
+          DistributedVirtualDatabase.INCOMPATIBLE_CONFIGURATION, (List<?>) ret[1]);
     }
 
     // Configuration is compatible, add it to our controller list
@@ -319,7 +319,7 @@ public class VirtualDatabaseConfiguration
           + " is compatible with the local configuration");
     return new VirtualDatabaseConfigurationResponse(
         ((DistributedRequestManager) dvdb.getRequestManager())
-            .getControllerId(), (List) ret[1]);
+            .getControllerId(), (List<?>) ret[1]);
   }
 
 }

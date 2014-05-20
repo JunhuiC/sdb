@@ -65,14 +65,14 @@ public class NotifyEnableBackend extends DistributedVirtualDatabaseMessage
       Object handleMessageSingleThreadedResult)
   {
     Trace logger = dvdb.getLogger();
-    List remoteBackends = (List) dvdb.getBackendsPerController().get(sender);
+    List<DatabaseBackend> remoteBackends = (List<DatabaseBackend>) dvdb.getBackendsPerController().get(sender);
     if (remoteBackends == null)
     { // This case was reported by Alessandro Gamboz on April 1, 2005.
       // It looks like the EnableBackend message arrives before membership
       // has been properly updated.
       logger.warn("No information has been found for remote controller "
           + sender);
-      remoteBackends = new ArrayList();
+      remoteBackends = new ArrayList<DatabaseBackend>();
       dvdb.addBackendPerController(sender, remoteBackends);
     }
     DatabaseBackend enabledBackend = backendInfo.getDatabaseBackend();

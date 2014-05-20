@@ -34,8 +34,9 @@ import org.continuent.sequoia.console.text.module.AbstractConsoleModule;
  * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk </a>
  * @author <a href="mailto:Mathieu.Peltier@inrialpes.fr">Mathieu Peltier </a>
  * @version 1.0
+ * @param <E>
  */
-public abstract class ConsoleCommand implements Comparable
+public abstract class ConsoleCommand implements Comparable<Object>
 {
   protected Console               console;
   protected RmiJmxClient          jmxClient;

@@ -270,7 +270,7 @@ public class RandomWaitPoolConnectionManager
       }
       else
       {
-        freeConnections.addLast(newConnection);
+        freeConnections.addLast((PooledConnection) newConnection);
         this.notify();
         if (logger.isDebugEnabled())
           logger.debug("Bad connection " + c

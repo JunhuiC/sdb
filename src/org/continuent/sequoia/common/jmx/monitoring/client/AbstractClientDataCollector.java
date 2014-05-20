@@ -41,7 +41,11 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabaseWorkerTh
  */
 public abstract class AbstractClientDataCollector extends AbstractDataCollector
 {
-  private String virtualDatabaseName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7431987841647096336L;
+private String virtualDatabaseName;
   private String clientId;
   private int    clientIndex;
 
@@ -63,7 +67,7 @@ public abstract class AbstractClientDataCollector extends AbstractDataCollector
   {
     VirtualDatabase vdb = ((Controller) controller)
         .getVirtualDatabase(virtualDatabaseName);
-    ArrayList activeThreads = vdb.getActiveThreads();
+    ArrayList<?> activeThreads = vdb.getActiveThreads();
     int size = activeThreads.size();
     VirtualDatabaseWorkerThread client = null;
     int index = 0;
@@ -89,7 +93,7 @@ public abstract class AbstractClientDataCollector extends AbstractDataCollector
   {
     VirtualDatabase vdb = ((Controller) controller)
         .getVirtualDatabase(virtualDatabaseName);
-    ArrayList activeThreads = vdb.getActiveThreads();
+    ArrayList<?> activeThreads = vdb.getActiveThreads();
     VirtualDatabaseWorkerThread client = (VirtualDatabaseWorkerThread) activeThreads
         .get(clientIndex);
     if (client.getUser().equals(clientId))

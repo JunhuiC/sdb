@@ -23,7 +23,6 @@
 package org.continuent.sequoia.console.text.commands.dbadmin;
 
 import org.continuent.sequoia.common.i18n.ConsoleTranslate;
-import org.continuent.sequoia.common.jmx.mbeans.DatabaseBackendMBean;
 import org.continuent.sequoia.console.text.module.VirtualDatabaseAdmin;
 import org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean;
 

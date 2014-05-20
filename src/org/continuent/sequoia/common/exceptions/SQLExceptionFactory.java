@@ -59,12 +59,13 @@ public class SQLExceptionFactory
    * creates a new SQLException with the sequoiaMessage, if all exceptions in
    * the list have the same errorcode and sqlstate the returned SQLExcepion will
    * be constructed with this values otherwise with null and 0
+ * @param <E>
    * 
    * @param exceptions list of exceptions
    * @param sequoiaMessage the Sequoia message
    * @return a new SQLException
    */
-  public static SQLException getSQLException(List exceptions,
+  public static <E> SQLException getSQLException(List<E> exceptions,
       String sequoiaMessage)
   {
     String sqlState = null;
@@ -86,7 +87,7 @@ public class SQLExceptionFactory
       // retrieved for each backend in the exception chaining below.
     }
     SQLException newHead = new SQLException(sequoiaMessage, sqlState, errorCode);
-    Iterator exIter = exceptions.iterator();
+    Iterator<E> exIter = exceptions.iterator();
 
     // TODO: shouldn't we use the new initCause() standard chaining instead ?
     // See more comments above.

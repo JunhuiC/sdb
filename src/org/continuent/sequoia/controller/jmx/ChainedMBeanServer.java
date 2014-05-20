@@ -175,7 +175,8 @@ public class ChainedMBeanServer implements MBeanServer
   /**
    * @see javax.management.MBeanServer#deserialize(java.lang.String, byte[])
    */
-  public ObjectInputStream deserialize(String className, byte[] bytes)
+  @SuppressWarnings("deprecation")
+public ObjectInputStream deserialize(String className, byte[] bytes)
       throws OperationsException, ReflectionException
   {
     return getMBeanServer().deserialize(className, bytes);
@@ -185,7 +186,8 @@ public class ChainedMBeanServer implements MBeanServer
    * @see javax.management.MBeanServer#deserialize(java.lang.String,
    *      javax.management.ObjectName, byte[])
    */
-  public ObjectInputStream deserialize(String className, ObjectName loaderName,
+  @SuppressWarnings("deprecation")
+public ObjectInputStream deserialize(String className, ObjectName loaderName,
       byte[] bytes) throws InstanceNotFoundException, OperationsException,
       ReflectionException
   {
@@ -196,7 +198,8 @@ public class ChainedMBeanServer implements MBeanServer
    * @see javax.management.MBeanServer#deserialize(javax.management.ObjectName,
    *      byte[])
    */
-  public ObjectInputStream deserialize(ObjectName objectName, byte[] bytes)
+  @SuppressWarnings("deprecation")
+public ObjectInputStream deserialize(ObjectName objectName, byte[] bytes)
       throws InstanceNotFoundException, OperationsException
   {
     return getMBeanServer().deserialize(objectName, bytes);
@@ -340,7 +343,7 @@ public class ChainedMBeanServer implements MBeanServer
    * @see javax.management.MBeanServerConnection#queryMBeans(javax.management.ObjectName,
    *      javax.management.QueryExp)
    */
-  public Set queryMBeans(ObjectName patternName, QueryExp filter)
+  public Set<ObjectInstance> queryMBeans(ObjectName patternName, QueryExp filter)
   {
     return getMBeanServer().queryMBeans(patternName, filter);
   }
@@ -349,7 +352,7 @@ public class ChainedMBeanServer implements MBeanServer
    * @see javax.management.MBeanServerConnection#queryNames(javax.management.ObjectName,
    *      javax.management.QueryExp)
    */
-  public Set queryNames(ObjectName patternName, QueryExp filter)
+  public Set<ObjectName> queryNames(ObjectName patternName, QueryExp filter)
   {
     return getMBeanServer().queryNames(patternName, filter);
   }

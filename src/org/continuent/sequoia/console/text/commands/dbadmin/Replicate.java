@@ -63,7 +63,7 @@ public class Replicate extends AbstractAdminCommand
     String backend2 = st.nextToken();
     String url = st.nextToken();
 
-    HashMap parameters = new HashMap();
+    HashMap<String, String> parameters = new HashMap<String, String>();
     parameters.put("url",url); //$NON-NLS-1$
     StringTokenizer st2;
     while (st.hasMoreTokens())

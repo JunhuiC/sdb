@@ -162,7 +162,7 @@ public class RAIDb1_RR extends RAIDb1
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)

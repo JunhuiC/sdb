@@ -53,6 +53,11 @@ public abstract class AbstractRequest implements Serializable
   // as transient
 
   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4015634729622591360L;
+
+/**
    * Rationale is to avoid the performance cost of .instanceof(), at
    * serialization time and elsewhere.
    */
@@ -209,7 +214,7 @@ public abstract class AbstractRequest implements Serializable
    * Sorted list of table names that must be locked in write. This list may be
    * null or empty if no table needs to be locked.
    */
-  protected SortedSet         writeLockedTables           = null;
+  protected SortedSet<String>         writeLockedTables           = null;
 
   /**
    * Default constructor Creates a new <code>AbstractRequest</code> object
@@ -318,7 +323,7 @@ public abstract class AbstractRequest implements Serializable
    *         this request. This list may be null or empty if no table needs to
    *         be locked.
    */
-  public SortedSet getWriteLockedDatabaseTables()
+  public SortedSet<String> getWriteLockedDatabaseTables()
   {
     return writeLockedTables;
   }
@@ -1048,13 +1053,13 @@ public abstract class AbstractRequest implements Serializable
    * @param lockedTables set of table names to add depending tables to
    */
   protected void addDependingTables(DatabaseSchema schema,
-      SortedSet lockedTables)
+      SortedSet<String> lockedTables)
   {
     if ((schema == null) || (lockedTables == null))
       return;
 
-    List tablesToAdd = null;
-    for (Iterator iter = lockedTables.iterator(); iter.hasNext();)
+    List<String> tablesToAdd = null;
+    for (Iterator<?> iter = lockedTables.iterator(); iter.hasNext();)
     {
       String tableName = (String) iter.next();
 
@@ -1062,14 +1067,14 @@ public abstract class AbstractRequest implements Serializable
       DatabaseTable table = schema.getTable(tableName, false);
       if (table == null)
         continue;
-      ArrayList dependingTables = table.getDependingTables();
+      ArrayList<String> dependingTables = table.getDependingTables();
       if (dependingTables == null)
         continue;
 
       // Add these tables to a temp list so that we don't have a concurrent
       // modification exception on writeLockedTables on which we iterate
       if (tablesToAdd == null)
-        tablesToAdd = new ArrayList();
+        tablesToAdd = new ArrayList<String>();
       tablesToAdd.addAll(dependingTables);
     }
     // Finally add all depending tables

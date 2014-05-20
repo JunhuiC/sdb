@@ -72,21 +72,21 @@ public class ResultCacheColumnUnique extends ResultCache
   public void processAddToCache(AbstractResultCacheEntry qe)
   {
     SelectRequest request = qe.getRequest();
-    ArrayList selectedColumns = request.getSelect();
+    ArrayList<?> selectedColumns = request.getSelect();
     // Update the tables columns dependencies
-    Collection from = request.getFrom();
+    Collection<?> from = request.getFrom();
     if (from == null)
       return;
     if (selectedColumns == null || selectedColumns.isEmpty())
     {
       logger
           .warn("No parsing of select clause found - Fallback to table granularity");
-      for (Iterator i = from.iterator(); i.hasNext();)
+      for (Iterator<?> i = from.iterator(); i.hasNext();)
       {
         CacheDatabaseTable table = cdbs.getTable((String) i.next());
         table.addCacheEntry(qe);
         // Add all columns, entries will be added below.
-        ArrayList columns = table.getColumns();
+        ArrayList<?> columns = table.getColumns();
         for (int j = 0; j < columns.size(); j++)
         {
           ((CacheDatabaseColumn) columns.get(j)).addCacheEntry(qe);
@@ -94,7 +94,7 @@ public class ResultCacheColumnUnique extends ResultCache
         return;
       }
     }
-    for (Iterator i = request.getSelect().iterator(); i.hasNext();)
+    for (Iterator<?> i = request.getSelect().iterator(); i.hasNext();)
     {
       TableColumn tc = (TableColumn) i.next();
       cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())
@@ -102,7 +102,7 @@ public class ResultCacheColumnUnique extends ResultCache
     }
     if (request.getWhere() != null)
     { // Add all columns dependencies
-      for (Iterator i = request.getWhere().iterator(); i.hasNext();)
+      for (Iterator<?> i = request.getWhere().iterator(); i.hasNext();)
       {
         TableColumn tc = (TableColumn) i.next();
         cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())
@@ -170,7 +170,7 @@ public class ResultCacheColumnUnique extends ResultCache
     }
     if (request.isInsert())
     {
-      for (Iterator i = request.getColumns().iterator(); i.hasNext();)
+      for (Iterator<?> i = request.getColumns().iterator(); i.hasNext();)
       {
         TableColumn tc = (TableColumn) i.next();
         cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())
@@ -212,7 +212,7 @@ public class ResultCacheColumnUnique extends ResultCache
       }
       // At this point this is a non unique write query or a request
       // we didn't handle properly (unknown request for example)
-      for (Iterator i = request.getColumns().iterator(); i.hasNext();)
+      for (Iterator<?> i = request.getColumns().iterator(); i.hasNext();)
       {
         TableColumn tc = (TableColumn) i.next();
         CacheDatabaseTable table = cdbs.getTable(tc.getTableName());

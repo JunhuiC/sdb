@@ -179,7 +179,7 @@ public class DatabaseBackend extends AbstractStandardMBean
    * @see org.continuent.sequoia.common.jmx.mbeans.DatabaseBackendMBean#getPendingRequestsDescription(int,
    *      boolean, boolean)
    */
-  public List getPendingRequestsDescription(int count, boolean fromFirst,
+  public List<?> getPendingRequestsDescription(int count, boolean fromFirst,
       boolean clone)
   {
     return managedBackend
@@ -189,7 +189,7 @@ public class DatabaseBackend extends AbstractStandardMBean
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.DatabaseBackendMBean#getActiveTransactions()
    */
-  public List getActiveTransactions()
+  public List<?> getActiveTransactions()
   {
     return managedBackend.getActiveTransactions();
   }
@@ -207,7 +207,7 @@ public class DatabaseBackend extends AbstractStandardMBean
    */
   public String[] getTablesNames()
   {
-    Set uniqueValues = new HashSet(managedBackend.getTables());
+    Set<?> uniqueValues = new HashSet<Object>(managedBackend.getTables());
     Object[] tables = uniqueValues.toArray();
     String[] res = new String[tables.length];
     for (int i = 0; i < tables.length; i++)
@@ -230,7 +230,7 @@ public class DatabaseBackend extends AbstractStandardMBean
       return null;
     // throw new VirtualDatabaseException("no such table");
 
-    ArrayList l = theTable.getColumns();
+    ArrayList<?> l = theTable.getColumns();
 
     String[] ret = new String[l.size()];
 
@@ -270,7 +270,7 @@ public class DatabaseBackend extends AbstractStandardMBean
    */
   private DatabaseTable getTable(String tableName)
   {
-    Set uniqueValues = new HashSet(managedBackend.getTables());
+    Set<?> uniqueValues = new HashSet<Object>(managedBackend.getTables());
     Object[] tables = uniqueValues.toArray();
 
     DatabaseTable theTable = null;
@@ -292,11 +292,11 @@ public class DatabaseBackend extends AbstractStandardMBean
    */
   public String[] getStoredProceduresNames()
   {
-    HashMap hm = managedBackend.getDatabaseSchema().getProcedures();
-    Set keys = hm.keySet();
+    HashMap<?, ?> hm = managedBackend.getDatabaseSchema().getProcedures();
+    Set<?> keys = hm.keySet();
     String[] res = new String[keys.size()];
     int i = 0;
-    for (Iterator iter = keys.iterator(); iter.hasNext(); i++)
+    for (Iterator<?> iter = keys.iterator(); iter.hasNext(); i++)
     {
       res[i] = (String) iter.next();
     }

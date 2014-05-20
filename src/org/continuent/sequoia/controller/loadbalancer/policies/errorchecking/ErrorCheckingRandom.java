@@ -50,7 +50,7 @@ public class ErrorCheckingRandom extends ErrorCheckingPolicy
   /**
    * @see org.continuent.sequoia.controller.loadbalancer.policies.errorchecking.ErrorCheckingPolicy#getBackends(ArrayList)
    */
-  public ArrayList getBackends(ArrayList backends)
+  public ArrayList<?> getBackends(ArrayList<?> backends)
     throws ErrorCheckingException
   {
     int size = backends.size();
@@ -65,8 +65,8 @@ public class ErrorCheckingRandom extends ErrorCheckingPolicy
           + size
           + ")");
 
-    ArrayList result = new ArrayList(nbOfNodes);
-    ArrayList clonedList = new ArrayList(size);
+    ArrayList<DatabaseBackend> result = new ArrayList<DatabaseBackend>(nbOfNodes);
+    ArrayList<DatabaseBackend> clonedList = new ArrayList<DatabaseBackend>(size);
     for (int i = 0; i < size; i++)
     { // Take all enabled backends
       DatabaseBackend db = (DatabaseBackend) backends.get(i);

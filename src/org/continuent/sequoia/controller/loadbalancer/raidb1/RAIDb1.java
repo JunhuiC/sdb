@@ -993,7 +993,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
     if (task.getSuccess() == 0)
     {
       // All backends that executed the query failed
-      List exceptions = task.getExceptions();
+      List<?> exceptions = task.getExceptions();
       if (exceptions == null)
         throw new AllBackendsFailedException(Translate.get(
             "loadbalancer.request.failed.all", new Object[]{request.getType(),
@@ -1463,7 +1463,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
         requestDescription);
 
     // Build the list of backends that need to commit this transaction
-    ArrayList commitList = new ArrayList(nbOfThreads);
+    ArrayList<DatabaseBackend> commitList = new ArrayList<DatabaseBackend>(nbOfThreads);
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1525,7 +1525,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.commit.all.failed", tid));
@@ -1579,7 +1579,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
         requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList rollbackList = new ArrayList();
+    ArrayList<DatabaseBackend> rollbackList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1621,7 +1621,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
         return;
 
       // All tasks failed
-      List exceptions = task.getExceptions();
+      List<?> exceptions = task.getExceptions();
       if (exceptions == null)
         throw new SQLException(Translate.get(
             "loadbalancer.rollback.all.failed", tid));
@@ -1677,7 +1677,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList rollbackList = new ArrayList();
+    ArrayList<DatabaseBackend> rollbackList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1728,7 +1728,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.rollbacksavepoint.all.failed", new String[]{
@@ -1787,7 +1787,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
     int nbOfThreads = acquireLockAndCheckNbOfThreads(null, requestDescription);
 
     // Build the list of backends that need to rollback this transaction
-    ArrayList savepointList = new ArrayList();
+    ArrayList<DatabaseBackend> savepointList = new ArrayList<DatabaseBackend>();
     for (int i = 0; i < nbOfThreads; i++)
     {
       DatabaseBackend backend = (DatabaseBackend) enabledBackends.get(i);
@@ -1838,7 +1838,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.releasesavepoint.all.failed", new String[]{
@@ -1931,7 +1931,7 @@ public abstract class RAIDb1 extends AbstractLoadBalancer
 
       if (task.getSuccess() == 0)
       { // All tasks failed
-        List exceptions = task.getExceptions();
+        List<?> exceptions = task.getExceptions();
         if (exceptions == null)
           throw new SQLException(Translate.get(
               "loadbalancer.setsavepoint.all.failed", new String[]{

@@ -166,7 +166,7 @@ public abstract class VirtualDatabaseShutdownThread extends ShutdownThread
    */
   protected void terminateVirtualDatabaseWorkerThreads()
   {
-    ArrayList idleThreads = virtualDatabase.getPendingConnections();
+    ArrayList<?> idleThreads = virtualDatabase.getPendingConnections();
 
     // Kill inactive threads first. As virtual database is shutting down, no new
     // thread will be created
@@ -176,7 +176,7 @@ public abstract class VirtualDatabaseShutdownThread extends ShutdownThread
       idleThreads.notifyAll();
     }
 
-    ArrayList threads = virtualDatabase.getActiveThreads();
+    ArrayList<?> threads = virtualDatabase.getActiveThreads();
     logger.info(Translate.get("controller.shutdown.active.threads", threads
         .size()));
 
@@ -221,7 +221,7 @@ public abstract class VirtualDatabaseShutdownThread extends ShutdownThread
   protected void waitForClientsToDisconnect()
   {
     boolean wait = true;
-    ArrayList threads = virtualDatabase.getActiveThreads();
+    ArrayList<?> threads = virtualDatabase.getActiveThreads();
     while (wait)
     {
       synchronized (threads)

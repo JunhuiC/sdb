@@ -267,7 +267,7 @@ public class ReportManager
     }
   }
 
-  private void write(Hashtable table)
+  private void write(Hashtable<?, ?> table)
   {
     write(ReadWrite.write(table, true));
   }
@@ -331,7 +331,7 @@ public class ReportManager
   /**
    * @param settings hashtable of settings
    */
-  public final void setSettings(Hashtable settings)
+  public final void setSettings(Hashtable<?, ?> settings)
   {
     // listLoggers();
     if (settings == null)
@@ -403,7 +403,8 @@ public class ReportManager
     Logger log = Logger.getRootLogger();
     if (!log.isDebugEnabled())
       return;
-    Enumeration loggers = Logger.getDefaultHierarchy().getCurrentLoggers();
+    @SuppressWarnings("deprecation")
+	Enumeration<?> loggers = Logger.getDefaultHierarchy().getCurrentLoggers();
     while (loggers.hasMoreElements())
     {
       Logger l = (Logger) loggers.nextElement();

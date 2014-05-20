@@ -42,8 +42,8 @@ public class NativeCommandOutputThread extends Thread
   // Buffer this many output lines.
   private static final int MAX_OUTPUT_LINES = 25;
 
-  ArrayList                errors           = new ArrayList();
-  ArrayList                output           = new ArrayList();
+  ArrayList<String>                errors           = new ArrayList<String>();
+  ArrayList<String>                output           = new ArrayList<String>();
   InputStream              inputStream      = null;
   OutputStream             outputStream     = null;
 
@@ -182,7 +182,7 @@ public class NativeCommandOutputThread extends Thread
    * 
    * @return ArrayList of <code>String</code> objects
    */
-  public ArrayList getErrors()
+  public ArrayList<String> getErrors()
   {
     return errors;
   }
@@ -192,7 +192,7 @@ public class NativeCommandOutputThread extends Thread
    * 
    * @return Output line array.
    */
-  public ArrayList getOutput()
+  public ArrayList<String> getOutput()
   {
     return output;
   }

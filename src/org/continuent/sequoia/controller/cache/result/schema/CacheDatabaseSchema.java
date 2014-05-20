@@ -40,7 +40,7 @@ import org.continuent.sequoia.common.sql.schema.DatabaseTable;
 public class CacheDatabaseSchema
 {
   /** Database tables. */
-  private ArrayList tables;
+  private ArrayList<CacheDatabaseTable> tables;
 
   /**
    * Creates a new <code>CacheDatabaseSchema</code> instance by cloning an
@@ -52,15 +52,15 @@ public class CacheDatabaseSchema
   {
     if (dbs == null)
     {
-      tables = new ArrayList();
+      tables = new ArrayList<CacheDatabaseTable>();
       return;
     }
 
     // Clone the tables
-    Collection origTables = dbs.getTables().values();
+    Collection<?> origTables = dbs.getTables().values();
     int size = origTables.size();
-    tables = new ArrayList(size);
-    for (Iterator iter = origTables.iterator(); iter.hasNext();)
+    tables = new ArrayList<CacheDatabaseTable>(size);
+    for (Iterator<?> iter = origTables.iterator(); iter.hasNext();)
       for (int i = 0; i < size; i++)
         tables.add(new CacheDatabaseTable((DatabaseTable) iter.next()));
   }
@@ -101,7 +101,7 @@ public class CacheDatabaseSchema
     if (databaseSchema == null)
       return;
 
-    ArrayList otherTables = databaseSchema.getTables();
+    ArrayList<CacheDatabaseTable> otherTables = databaseSchema.getTables();
     if (otherTables == null)
       return;
 
@@ -123,7 +123,7 @@ public class CacheDatabaseSchema
    * 
    * @return an <code>ArrayList</code> of <code>CacheDatabaseTable</code>
    */
-  public ArrayList getTables()
+  public ArrayList<CacheDatabaseTable> getTables()
   {
     return tables;
   }

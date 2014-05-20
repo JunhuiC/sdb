@@ -53,7 +53,7 @@ public class ResumeActivity extends DistributedVirtualDatabaseMessage
 {
   private static final long    serialVersionUID = 7285174496382359441L;
 
-  private transient LinkedList totalOrderQueue;
+  private transient LinkedList<Object> totalOrderQueue;
 
   private boolean              interactiveCommand;
 

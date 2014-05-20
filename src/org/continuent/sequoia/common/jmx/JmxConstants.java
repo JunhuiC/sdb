@@ -144,7 +144,7 @@ public final class JmxConstants
       String virtualDataBaseName) throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(
-        VIRTUALDATABASE_OBJECTNAME_PATTERN, new String[]{virtualDataBaseName}));
+        VIRTUALDATABASE_OBJECTNAME_PATTERN, new Object[]{virtualDataBaseName}));
   }
 
   /**
@@ -171,7 +171,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(
-        DATABASEBACKEND_OBJECTNAME_PATTERN, new String[]{
+        DATABASEBACKEND_OBJECTNAME_PATTERN, new Object[]{
             virtualDataBaseName,
             name}));
   }
@@ -189,7 +189,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(RECOVERYLOG_OBJECTNAME_PATTERN,
-        new String[]{vdbName}));
+        new Object[]{vdbName}));
   }
 
   /**
@@ -217,7 +217,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(
-        REQUESTMANAGER_OBJECTNAME_PATTERN, new String[]{vdbName}));
+        REQUESTMANAGER_OBJECTNAME_PATTERN, new Object[]{vdbName}));
   }
 
   /**
@@ -234,7 +234,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(LOADBALANCER_OBJECTNAME_PATTERN,
-        new String[]{vdbName}));
+        new Object[]{vdbName}));
   }
 
   /**
@@ -252,7 +252,7 @@ public final class JmxConstants
   {
     return new ObjectName(MessageFormat.format(
         BACKENDTASKQUEUES_OBJECTNAME_PATTERN,
-        new String[]{vdbName, backendName}));
+        new Object[]{vdbName, backendName}));
   }
 
   /**
@@ -266,7 +266,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(
-        ABSTRACTSCHEDULER_OBJECTNAME_PATTERN, new String[]{vdbName}));
+        ABSTRACTSCHEDULER_OBJECTNAME_PATTERN, new Object[]{vdbName}));
   }
 
   /**
@@ -280,7 +280,7 @@ public final class JmxConstants
       throws MalformedObjectNameException
   {
     return new ObjectName(MessageFormat.format(PARSINGCACHE_OBJECTNAME_PATTERN,
-        new String[]{vdbName}));
+        new Object[]{vdbName}));
   }
 
   /**

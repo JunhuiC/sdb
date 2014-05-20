@@ -33,6 +33,7 @@ import org.continuent.sequoia.console.text.module.AbstractConsoleModule;
  * 
  * @author <a href="mailto:Nicolas.Modrzyk@inrialpes.fr">Nicolas Modrzyk </a>
  * @version 1.0
+ * @param <E>
  */
 public class History extends ConsoleCommand
 {
@@ -52,7 +53,7 @@ public class History extends ConsoleCommand
    */
   public void parse(String commandText) throws Exception
   {
-    List list = module.getConsole().getHistory();
+    List<?> list = module.getConsole().getHistory();
     StringTokenizer st = new StringTokenizer(commandText);
     if (st.countTokens() == 0)
     {

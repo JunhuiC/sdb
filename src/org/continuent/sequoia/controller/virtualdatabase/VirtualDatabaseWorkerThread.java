@@ -61,6 +61,7 @@ import org.continuent.sequoia.common.stream.DriverBufferedInputStream;
 import org.continuent.sequoia.common.stream.DriverBufferedOutputStream;
 import org.continuent.sequoia.common.users.VirtualDatabaseUser;
 import org.continuent.sequoia.common.util.Constants;
+import org.continuent.sequoia.controller.backend.result.AbstractResult;
 import org.continuent.sequoia.controller.backend.result.ControllerResultSet;
 import org.continuent.sequoia.controller.backend.result.ExecuteResult;
 import org.continuent.sequoia.controller.backend.result.ExecuteUpdateResult;
@@ -124,7 +125,7 @@ public class VirtualDatabaseWorkerThread extends Thread
 
   private boolean                    waitForCommand;
 
-  private HashMap                    streamedResultSets;
+  private HashMap<String, AbstractResult>                    streamedResultSets;
 
   private RequestFactory             requestFactory          = ControllerConstants.CONTROLLER_FACTORY
                                                                  .getRequestFactory();
@@ -189,13 +190,14 @@ public class VirtualDatabaseWorkerThread extends Thread
   /**
    * Gets a connection from the connection queue and process it.
    */
-  public void run()
+  @SuppressWarnings("deprecation")
+public void run()
   {
-    ArrayList vdbActiveThreads = vdb.getActiveThreads();
-    ArrayList vdbPendingQueue = vdb.getPendingConnections();
+    ArrayList<VirtualDatabaseWorkerThread> vdbActiveThreads = vdb.getActiveThreads();
+    ArrayList<?> vdbPendingQueue = vdb.getPendingConnections();
     // List of open ResultSets for streaming. This is not synchronized since the
     // connection does only handle one request at a time
-    streamedResultSets = new HashMap();
+    streamedResultSets = new HashMap<String, AbstractResult>();
     boolean isActive = true;
 
     if (vdbActiveThreads == null)
@@ -736,7 +738,7 @@ public class VirtualDatabaseWorkerThread extends Thread
       // Do the cleanup
       if (!streamedResultSets.isEmpty())
       {
-        for (Iterator iter = streamedResultSets.values().iterator(); iter
+        for (Iterator<AbstractResult> iter = streamedResultSets.values().iterator(); iter
             .hasNext();)
         {
           ControllerResultSet crs = (ControllerResultSet) iter.next();
@@ -1011,7 +1013,7 @@ public class VirtualDatabaseWorkerThread extends Thread
   {
     if (logger.isDebugEnabled())
       logger.debug("ConnectionGetCatalogs command");
-    ArrayList list = controller.getVirtualDatabaseNames();
+    ArrayList<?> list = controller.getVirtualDatabaseNames();
     sendToDriver(vdb.getDynamicMetaData().getCatalogs(list));
   }
 
@@ -2524,7 +2526,7 @@ public class VirtualDatabaseWorkerThread extends Thread
     // Send SQL Warnings if any
     sendToDriver(result.getStatementWarnings());
 
-    for (Iterator iter = result.getResults().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = result.getResults().iterator(); iter.hasNext();)
     {
       Object r = iter.next();
       if (r instanceof Integer)
@@ -2763,7 +2765,7 @@ public class VirtualDatabaseWorkerThread extends Thread
     // Send SQL Warnings if any
     sendToDriver(result.getStatementWarnings());
 
-    for (Iterator iter = result.getResults().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = result.getResults().iterator(); iter.hasNext();)
     {
       Object r = iter.next();
 
@@ -2794,11 +2796,11 @@ public class VirtualDatabaseWorkerThread extends Thread
       {
         StoredProcedure proc = (StoredProcedure) request;
         // First send the out parameters
-        List outParamIndexes = proc.getOutParameterIndexes();
+        List<?> outParamIndexes = proc.getOutParameterIndexes();
         if (outParamIndexes != null)
         {
           // Now send each param (index, then serializer and serialized object)
-          for (Iterator iter = outParamIndexes.iterator(); iter.hasNext();)
+          for (Iterator<?> iter = outParamIndexes.iterator(); iter.hasNext();)
           {
             Integer index = (Integer) iter.next();
             sendToDriver(index.intValue());
@@ -2809,10 +2811,10 @@ public class VirtualDatabaseWorkerThread extends Thread
         sendToDriver(0);
 
         // Fetch the named parameters
-        List namedParamNames = proc.getNamedParameterNames();
+        List<?> namedParamNames = proc.getNamedParameterNames();
         if (namedParamNames != null)
         {
-          for (Iterator iter = namedParamNames.iterator(); iter.hasNext();)
+          for (Iterator<?> iter = namedParamNames.iterator(); iter.hasNext();)
           {
             // Send param name first
             String paramName = (String) iter.next();
@@ -2927,7 +2929,7 @@ public class VirtualDatabaseWorkerThread extends Thread
           sendToDriver(((ExecuteResult) spResult.getResult())
               .getStatementWarnings());
           // Send results first
-          for (Iterator iter = ((ExecuteResult) spResult.getResult())
+          for (Iterator<?> iter = ((ExecuteResult) spResult.getResult())
               .getResults().iterator(); iter.hasNext();)
           {
             Object element = iter.next();
@@ -3137,7 +3139,7 @@ public class VirtualDatabaseWorkerThread extends Thread
             .getStatementWarnings();
         sendToDriver(cachedWarns);
         // and result
-        for (Iterator iter = ((ExecuteResult) result).getResults().iterator(); iter
+        for (Iterator<?> iter = ((ExecuteResult) result).getResults().iterator(); iter
             .hasNext();)
         {
           Object element = iter.next();

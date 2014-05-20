@@ -21,7 +21,6 @@
 
 package org.continuent.sequoia.controller.scheduler;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +75,7 @@ public class AbstractSchedulerControl extends AbstractStandardMBean
    */
   public long[] listActiveTransactionIds()
   {
-    List transactions = managedScheduler.getActiveTransactions();
+    List<?> transactions = managedScheduler.getActiveTransactions();
     int sz = transactions.size();
     long[] res = new long[sz];
     for (int i = 0; i < sz; i++)
@@ -94,7 +93,7 @@ public class AbstractSchedulerControl extends AbstractStandardMBean
    */
   public TabularData getActiveTransactions() throws Exception
   {
-    List transactions = managedScheduler.getActiveTransactions();
+    List<?> transactions = managedScheduler.getActiveTransactions();
     TabularData data = TransactionDataSupport.newTabularData();
     long now = System.currentTimeMillis();
     for (int i = 0; i < transactions.size(); i++)
@@ -107,12 +106,12 @@ public class AbstractSchedulerControl extends AbstractStandardMBean
     return data;
   }
 
-  private long[] listPendingRequestIds(Map requests)
+  private long[] listPendingRequestIds(Map<?, ?> requests)
   {
-    Set reqIds = requests.keySet();
+    Set<?> reqIds = requests.keySet();
     long[] res = new long[reqIds.size()];
     int i = 0;
-    for (Iterator iter = reqIds.iterator(); iter.hasNext(); i++)
+    for (Iterator<?> iter = reqIds.iterator(); iter.hasNext(); i++)
     {
       Long l = (Long) iter.next();
       res[i] = l.longValue();
@@ -139,7 +138,7 @@ public class AbstractSchedulerControl extends AbstractStandardMBean
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.AbstractSchedulerControlMBean#listOpenPersistentConnections()
    */
-  public Hashtable listOpenPersistentConnections()
+  public Hashtable<?, ?> listOpenPersistentConnections()
   {
     return managedScheduler.getOpenPersistentConnections();
   }
@@ -150,14 +149,14 @@ public class AbstractSchedulerControl extends AbstractStandardMBean
   public String dumpRequest(long requestId)
   {
     AbstractRequest request = null;
-    Map writeRequests = managedScheduler.getActiveWriteRequests();
+    Map<?, ?> writeRequests = managedScheduler.getActiveWriteRequests();
     synchronized (writeRequests)
     {
       request = (AbstractRequest) writeRequests.get(new Long(requestId));
     }
     if (request == null)
     {
-      Map readRequests = managedScheduler.getActiveReadRequests();
+      Map<?, ?> readRequests = managedScheduler.getActiveReadRequests();
       synchronized (readRequests)
       {
         request = (AbstractRequest) readRequests.get(new Long(requestId));

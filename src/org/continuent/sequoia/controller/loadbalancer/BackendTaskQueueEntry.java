@@ -36,7 +36,7 @@ import org.continuent.sequoia.controller.loadbalancer.tasks.AbstractTask;
 public class BackendTaskQueueEntry
 {
   AbstractTask        task;
-  private LinkedList  queue;
+  private LinkedList<?>  queue;
   BackendWorkerThread processingThread;
   private boolean     isACommitOrRollback;
   private long timestamp;
@@ -48,7 +48,7 @@ public class BackendTaskQueueEntry
    * @param queue the queue in which the task has been posted
    * @param isACommitOrRollback true if the task is a commit or a rollback
    */
-  public BackendTaskQueueEntry(AbstractTask task, LinkedList queue,
+  public BackendTaskQueueEntry(AbstractTask task, LinkedList<?> queue,
       boolean isACommitOrRollback)
   {
     this.task = task;
@@ -94,7 +94,7 @@ public class BackendTaskQueueEntry
    * 
    * @return Returns the queue holding the query.
    */
-  public final LinkedList getQueue()
+  public final LinkedList<?> getQueue()
   {
     return queue;
   }
@@ -114,7 +114,7 @@ public class BackendTaskQueueEntry
    * 
    * @param queue The queue to set.
    */
-  public void setQueue(LinkedList queue)
+  public void setQueue(LinkedList<?> queue)
   {
     this.queue = queue;
   }

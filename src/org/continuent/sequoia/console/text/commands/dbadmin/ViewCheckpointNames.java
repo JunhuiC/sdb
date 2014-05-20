@@ -57,7 +57,7 @@ public class ViewCheckpointNames extends AbstractAdminCommand
     RecoveryLogControlMBean recoveryLog = jmxClient.getRecoveryLog(dbName,
         user,
         password);
-    Map checkpoints = recoveryLog.getCheckpoints();
+    Map<?, ?> checkpoints = recoveryLog.getCheckpoints();
     if (checkpoints.size() == 0)
     {
       console.printInfo(ConsoleTranslate.get("ViewCheckpointNames.nocheckpoints")); //$NON-NLS-1$
@@ -71,15 +71,15 @@ public class ViewCheckpointNames extends AbstractAdminCommand
 
   }
 
-  private String[][] getCheckpointsAsStrings(Map checkpoints)
+  private String[][] getCheckpointsAsStrings(Map<?, ?> checkpoints)
   {
     String[][] cp = new String[checkpoints.entrySet().size()][2];
-    Iterator iter = checkpoints.entrySet().iterator();
+    Iterator<?> iter = checkpoints.entrySet().iterator();
     int i = 0;
     while (iter.hasNext())
     {
       // we display first the log ID and then the checkpoint names
-      Map.Entry checkpoint = (Map.Entry) iter.next();
+      Map.Entry<?,?> checkpoint = (Map.Entry<?,?>) iter.next();
       cp[i][1] = (String) checkpoint.getKey();
       cp[i][0] = (String) checkpoint.getValue();
       i++;

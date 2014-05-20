@@ -138,7 +138,7 @@ public class Controller extends AbstractStandardMBean
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.ControllerMBean#getVirtualDatabaseNames()
    */
-  public List getVirtualDatabaseNames()
+  public List<?> getVirtualDatabaseNames()
   {
     return controller.getVirtualDatabaseNames();
   }

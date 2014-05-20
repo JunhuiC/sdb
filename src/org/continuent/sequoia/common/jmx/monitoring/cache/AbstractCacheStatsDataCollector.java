@@ -37,7 +37,11 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabase;
 public abstract class AbstractCacheStatsDataCollector
     extends AbstractDataCollector
 {
-  private String virtualDatabaseName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1449138589332066669L;
+private String virtualDatabaseName;
 
   /**
    * new collector

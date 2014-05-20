@@ -22,6 +22,7 @@
 
 package org.continuent.sequoia.controller.core.security;
 
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -40,10 +41,10 @@ public class ControllerSecurityManager implements XmlComponent
 {
   private boolean          allowAdditionalDriver = true;
   private boolean          defaultConnect        = true;
-  private ArrayList        accept;
-  private ArrayList        saccept;
-  private ArrayList        block;
-  private ArrayList        sblock;
+  private ArrayList<Serializable>        accept;
+  private ArrayList<Serializable>        saccept;
+  private ArrayList<Serializable>        block;
+  private ArrayList<Serializable>        sblock;
   private SSLConfiguration sslConfig;
 
   /**
@@ -51,10 +52,10 @@ public class ControllerSecurityManager implements XmlComponent
    */
   public ControllerSecurityManager()
   {
-    block = new ArrayList();
-    accept = new ArrayList();
-    saccept = new ArrayList();
-    sblock = new ArrayList();
+    block = new ArrayList<Serializable>();
+    accept = new ArrayList<Serializable>();
+    saccept = new ArrayList<Serializable>();
+    sblock = new ArrayList<Serializable>();
   }
 
   /**
@@ -118,7 +119,7 @@ public class ControllerSecurityManager implements XmlComponent
       block.add(host);
   }
 
-  private static boolean checkList(ArrayList list, Socket clientSocket)
+  private static boolean checkList(ArrayList<Serializable> list, Socket clientSocket)
   {
     String hostAddress = clientSocket.getInetAddress().getHostAddress();
     String hostName = clientSocket.getInetAddress().getHostName();
@@ -180,7 +181,7 @@ public class ControllerSecurityManager implements XmlComponent
   /**
    * @return Returns the saccept.
    */
-  public ArrayList getSaccept()
+  public ArrayList<Serializable> getSaccept()
   {
     return saccept;
   }
@@ -188,7 +189,7 @@ public class ControllerSecurityManager implements XmlComponent
   /**
    * @return Returns the sblock.
    */
-  public ArrayList getSblock()
+  public ArrayList<Serializable> getSblock()
   {
     return sblock;
   }
@@ -196,7 +197,7 @@ public class ControllerSecurityManager implements XmlComponent
   /**
    * @return Returns the accept.
    */
-  public ArrayList getAccept()
+  public ArrayList<Serializable> getAccept()
   {
     return accept;
   }
@@ -204,7 +205,7 @@ public class ControllerSecurityManager implements XmlComponent
   /**
    * @return Returns the block.
    */
-  public ArrayList getBlock()
+  public ArrayList<Serializable> getBlock()
   {
     return block;
   }
@@ -212,7 +213,7 @@ public class ControllerSecurityManager implements XmlComponent
   /**
    * @param block The block to set.
    */
-  public void setBlock(ArrayList block)
+  public void setBlock(ArrayList<Serializable> block)
   {
     this.block = block;
   }
@@ -232,7 +233,7 @@ public class ControllerSecurityManager implements XmlComponent
         + "\"/>");
 
     sb.append("<" + ControllerXmlTags.ELT_ACCEPT + ">");
-    ArrayList list = this.getSaccept();
+    ArrayList<Serializable> list = this.getSaccept();
     String tmp;
     for (int i = 0; i < list.size(); i++)
     {

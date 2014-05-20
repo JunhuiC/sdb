@@ -63,14 +63,14 @@ public class BackupManager implements XmlComponent
   /**
    * This is a HashMap of backuperName -> Backuper HashMap<String,Backuper>
    */
-  private HashMap          backupers;
+  private HashMap<String, Backuper>          backupers;
 
   /**
    * Creates a new <code>BackupManager</code> object
    */
   public BackupManager()
   {
-    backupers = new HashMap();
+    backupers = new HashMap<String, Backuper>();
   }
 
   /**
@@ -94,7 +94,7 @@ public class BackupManager implements XmlComponent
    */
   public synchronized String[] getBackuperNames()
   {
-    Set backuperNames = backupers.keySet();
+    Set<String> backuperNames = backupers.keySet();
     return (String[]) backuperNames.toArray(new String[backuperNames.size()]);
   }
 
@@ -109,7 +109,7 @@ public class BackupManager implements XmlComponent
   {
     if (format == null)
       return null;
-    for (Iterator iter = backupers.values().iterator(); iter.hasNext();)
+    for (Iterator<Backuper> iter = backupers.values().iterator(); iter.hasNext();)
     {
       Backuper b = (Backuper) iter.next();
       if (format.equals(b.getDumpFormat()))
@@ -141,7 +141,7 @@ public class BackupManager implements XmlComponent
       throw new BackupException("Invalid null dump format for backuper " + name);
 
     // Check that an already loaded backuper does no already handle that format
-    for (Iterator iter = backupers.values().iterator(); iter.hasNext();)
+    for (Iterator<Backuper> iter = backupers.values().iterator(); iter.hasNext();)
     {
       Backuper b = (Backuper) iter.next();
       if (b.getDumpFormat().equals(dumpFormat))
@@ -180,7 +180,7 @@ public class BackupManager implements XmlComponent
   public synchronized String getXml()
   {
     StringBuffer sb = new StringBuffer("<" + DatabasesXmlTags.ELT_Backup + "> ");
-    for (Iterator iter = backupers.keySet().iterator(); iter.hasNext();)
+    for (Iterator<String> iter = backupers.keySet().iterator(); iter.hasNext();)
     {
       String backuperName = (String) iter.next();
       Backuper b = (Backuper) backupers.get(backuperName);

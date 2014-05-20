@@ -52,7 +52,7 @@ public class WaitForGraph
 {
   private static final String INDENT = "    ";
   private DatabaseBackend     backend;
-  private List                storedProcedureQueue;
+  private List<?>                storedProcedureQueue;
   private Node                victim;
 
   private static Trace        logger = Trace
@@ -64,7 +64,7 @@ public class WaitForGraph
    * @param backend database backend that will be used to build the graph.
    * @param storedProcedureQueue also used to build the graph.
    */
-  public WaitForGraph(DatabaseBackend backend, List storedProcedureQueue)
+  public WaitForGraph(DatabaseBackend backend, List<?> storedProcedureQueue)
   {
     this.backend = backend;
     this.storedProcedureQueue = storedProcedureQueue;
@@ -80,8 +80,8 @@ public class WaitForGraph
    */
   public boolean detectDeadlocks()
   {
-    Collection nodes = build();
-    Collection cycles = walk(nodes);
+    Collection<?> nodes = build();
+    Collection<Path> cycles = walk(nodes);
     kill(cycles);
     return (victim != null);
   }
@@ -97,7 +97,7 @@ public class WaitForGraph
     return victim.getTransactionId();
   }
 
-  private Collection build()
+  private Collection<?> build()
   {
     if (logger.isDebugEnabled())
       logger.debug("Building wait-for graph...");
@@ -105,14 +105,14 @@ public class WaitForGraph
     // Triggers schema update
     DatabaseSchema schema = backend.getDatabaseSchema();
 
-    Map transactionToNode = new HashMap();
+    Map<Long, WaitForGraph.Node> transactionToNode = new HashMap<Long, WaitForGraph.Node>();
     TransactionLogicalLock globalLock = schema.getLock();
     // Make sure we don't process a DatabaseTable object twice,
     // which may happen if we reference a table
     // both by its fully qualified name (i.e. schemaName.tableName)
     // and by its short name (i.e. tableName).
-    Set uniqueTables = new HashSet(schema.getTables().values());
-    for (Iterator iter = uniqueTables.iterator(); iter.hasNext();)
+    Set<DatabaseTable> uniqueTables = new HashSet<DatabaseTable>(schema.getTables().values());
+    for (Iterator<DatabaseTable> iter = uniqueTables.iterator(); iter.hasNext();)
     {
       DatabaseTable table = (DatabaseTable) iter.next();
       TransactionLogicalLock lock = table.getLock();
@@ -128,7 +128,7 @@ public class WaitForGraph
           lockerNode = new Node(lockerTransactionId);
           transactionToNode.put(new Long(lockerTransactionId), lockerNode);
         }
-        for (Iterator iter2 = lock.getWaitingList().iterator(); iter2.hasNext();)
+        for (Iterator<?> iter2 = lock.getWaitingList().iterator(); iter2.hasNext();)
         {
           long waitingTransactionId = ((WaitingListElement) iter2.next())
               .getTransactionId();
@@ -147,7 +147,7 @@ public class WaitForGraph
         // Check for blocked stored procedures
         if ((storedProcedureQueue != null) && (globalLock.isLocked()))
         {
-          for (Iterator iter2 = storedProcedureQueue.iterator(); iter2
+          for (Iterator<?> iter2 = storedProcedureQueue.iterator(); iter2
               .hasNext();)
           {
             AbstractTask task = ((BackendTaskQueueEntry) iter2.next())
@@ -176,21 +176,21 @@ public class WaitForGraph
     return transactionToNode.values();
   }
 
-  private Collection walk(Collection nodes)
+  private Collection<Path> walk(Collection<?> nodes)
   {
     if (logger.isDebugEnabled())
       logger.debug("Walking wait-for graph...");
-    List startNodes = new ArrayList();
-    List cycles = new ArrayList();
+    List<Node> startNodes = new ArrayList<Node>();
+    List<Path> cycles = new ArrayList<Path>();
     String indent = new String();
 
     // Need to start from different nodes since graph may not be fully connected
-    for (Iterator iter = nodes.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = nodes.iterator(); iter.hasNext();)
     {
       Node node = (Node) iter.next();
       if (!startNodes.contains(node))
       {
-        List visitedNodes = new ArrayList();
+        List<Node> visitedNodes = new ArrayList<Node>();
         doWalk(node, visitedNodes, new Path(), cycles, indent);
         startNodes.addAll(visitedNodes);
       }
@@ -198,7 +198,7 @@ public class WaitForGraph
     return cycles;
   }
 
-  private void doWalk(Node node, List visitedNodes, Path path, List cycles,
+  private void doWalk(Node node, List<Node> visitedNodes, Path path, List<Path> cycles,
       String indent)
   {
     // Check that we haven't met a cycle
@@ -219,7 +219,7 @@ public class WaitForGraph
 
     // No cycle, proceed with exploration
     visitedNodes.add(node);
-    for (Iterator iter = node.getOutgoingEdges().iterator(); iter.hasNext();)
+    for (Iterator<Edge> iter = node.getOutgoingEdges().iterator(); iter.hasNext();)
     {
       Edge edge = (Edge) iter.next();
       if (!path.containsEdge(edge))
@@ -235,22 +235,22 @@ public class WaitForGraph
     }
   }
 
-  private Node kill(Collection cycles)
+  private Node kill(Collection<Path> cycles)
   {
     if (logger.isDebugEnabled())
       logger.debug("Choosing victim node...");
     if (logger.isDebugEnabled())
       logger.debug(cycles.size() + " cycles detected");
-    Map appearances = new HashMap();
+    Map<Node, Integer> appearances = new HashMap<Node, Integer>();
     int maxCount = 0;
     victim = null;
 
     // Count in how many cycles each node appears
     // FIXME : some cycles may have been detected multiple times
-    for (Iterator iter = cycles.iterator(); iter.hasNext();)
+    for (Iterator<Path> iter = cycles.iterator(); iter.hasNext();)
     {
       Path cycle = (Path) iter.next();
-      for (Iterator iter2 = cycle.getSources().iterator(); iter2.hasNext();)
+      for (Iterator<Node> iter2 = cycle.getSources().iterator(); iter2.hasNext();)
       {
         Node node = (Node) iter2.next();
         if (appearances.containsKey(node))
@@ -273,12 +273,12 @@ public class WaitForGraph
 
     if (logger.isDebugEnabled())
     {
-      for (Iterator iter = cycles.iterator(); iter.hasNext();)
+      for (Iterator<Path> iter = cycles.iterator(); iter.hasNext();)
       {
         StringBuffer printableCycle = new StringBuffer(INDENT);
         Path cycle = (Path) iter.next();
         Edge edge = null;
-        for (Iterator iter2 = cycle.getEdges().iterator(); iter2.hasNext();)
+        for (Iterator<Edge> iter2 = cycle.getEdges().iterator(); iter2.hasNext();)
         {
           edge = (Edge) iter2.next();
           printableCycle.append(edge.getSource().getTransactionId() + " --"
@@ -302,8 +302,8 @@ public class WaitForGraph
   private class Node
   {
     private long transactionId;
-    private Set  outgoingEdges = new HashSet();
-    private Set  incomingEdges = new HashSet();
+    private Set<Edge>  outgoingEdges = new HashSet<Edge>();
+    private Set<Edge>  incomingEdges = new HashSet<Edge>();
 
     /**
      * Creates a new <code>Node</code> object
@@ -340,7 +340,7 @@ public class WaitForGraph
      *
      * @return Returns the outgoingEdges.
      */
-    public Set getOutgoingEdges()
+    public Set<Edge> getOutgoingEdges()
     {
       return outgoingEdges;
     }
@@ -410,18 +410,18 @@ public class WaitForGraph
 
   private class Path
   {
-    private List edges;
-    private List sources;
-    private Map  sourceToEdge;
+    private List<Edge> edges;
+    private List<Node> sources;
+    private Map<Node, Edge>  sourceToEdge;
 
     /**
      * Creates a new <code>Path</code> object
      */
     public Path()
     {
-      edges = new ArrayList();
-      sources = new ArrayList();
-      sourceToEdge = new HashMap();
+      edges = new ArrayList<Edge>();
+      sources = new ArrayList<Node>();
+      sourceToEdge = new HashMap<Node, Edge>();
     }
 
     /**
@@ -431,9 +431,9 @@ public class WaitForGraph
      */
     public Path(Path path)
     {
-      edges = new ArrayList(path.edges);
-      sources = new ArrayList(path.sources);
-      sourceToEdge = new HashMap(path.sourceToEdge);
+      edges = new ArrayList<Edge>(path.edges);
+      sources = new ArrayList<Node>(path.sources);
+      sourceToEdge = new HashMap<Node, Edge>(path.sourceToEdge);
     }
 
     /**
@@ -447,8 +447,8 @@ public class WaitForGraph
       }
       if (obj instanceof Path)
       {
-        Set thisEdgesSet = new HashSet(edges);
-        Set objEdgesSet = new HashSet(((Path) obj).edges);
+        Set<Edge> thisEdgesSet = new HashSet<Edge>(edges);
+        Set<Edge> objEdgesSet = new HashSet<Edge>(((Path) obj).edges);
         return thisEdgesSet.equals(objEdgesSet);
       }
       return false;
@@ -459,7 +459,7 @@ public class WaitForGraph
      */
     public int hashCode()
     {
-      return (new HashSet(edges)).hashCode();
+      return (new HashSet<Edge>(edges)).hashCode();
     }
 
     /**
@@ -501,7 +501,7 @@ public class WaitForGraph
      *
      * @return Returns the edges.
      */
-    public List getEdges()
+    public List<Edge> getEdges()
     {
       return edges;
     }
@@ -511,7 +511,7 @@ public class WaitForGraph
      *
      * @return Returns the sources.
      */
-    public List getSources()
+    public List<Node> getSources()
     {
       return sources;
     }

@@ -41,13 +41,13 @@ public abstract class WeightedBalancer
    * @param weights a list ((String)name,(Integer)weight) of weights
    * @return xml formatted string of weighted backends
    */
-  public static final String getWeightedXml(HashMap weights)
+  public static final String getWeightedXml(HashMap<?, ?> weights)
   {
     if (weights == null)
       return "";
     StringBuffer info = new StringBuffer();
     String nametmp;
-    for (Iterator iterator = weights.keySet().iterator(); iterator.hasNext();)
+    for (Iterator<?> iterator = weights.keySet().iterator(); iterator.hasNext();)
     {
       nametmp = (String) iterator.next();
       info
@@ -66,7 +66,7 @@ public abstract class WeightedBalancer
    * @param xmltag the xml tag to use
    * @return xml formatted string
    */
-  public static final String getRaidbXml(HashMap weights, String xmltag)
+  public static final String getRaidbXml(HashMap<?, ?> weights, String xmltag)
   {
     StringBuffer info = new StringBuffer();
     info.append("<" + xmltag + ">");

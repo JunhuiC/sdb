@@ -54,7 +54,7 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
   /** <code>true</code> if this request updates a <code>UNIQUE</code> row. */
   protected transient boolean isUnique;
 
-  protected transient HashMap updatedValues    = null;
+  protected transient HashMap<String, String> updatedValues    = null;
 
   /**
    * Creates a new <code>UpdateRequest</code> instance. The caller must give
@@ -168,7 +168,7 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
    * @return a hashtable of (colname,value) or null if parsing granularity has
    *         stop computation
    */
-  public HashMap getUpdatedValues()
+  public HashMap<String, String> getUpdatedValues()
   {
     return updatedValues;
   }
@@ -261,7 +261,7 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
 
     if (schema == null)
     {
-      writeLockedTables = new TreeSet();
+      writeLockedTables = new TreeSet<String>();
       writeLockedTables.add(tableName);
       isParsed = true;
       return;
@@ -277,7 +277,7 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
       tableName = t.getName();
 
     // Lock this table in write
-    writeLockedTables = new TreeSet();
+    writeLockedTables = new TreeSet<String>();
     writeLockedTables.add(tableName);
     addDependingTables(schema, writeLockedTables);
 
@@ -288,7 +288,7 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
       StringTokenizer columnTokens = new StringTokenizer(sql.substring(
           setIdx + 5, whereIdx), ",");
       // 5 = length(" SET ")
-      columns = new ArrayList();
+      columns = new ArrayList<TableColumn>();
       DatabaseColumn col = null;
       while (columnTokens.hasMoreTokens())
       {
@@ -320,13 +320,13 @@ public class UpdateRequest extends AbstractWriteRequest implements Serializable
       return;
 
     // Prepare hashtable for updated values
-    updatedValues = new HashMap(columns.size());
+    updatedValues = new HashMap<String, String>(columns.size());
 
     // Check whether this update affects a single row or not
     // Instead of parsing the clause, we use a brutal force technique
     // and we try to directly identify every column name of the table.
     DatabaseColumn col = null;
-    ArrayList cols = t.getColumns();
+    ArrayList<?> cols = t.getColumns();
     int size = cols.size();
     for (int j = 0; j < size; j++)
     {

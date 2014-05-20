@@ -75,7 +75,7 @@ public class RmiConnector
   private JMXConnectorServer connection;
   private Remote             rmiRegistry;
 
-  private static List        rmiConnectors = new ArrayList();
+  private static List<RmiConnector>        rmiConnectors = new ArrayList<RmiConnector>();
 
   /**
    * Creates a new <code>RmiConnector.java</code> object
@@ -264,7 +264,7 @@ public class RmiConnector
           + rmiServer + "/jndi/rmi://" + hostName + ":" + registryPort
           + "/jmxrmi");
 
-      java.util.Map environment = new java.util.HashMap();
+      java.util.Map<String, Object> environment = new java.util.HashMap<String, Object>();
 
       if (authenticator == null)
       {
@@ -307,7 +307,7 @@ public class RmiConnector
    * 
    * @return Returns list of RmiConnector.
    */
-  public static List getRmiConnectors()
+  public static List<RmiConnector> getRmiConnectors()
   {
     return rmiConnectors;
   }
@@ -361,7 +361,7 @@ public class RmiConnector
    *          on the notification
    */
   public synchronized void sendNotification(AbstractStandardMBean mbean,
-      String type, String priority, String description, Hashtable data)
+      String type, String priority, String description, Hashtable<String, ArrayList<String>> data)
   {
 
     myDate = new Date();
@@ -390,16 +390,16 @@ public class RmiConnector
    *          on the notification
    */
   public static void broadcastNotification(AbstractStandardMBean mbean,
-      String type, String priority, String description, Hashtable data)
+      String type, String priority, String description, Hashtable<String, ArrayList<String>> data)
   {
     sequence++;
     logger.info("Sending notification:" + description + "(Message No:"
         + sequence + ")");
-    Iterator iter = rmiConnectors.iterator();
+    Iterator<RmiConnector> iter = rmiConnectors.iterator();
     RmiConnector rmi;
     while (iter.hasNext())
     {
-      rmi = ((RmiConnector) iter.next());
+      rmi = iter.next();
       rmi.sendNotification(mbean, type, priority, description, data);
     }
   }

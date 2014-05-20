@@ -45,7 +45,7 @@ public class DatabaseProcedure
   /** Returns a result */
   public static final int           ProcedureReturnsResult = 2;
 
-  ArrayList                         parameters;
+  ArrayList<DatabaseProcedureParameter>                         parameters;
   private String                    name;
   private String                    remarks;
   private int                       procedureType;
@@ -61,7 +61,7 @@ public class DatabaseProcedure
     this.name = name;
     this.remarks = remarks;
     this.procedureType = procedureType;
-    this.parameters = new ArrayList();
+    this.parameters = new ArrayList<DatabaseProcedureParameter>();
   }
 
   /**
@@ -121,7 +121,7 @@ public class DatabaseProcedure
   /**
    * @return Returns the parameters.
    */
-  public ArrayList getParameters()
+  public ArrayList<DatabaseProcedureParameter> getParameters()
   {
     return parameters;
   }
@@ -129,7 +129,7 @@ public class DatabaseProcedure
   /**
    * @param parameters The parameters to set.
    */
-  public void setParameters(ArrayList parameters)
+  public void setParameters(ArrayList<DatabaseProcedureParameter> parameters)
   {
     this.parameters = parameters;
   }

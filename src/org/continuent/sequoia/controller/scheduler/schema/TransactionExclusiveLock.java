@@ -45,7 +45,7 @@ public class TransactionExclusiveLock
   private long       locker;
 
   /** <code>ArrayList</code> of <code>WaitingListElement</code>. */
-  private LinkedList waitingList = new LinkedList();
+  private LinkedList<WaitingListElement> waitingList = new LinkedList<WaitingListElement>();
 
   /**
    * The element stored in the waiting list is the waiting thread and the
@@ -158,7 +158,7 @@ public class TransactionExclusiveLock
           { // Too late, remove ourselves from the waiting list
             synchronized (this)
             {
-              for (Iterator iter = waitingList.iterator(); iter.hasNext();)
+              for (Iterator<WaitingListElement> iter = waitingList.iterator(); iter.hasNext();)
               {
                 WaitingListElement e = (WaitingListElement) iter.next();
                 if (e.equals(wle))
@@ -235,7 +235,7 @@ public class TransactionExclusiveLock
    * 
    * @return an <code>LinkedList</code> of <code>WaitingListElement</code>
    */
-  public LinkedList getWaitingList()
+  public LinkedList<WaitingListElement> getWaitingList()
   {
     return waitingList;
   }
@@ -249,7 +249,7 @@ public class TransactionExclusiveLock
    */
   public synchronized boolean isWaiting(long transactionId)
   {
-    for (Iterator iter = waitingList.iterator(); iter.hasNext();)
+    for (Iterator<WaitingListElement> iter = waitingList.iterator(); iter.hasNext();)
     {
       WaitingListElement e = (WaitingListElement) iter.next();
       if (e.getTransactionId() == transactionId)

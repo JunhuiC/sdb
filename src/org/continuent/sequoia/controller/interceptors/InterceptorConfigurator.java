@@ -41,10 +41,10 @@ public interface InterceptorConfigurator
   /**
    * @return a list of frontend request interceptors in invocation order
    */
-  public List getFrontendRequestInterceptors();
+  public List<?> getFrontendRequestInterceptors();
   
   /**
    * @return a list of backend request interceptors in invocation order
    */
-  public List getBackendRequestInterceptors();
+  public List<?> getBackendRequestInterceptors();
 }

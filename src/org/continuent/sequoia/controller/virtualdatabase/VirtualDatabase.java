@@ -105,10 +105,11 @@ import org.continuent.sequoia.controller.virtualdatabase.management.RestoreDumpO
  *         </a>
  * @author <a href="mailto:Stephane.Giron@continuent.com>Stephane Giron </a>
  * @version 1.0
+ * @param <E>
  */
 public class VirtualDatabase implements XmlComponent
 {
-  private static final long                serialVersionUID                = 1399418136380336827L;
+  
 
   //
   // How the code is organized ?
@@ -133,7 +134,7 @@ public class VirtualDatabase implements XmlComponent
   protected AuthenticationManager          authenticationManager;
 
   /** <code>ArrayList</code> of <code>DatabaseBackend</code> objects */
-  protected ArrayList                      backends;
+  protected ArrayList<DatabaseBackend>                      backends;
 
   /** Read/Write lock for backend list */
   protected ReadPrioritaryFIFOWriteLock    rwLock;
@@ -145,7 +146,7 @@ public class VirtualDatabase implements XmlComponent
   protected RequestManager                 requestManager;
 
   /** ArrayList to store the order of requests */
-  protected LinkedList                     totalOrderQueue                 = null;
+  protected LinkedList<Object>                     totalOrderQueue                 = null;
 
   /** Virtual database logger */
   protected Trace                          logger                          = null;
@@ -156,11 +157,11 @@ public class VirtualDatabase implements XmlComponent
                                                                                .getLogger("org.continuent.sequoia.enduser");
 
   // List of current active Worker Threads
-  private ArrayList                        activeThreads                   = new ArrayList();
+  private ArrayList<VirtualDatabaseWorkerThread>                        activeThreads                   = new ArrayList<VirtualDatabaseWorkerThread>();
   // List of current idle Worker Threads
   private int                              idleThreads                     = 0;
   // List of current pending connections (Socket objects)
-  private ArrayList                        pendingConnections              = new ArrayList();
+  private ArrayList<Object>                        pendingConnections              = new ArrayList<Object>();
 
   /** Maximum number of concurrent accepted for this virtual database */
   protected int                            maxNbOfConnections;
@@ -210,7 +211,7 @@ public class VirtualDatabase implements XmlComponent
   protected boolean                        shuttingDown                    = false;
   private boolean                          refusingNewTransaction          = false;
   /** List of currently executing admin operations (preventing shutdown) */
-  private List                             currentAdminOperations;
+  private List<AbstractAdminOperation>                             currentAdminOperations;
 
   protected NotificationBroadcasterSupport notificationBroadcasterSupport;
 
@@ -220,9 +221,9 @@ public class VirtualDatabase implements XmlComponent
 
   private boolean                          enforceTableExistenceIntoSchema = false;
 
-  private List                             functionsToBroadcastList;
+  private List<?>                             functionsToBroadcastList;
 
-  protected List                           recoverThreads;
+  protected List<RecoverThread>                           recoverThreads;
 
   private int                              ongoingSuspendOperationFromLocalController;
   private Object                           syncObject                      = new Object();
@@ -273,9 +274,9 @@ public class VirtualDatabase implements XmlComponent
     this.sqlShortFormLength = sqlShortFormLength;
     this.useStaticResultSetMetaData = useStaticResultSetMetaData;
     this.enforceTableExistenceIntoSchema = enforceTableExistenceIntoSchema;
-    backends = new ArrayList();
-    currentAdminOperations = new LinkedList();
-    recoverThreads = new LinkedList();
+    backends = new ArrayList<DatabaseBackend>();
+    currentAdminOperations = new LinkedList<AbstractAdminOperation>();
+    recoverThreads = new LinkedList<RecoverThread>();
 
     rwLock = new ReadPrioritaryFIFOWriteLock();
     logger = Trace
@@ -503,7 +504,7 @@ public class VirtualDatabase implements XmlComponent
   public void performAddVirtualDatabaseUser(VirtualDatabaseUser vdbUser)
       throws SQLException
   {
-    for (Iterator iter = backends.iterator(); iter.hasNext();)
+    for (Iterator<DatabaseBackend> iter = backends.iterator(); iter.hasNext();)
     {
       DatabaseBackend backend = (DatabaseBackend) iter.next();
       backend.addDefaultConnectionManager(vdbUser);
@@ -520,7 +521,7 @@ public class VirtualDatabase implements XmlComponent
   public void performRemoveVirtualDatabaseUser(VirtualDatabaseUser vdbUser)
   {
     authenticationManager.removeVirtualUser(vdbUser);
-    for (Iterator iter = backends.iterator(); iter.hasNext();)
+    for (Iterator<DatabaseBackend> iter = backends.iterator(); iter.hasNext();)
     {
       DatabaseBackend backend = (DatabaseBackend) iter.next();
       try
@@ -552,7 +553,7 @@ public class VirtualDatabase implements XmlComponent
   public boolean isValidUserForAllBackends(VirtualDatabaseUser vdbUser)
   {
     boolean result = true;
-    for (Iterator iter = backends.iterator(); iter.hasNext();)
+    for (Iterator<DatabaseBackend> iter = backends.iterator(); iter.hasNext();)
     {
       DatabaseBackend backend = (DatabaseBackend) iter.next();
       if (!backend.isValidBackendUser(vdbUser))
@@ -1529,7 +1530,7 @@ public class VirtualDatabase implements XmlComponent
     }
 
     // Check the authentication manager has all virtual logins defined
-    ArrayList logins = authenticationManager.getVirtualLogins();
+    ArrayList<?> logins = authenticationManager.getVirtualLogins();
     VirtualDatabaseUser vdu;
     String login;
     for (int i = 0; i < logins.size(); i++)
@@ -1724,8 +1725,8 @@ public class VirtualDatabase implements XmlComponent
 
     try
     {
-      ArrayList backendInfos = new ArrayList();
-      Iterator iter = backends.iterator();
+      ArrayList<BackendInfo> backendInfos = new ArrayList<BackendInfo>();
+      Iterator<DatabaseBackend> iter = backends.iterator();
       while (iter.hasNext())
       {
         DatabaseBackend backend = (DatabaseBackend) iter.next();
@@ -2066,7 +2067,7 @@ public class VirtualDatabase implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean#getAllBackendNames()
    */
-  public ArrayList getAllBackendNames() throws VirtualDatabaseException
+  public ArrayList<String> getAllBackendNames() throws VirtualDatabaseException
   {
     try
     {
@@ -2081,7 +2082,7 @@ public class VirtualDatabase implements XmlComponent
     }
 
     int size = backends.size();
-    ArrayList result = new ArrayList();
+    ArrayList<String> result = new ArrayList<String>();
     for (int i = 0; i < size; i++)
     {
       result.add(((DatabaseBackend) backends.get(i)).getName());
@@ -2225,7 +2226,7 @@ public class VirtualDatabase implements XmlComponent
    *      java.lang.String, java.util.Map)
    */
   public void replicateBackend(String backendName, String newBackendName,
-      Map parameters) throws VirtualDatabaseException
+      Map<?, ?> parameters) throws VirtualDatabaseException
   {
     // Access the backend we want to replicate
     DatabaseBackend backend = getAndCheckBackend(backendName, NO_CHECK_BACKEND);
@@ -2367,7 +2368,7 @@ public class VirtualDatabase implements XmlComponent
    */
   public void backupBackend(String backendName, String login, String password,
       String dumpName, String backuperName, String path, boolean force,
-      ArrayList tables) throws VirtualDatabaseException
+      ArrayList<?> tables) throws VirtualDatabaseException
   {
     // Sanity checks
     if (!isDumpNameAvailable(dumpName))
@@ -2403,36 +2404,7 @@ public class VirtualDatabase implements XmlComponent
 
   protected int getNumberOfEnabledBackends() throws VirtualDatabaseException
   {
-    // This check is not sufficient. Disable functionality. (see SEQUOIA-556)
-    if (true)
-      return -1;
-
-    try
-    {
-      acquireReadLockBackendLists();
-    }
-    catch (InterruptedException e)
-    {
-      String msg = Translate.get("virtualdatabase.fail.read.lock");
-      logger.error(msg, e);
-      throw new VirtualDatabaseException(msg, e);
-    }
-
-    int nbActive = 0;
-    DatabaseBackend b;
-    int size = backends.size();
-    b = null;
-    for (int i = 0; i < size; i++)
-    {
-      b = (DatabaseBackend) backends.get(i);
-      if (b.isReadEnabled() || b.isWriteEnabled())
-        // test symetrical to RequestManager.backupBackend()
-        nbActive++;
-    }
-
-    releaseReadLockBackendLists();
-
-    return nbActive;
+    return -1;
   }
 
   /**
@@ -2543,7 +2515,7 @@ public class VirtualDatabase implements XmlComponent
       }
       else
       {
-        ArrayList dumps = recoveryLog.getDumpList();
+        ArrayList<?> dumps = recoveryLog.getDumpList();
         return (DumpInfo[]) dumps.toArray(new DumpInfo[dumps.size()]);
       }
     }
@@ -2726,7 +2698,7 @@ public class VirtualDatabase implements XmlComponent
    *      String, String, String, ArrayList)
    */
   public void restoreDumpOnBackend(String databaseBackendName, String login,
-      String password, String dumpName, ArrayList tables)
+      String password, String dumpName, ArrayList<?> tables)
       throws VirtualDatabaseException
   {
     DatabaseBackend backend = getAndCheckBackend(databaseBackendName,
@@ -2844,19 +2816,20 @@ public class VirtualDatabase implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean#viewCheckpointNames()
    */
-  public ArrayList viewCheckpointNames()
+  @SuppressWarnings("deprecation")
+public ArrayList<?> viewCheckpointNames()
   {
     try
     {
       RecoveryLog recoveryLog = requestManager.getRecoveryLog();
       if (recoveryLog == null)
-        return new ArrayList();
+        return new ArrayList<Object>();
       else
         return recoveryLog.getCheckpointNames();
     }
     catch (SQLException e)
     {
-      return new ArrayList();
+      return new ArrayList<Object>();
     }
   }
 
@@ -2884,13 +2857,13 @@ public class VirtualDatabase implements XmlComponent
    */
   protected void checkActiveThreadsIdleConnectionTime()
   {
-    List activeThreadsCopy;
+    List<VirtualDatabaseWorkerThread> activeThreadsCopy;
     synchronized (activeThreads)
     {
-      activeThreadsCopy = new ArrayList(activeThreads);
+      activeThreadsCopy = new ArrayList<VirtualDatabaseWorkerThread>(activeThreads);
     }
 
-    for (Iterator iter = activeThreadsCopy.iterator(); iter.hasNext();)
+    for (Iterator<VirtualDatabaseWorkerThread> iter = activeThreadsCopy.iterator(); iter.hasNext();)
     {
       VirtualDatabaseWorkerThread vdwt = (VirtualDatabaseWorkerThread) iter
           .next();
@@ -3000,7 +2973,7 @@ public class VirtualDatabase implements XmlComponent
   {
     synchronized (activeThreads)
     {
-      for (Iterator iter = activeThreads.iterator(); iter.hasNext();)
+      for (Iterator<VirtualDatabaseWorkerThread> iter = activeThreads.iterator(); iter.hasNext();)
       {
         VirtualDatabaseWorkerThread vdbwt = (VirtualDatabaseWorkerThread) iter
             .next();
@@ -3024,7 +2997,7 @@ public class VirtualDatabase implements XmlComponent
   {
     synchronized (activeThreads)
     {
-      for (Iterator iter = activeThreads.iterator(); iter.hasNext();)
+      for (Iterator<VirtualDatabaseWorkerThread> iter = activeThreads.iterator(); iter.hasNext();)
       {
         VirtualDatabaseWorkerThread vdbwt = (VirtualDatabaseWorkerThread) iter
             .next();
@@ -3101,7 +3074,7 @@ public class VirtualDatabase implements XmlComponent
    * 
    * @return ArrayList of <code>VirtualDatabaseWorkerThread</code>
    */
-  public ArrayList getActiveThreads()
+  public ArrayList<VirtualDatabaseWorkerThread> getActiveThreads()
   {
     return activeThreads;
   }
@@ -3163,7 +3136,7 @@ public class VirtualDatabase implements XmlComponent
    * 
    * @return <code>ArrayList</code> of <code>DatabaseBackend</code> Objects
    */
-  public ArrayList getBackends()
+  public ArrayList<DatabaseBackend> getBackends()
   {
     return backends;
   }
@@ -3226,7 +3199,7 @@ public class VirtualDatabase implements XmlComponent
       return;
     try
     {
-      for (Iterator iter = backends.iterator(); iter.hasNext();)
+      for (Iterator<DatabaseBackend> iter = backends.iterator(); iter.hasNext();)
       {
         DatabaseBackend b = (DatabaseBackend) iter.next();
         if (b.isWriteEnabled() && b.isJDBCConnected())
@@ -3409,7 +3382,7 @@ public class VirtualDatabase implements XmlComponent
       return null;
     try
     {
-      for (Iterator iter = backends.iterator(); iter.hasNext();)
+      for (Iterator<DatabaseBackend> iter = backends.iterator(); iter.hasNext();)
       {
         DatabaseBackend b = (DatabaseBackend) iter.next();
         if (b.isReadEnabled() && b.isJDBCConnected())
@@ -3462,7 +3435,7 @@ public class VirtualDatabase implements XmlComponent
    * 
    * @return ArrayList
    */
-  public ArrayList getPendingConnections()
+  public ArrayList<Object> getPendingConnections()
   {
     return pendingConnections;
   }
@@ -3538,7 +3511,7 @@ public class VirtualDatabase implements XmlComponent
    * 
    * @return Returns the totalOrderQueue.
    */
-  public LinkedList getTotalOrderQueue()
+  public LinkedList<Object> getTotalOrderQueue()
   {
     return totalOrderQueue;
   }
@@ -3705,7 +3678,7 @@ public class VirtualDatabase implements XmlComponent
       String msg = Translate.get("virtualdatabase.fail.read.lock", e);
       throw new VirtualDatabaseException(msg);
     }
-    ArrayList localBackends = this.getBackends();
+    ArrayList<DatabaseBackend> localBackends = this.getBackends();
     int backendListSize = localBackends.size();
     String[][] data = new String[backendListSize][];
     for (int i = 0; i < backendListSize; i++)
@@ -3732,8 +3705,8 @@ public class VirtualDatabase implements XmlComponent
       throw new VirtualDatabaseException(msg);
     }
     BackendStatistics stat = null;
-    ArrayList backendList = this.getBackends();
-    for (Iterator iter = backendList.iterator(); iter.hasNext();)
+    ArrayList<DatabaseBackend> backendList = this.getBackends();
+    for (Iterator<DatabaseBackend> iter = backendList.iterator(); iter.hasNext();)
     {
       DatabaseBackend backend = (DatabaseBackend) iter.next();
       if (backend.getName().equals(backendName))
@@ -3783,7 +3756,7 @@ public class VirtualDatabase implements XmlComponent
     {
       while (!currentAdminOperations.isEmpty())
       {
-        for (Iterator iter = currentAdminOperations.iterator(); iter.hasNext();)
+        for (Iterator<AbstractAdminOperation> iter = currentAdminOperations.iterator(); iter.hasNext();)
         {
           AbstractAdminOperation op = (AbstractAdminOperation) iter.next();
           logger.info("Waiting for command '" + op + "' to complete");
@@ -3928,7 +3901,7 @@ public class VirtualDatabase implements XmlComponent
               .getLoadBalancerObjectName(name));
           MBeanServerManager.unregister(JmxConstants
               .getRequestManagerObjectName(name));
-          ArrayList backendNames = getAllBackendNames();
+          ArrayList<String> backendNames = getAllBackendNames();
           for (int i = 0; i < backendNames.size(); i++)
           {
             String backendName = (String) backendNames.get(i);
@@ -3963,11 +3936,11 @@ public class VirtualDatabase implements XmlComponent
    * @return an <code>ArrayList</code> of strings containing the clients
    *         username
    */
-  public ArrayList viewAllClientNames()
+  public ArrayList<String> viewAllClientNames()
   {
-    ArrayList list = this.getActiveThreads();
+    ArrayList<VirtualDatabaseWorkerThread> list = this.getActiveThreads();
     int size = list.size();
-    ArrayList clients = new ArrayList(size);
+    ArrayList<String> clients = new ArrayList<String>(size);
     for (int i = 0; i < list.size(); i++)
       clients.add(((VirtualDatabaseWorkerThread) list.get(i)).getUser());
     return clients;
@@ -3994,9 +3967,9 @@ public class VirtualDatabase implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean#viewGroupBackends()
    */
-  public Hashtable viewGroupBackends() throws VirtualDatabaseException
+  public Hashtable<String, ArrayList<BackendInfo>> viewGroupBackends() throws VirtualDatabaseException
   {
-    Hashtable map = new Hashtable();
+    Hashtable<String, ArrayList<BackendInfo>> map = new Hashtable<String, ArrayList<BackendInfo>>();
     try
     {
       acquireReadLockBackendLists();
@@ -4011,7 +3984,7 @@ public class VirtualDatabase implements XmlComponent
 
     // Create an ArrayList<BackendInfo> from the backend list
     int size = backends.size();
-    ArrayList backendInfos = new ArrayList(size);
+    ArrayList<BackendInfo> backendInfos = new ArrayList<BackendInfo>(size);
     for (int i = 0; i < size; i++)
       backendInfos.add(new BackendInfo(((DatabaseBackend) backends.get(i))));
 
@@ -4116,7 +4089,7 @@ public class VirtualDatabase implements XmlComponent
    * @param functionsToBroadcast List of functions to broadcast (list of
    *          Strings?)
    */
-  public void setFunctionsToBroadcastList(List functionsToBroadcast)
+  public void setFunctionsToBroadcastList(List<?> functionsToBroadcast)
   {
     this.functionsToBroadcastList = functionsToBroadcast;
   }
@@ -4127,7 +4100,7 @@ public class VirtualDatabase implements XmlComponent
    * 
    * @return Returns functionsToBroadcastList.
    */
-  public List getFunctionsToBroadcastList()
+  public List<?> getFunctionsToBroadcastList()
   {
     return functionsToBroadcastList;
   }
@@ -4145,7 +4118,7 @@ public class VirtualDatabase implements XmlComponent
       boolean threadToInterrupt = false;
       synchronized (syncObject)
       {
-        for (Iterator iterator = recoverThreads.iterator(); iterator.hasNext();)
+        for (Iterator<RecoverThread> iterator = recoverThreads.iterator(); iterator.hasNext();)
         {
           threadToInterrupt = ((RecoverThread) iterator.next())
               .canBeInterrupted();

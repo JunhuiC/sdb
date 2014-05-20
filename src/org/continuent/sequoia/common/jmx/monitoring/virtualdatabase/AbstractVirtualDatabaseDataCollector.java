@@ -34,7 +34,11 @@ public abstract class AbstractVirtualDatabaseDataCollector
     extends
       AbstractDataCollector
 {
-  private String virtualDatabaseName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -9143966359481600314L;
+private String virtualDatabaseName;
 
   /**
    * abstract collector contructor

@@ -133,7 +133,7 @@ public class DriverResultSet
   /** Number of columns */
   protected int                             nbOfColumns          = -1;
   /** The results */
-  protected ArrayList                       data;
+  protected ArrayList<Object[]>                       data;
   /** True if there is more data to fetch from the controller */
   private boolean                           hasMoreData;
   /** The fetch direction (not used yet) */
@@ -152,9 +152,9 @@ public class DriverResultSet
   /** for wasNull() */
   protected boolean                         wasNullFlag          = false;
   /** column name -> index in ResultSet data array */
-  protected transient Hashtable             lowerNameToIndex     = null;
+  protected transient Hashtable<String, Integer>             lowerNameToIndex     = null;
   /** case sensitive column name -> index in ResultSet data array */
-  protected transient Hashtable             sensitiveNameToIndex = null;
+  protected transient Hashtable<String, Integer>             sensitiveNameToIndex = null;
 
   /** Type of ResultSet */
   protected int                             resultSetType        = 0;
@@ -2857,7 +2857,7 @@ public class DriverResultSet
 
     // Insert row in this ResultSet
     if (data == null)
-      data = new ArrayList();
+      data = new ArrayList<Object[]>();
     data.add(tempRow);
     nbOfRows++;
 
@@ -3222,7 +3222,7 @@ public class DriverResultSet
     // Try to match the exact case (not per the spec!)
     if (sensitiveNameToIndex == null)
     {
-      sensitiveNameToIndex = new Hashtable();
+      sensitiveNameToIndex = new Hashtable<String, Integer>();
       buildIndexMapping(sensitiveNameToIndex, true);
     }
     index = (Integer) sensitiveNameToIndex.get(columnName);
@@ -3232,7 +3232,7 @@ public class DriverResultSet
     // Try to be case-insensitive (according to the spec)
     if (lowerNameToIndex == null)
     {
-      lowerNameToIndex = new Hashtable();
+      lowerNameToIndex = new Hashtable<String, Integer>();
       buildIndexMapping(lowerNameToIndex, false);
     }
     index = (Integer) lowerNameToIndex.get(columnName.toLowerCase());
@@ -3356,7 +3356,7 @@ public class DriverResultSet
    * @param fromData List of objects to be inserted in this resultset
    * @param fromField Metadata for this colum
    */
-  public DriverResultSet(Connection conn, ArrayList fromData, Field fromField)
+  public DriverResultSet(Connection conn, ArrayList<?> fromData, Field fromField)
   {
     this(conn, true);
     if (fromData != null && fromData.size() > 0)
@@ -3364,7 +3364,7 @@ public class DriverResultSet
       nbOfRows = fromData.size();
       nbOfColumns = 1;
       hasMoreData = false;
-      this.data = new ArrayList(this.nbOfRows);
+      this.data = new ArrayList<Object[]>(this.nbOfRows);
       for (int i = 0; i < nbOfRows; i++)
       {
         Object[] row = new Object[nbOfColumns];
@@ -3393,7 +3393,7 @@ public class DriverResultSet
     boolean[] nulls = new boolean[this.nbOfColumns];
 
     // Receive the actual data
-    this.data = new ArrayList(this.nbOfRows);
+    this.data = new ArrayList<Object[]>(this.nbOfRows);
 
     for (int r = 0; r < this.nbOfRows; r++)
     {
@@ -3451,7 +3451,7 @@ public class DriverResultSet
    * earlier name or label currently preempts any later name or label. This
    * looks compliant with the 3.0 spec and 4.0 draft.
    */
-  private void buildIndexMapping(Hashtable table, boolean sensitive)
+  private void buildIndexMapping(Hashtable<String, Integer> table, boolean sensitive)
   {
     int numFields = nbOfColumns;
 
@@ -3472,7 +3472,7 @@ public class DriverResultSet
   }
 
   private void putFieldNameInIndexMapping(String name, int i,
-      boolean sensitive, Hashtable table)
+      boolean sensitive, Hashtable<String, Integer> table)
   {
     if ((name == null) || "".equals(name))
       return;

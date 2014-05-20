@@ -46,7 +46,7 @@ public class BlockActivity extends DistributedVirtualDatabaseMessage
 {
   private static final long    serialVersionUID = -8451114082404567986L;
 
-  private transient LinkedList totalOrderQueue;
+  private transient LinkedList<Object> totalOrderQueue;
 
   /**
    * Public constructor

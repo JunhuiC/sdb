@@ -64,8 +64,6 @@ public class RollbackTask extends AbstractTask
   {
     super(nbToComplete, totalNb, tm.isPersistentConnection(), tm
         .getPersistentConnectionId());
-    if (tm == null)
-      throw new NullPointerException("Unexpected null metadata in RollbackTask");
     this.tm = tm;
   }
 

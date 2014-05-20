@@ -222,16 +222,16 @@ public class BackendInfo implements Serializable
    *         empty if the list of backendInfos was <code>null</code>
    * @see DatabaseBackend#toBackendInfos(List)        
    */
-  public static List /*<DatabaseBackend>*/ toDatabaseBackends(
-  List /*<BackendInfo>*/ backendInfos)
+  public static List /*<DatabaseBackend>*/<DatabaseBackend> toDatabaseBackends(
+  List /*<BackendInfo>*/<BackendInfo> backendInfos)
   {
     if (backendInfos == null)
     {
-      return new ArrayList();
+      return new ArrayList<DatabaseBackend>();
     }
     // Convert BackendInfo arraylist to real DatabaseBackend objects
-    List backends = new ArrayList(backendInfos.size());
-    for (Iterator iter = backendInfos.iterator(); iter.hasNext();)
+    List<DatabaseBackend> backends = new ArrayList<DatabaseBackend>(backendInfos.size());
+    for (Iterator<BackendInfo> iter = backendInfos.iterator(); iter.hasNext();)
     {
       BackendInfo info = (BackendInfo) iter.next();
       backends.add(info.getDatabaseBackend());

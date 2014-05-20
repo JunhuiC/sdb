@@ -106,11 +106,11 @@ public abstract class DistributedRequestManager extends RequestManager
    * a boolean indicating whether the request has been scheduled or not before
    * the failure so that we know if the scheduler must be notified or not.
    */
-  private HashMap                      failedOnAllBackends;
+  private HashMap<AbstractRequest, FailureInformation>                      failedOnAllBackends;
   /** Unique controller identifier */
   private long                         controllerId;
   /** List of transactions that have executed on multiple controllers */
-  protected LinkedList                 distributedTransactions;
+  protected LinkedList<Long>                 distributedTransactions;
 
   /**
    * Constant to acknowledge the successful completion of a distributed query
@@ -142,8 +142,8 @@ public abstract class DistributedRequestManager extends RequestManager
     super(vdb, scheduler, cache, loadBalancer, recoveryLog, beginTimeout,
         commitTimeout, rollbackTimeout);
     dvdb = vdb;
-    failedOnAllBackends = new HashMap();
-    distributedTransactions = new LinkedList();
+    failedOnAllBackends = new HashMap<AbstractRequest, FailureInformation>();
+    distributedTransactions = new LinkedList<Long>();
   }
 
   //
@@ -356,7 +356,7 @@ public abstract class DistributedRequestManager extends RequestManager
    * @see org.continuent.sequoia.controller.requestmanager.RequestManager#disableBackendsWithCheckpoint(java.util.ArrayList,
    *      java.lang.String)
    */
-  public void disableBackendsWithCheckpoint(ArrayList backendInfos,
+  public void disableBackendsWithCheckpoint(ArrayList<BackendInfo> backendInfos,
       String checkpointName) throws SQLException
   {
     // Perform the distributed call through the group-comm, in order to
@@ -492,17 +492,6 @@ public abstract class DistributedRequestManager extends RequestManager
       return success;
     }
 
-    /**
-     * Returns the update count (only meaningful if this was a request returning
-     * an update count)
-     * 
-     * @return update count
-     */
-    public int getUpdateCount()
-    {
-      return updateCount;
-    }
-
   }
 
   private void logRequestCompletionAndNotifyScheduler(AbstractRequest request,
@@ -610,7 +599,7 @@ public abstract class DistributedRequestManager extends RequestManager
   {
     synchronized (failedOnAllBackends)
     {
-      for (Iterator iter = failedOnAllBackends.keySet().iterator(); iter
+      for (Iterator<AbstractRequest> iter = failedOnAllBackends.keySet().iterator(); iter
           .hasNext();)
       {
         AbstractRequest request = (AbstractRequest) iter.next();
@@ -713,7 +702,8 @@ public abstract class DistributedRequestManager extends RequestManager
   public void distributedClosePersistentConnection(String login,
       long persistentConnectionId)
   {
-    List groupMembers = dvdb.getCurrentGroup().getMembers();
+    @SuppressWarnings("unchecked")
+	List<Member> groupMembers = dvdb.getCurrentGroup().getMembers();
 
     if (logger.isDebugEnabled())
       logger.debug("Broadcasting closing persistent connection "
@@ -748,7 +738,8 @@ public abstract class DistributedRequestManager extends RequestManager
   public void distributedOpenPersistentConnection(String login,
       long persistentConnectionId) throws SQLException
   {
-    List groupMembers = dvdb.getCurrentGroup().getMembers();
+    @SuppressWarnings("unchecked")
+	List<Member> groupMembers = dvdb.getCurrentGroup().getMembers();
 
     if (logger.isDebugEnabled())
       logger.debug("Broadcasting opening persistent connection "
@@ -770,7 +761,7 @@ public abstract class DistributedRequestManager extends RequestManager
       // get a list that won't change while we go through it
       groupMembers = dvdb.getAllMembers();
       int size = groupMembers.size();
-      ArrayList failedControllers = null;
+      ArrayList<Member> failedControllers = null;
       // Get the result of each controller
       for (int i = 0; i < size; i++)
       {
@@ -792,7 +783,7 @@ public abstract class DistributedRequestManager extends RequestManager
         else if (r instanceof Exception)
         {
           if (failedControllers == null)
-            failedControllers = new ArrayList();
+            failedControllers = new ArrayList<Member>();
           failedControllers.add(member);
           if (exception == null)
             exception = (Exception) r;
@@ -845,7 +836,8 @@ public abstract class DistributedRequestManager extends RequestManager
   public void distributedFailoverForPersistentConnection(
       long persistentConnectionId)
   {
-    List groupMembers = dvdb.getCurrentGroup().getMembers();
+    @SuppressWarnings("unchecked")
+	List<Member> groupMembers = dvdb.getCurrentGroup().getMembers();
 
     if (logger.isDebugEnabled())
       logger.debug("Broadcasting failover for persistent connection "
@@ -876,7 +868,8 @@ public abstract class DistributedRequestManager extends RequestManager
    */
   public void distributedFailoverForTransaction(long currentTid)
   {
-    List groupMembers = dvdb.getCurrentGroup().getMembers();
+    @SuppressWarnings("unchecked")
+	List<Member> groupMembers = dvdb.getCurrentGroup().getMembers();
 
     if (logger.isDebugEnabled())
       logger.debug("Broadcasting failover for transaction " + currentTid
@@ -953,7 +946,7 @@ public abstract class DistributedRequestManager extends RequestManager
       // read-only transaction, it is local but we still have to post the query
       // in the total order queue. Note that we post a Rollback object because
       // the load balancer will treat the abort as a rollback.
-      LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+      LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.addLast(new DistributedRollback(tm.getLogin(),
@@ -1005,7 +998,7 @@ public abstract class DistributedRequestManager extends RequestManager
           transactionId);
       if (!emptyTransaction)
       {
-        LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+        LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
         synchronized (totalOrderQueue)
         {
           totalOrderQueue.addLast(commit);
@@ -1159,7 +1152,7 @@ public abstract class DistributedRequestManager extends RequestManager
       // read-only transaction, it is local
       DistributedRollback rollback = new DistributedRollback(tm.getLogin(),
           transactionId);
-      LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+      LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.addLast(rollback);
@@ -1213,7 +1206,7 @@ public abstract class DistributedRequestManager extends RequestManager
     }
     else
     { // read-only transaction, it is local
-      LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+      LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.addLast(new DistributedRollbackToSavepoint(
@@ -1278,7 +1271,7 @@ public abstract class DistributedRequestManager extends RequestManager
     else
     {
       // read-only transaction, it is local
-      LinkedList totalOrderQueue = dvdb.getTotalOrderQueue();
+      LinkedList<Object> totalOrderQueue = dvdb.getTotalOrderQueue();
       synchronized (totalOrderQueue)
       {
         totalOrderQueue.addLast(new DistributedReleaseSavepoint(transactionId,
@@ -1564,12 +1557,12 @@ public abstract class DistributedRequestManager extends RequestManager
    *           failover cache
    */
   protected Serializable getRequestResultFromFailoverCache(
-      List successfulControllers, long id) throws NoResultAvailableException
+      List<?> successfulControllers, long id) throws NoResultAvailableException
   {
-    List groupMembers = new ArrayList(1);
+    List<Member> groupMembers = new ArrayList<Member>(1);
 
     // Try all members in turn and return as soon as one succeeds
-    for (Iterator iter = successfulControllers.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = successfulControllers.iterator(); iter.hasNext();)
     {
       Member remoteController = (Member) iter.next();
       groupMembers.clear();
@@ -1909,7 +1902,7 @@ public abstract class DistributedRequestManager extends RequestManager
    * @throws SQLException if an error occurs
    */
   protected void notifyControllerInconsistency(AbstractRequest request,
-      ArrayList inconsistentControllers) throws SQLException
+      ArrayList<Member> inconsistentControllers) throws SQLException
   {
     try
     {
@@ -1941,7 +1934,7 @@ public abstract class DistributedRequestManager extends RequestManager
    */
   protected void notifyRequestCompletion(AbstractRequest request,
       boolean success, boolean disableBackendOnSuccess,
-      ArrayList backendsToNotify) throws SQLException
+      ArrayList<Member> backendsToNotify) throws SQLException
   {
     if (backendsToNotify == null)
       return;
@@ -1977,7 +1970,7 @@ public abstract class DistributedRequestManager extends RequestManager
    */
   protected void notifyRequestCompletion(AbstractRequest request,
       boolean success, boolean disableBackendOnSuccess,
-      ArrayList backendsToNotify, int requestUpdateCount) throws SQLException
+      ArrayList<Member> backendsToNotify, int requestUpdateCount) throws SQLException
   {
     if (backendsToNotify == null)
       return;
@@ -2013,7 +2006,7 @@ public abstract class DistributedRequestManager extends RequestManager
     long cid = this.getControllerId();
     synchronized (failedOnAllBackends)
     {
-      for (Iterator iter = failedOnAllBackends.keySet().iterator(); iter
+      for (Iterator<AbstractRequest> iter = failedOnAllBackends.keySet().iterator(); iter
           .hasNext();)
       {
         AbstractRequest request = (AbstractRequest) iter.next();

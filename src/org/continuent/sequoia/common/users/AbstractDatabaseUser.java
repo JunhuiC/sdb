@@ -34,7 +34,12 @@ import java.security.Principal;
  */
 public abstract class AbstractDatabaseUser implements Serializable, Principal
 {
-  /** Login name. */
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7625056969374826623L;
+
+/** Login name. */
   protected String login;
 
   /** Password. */

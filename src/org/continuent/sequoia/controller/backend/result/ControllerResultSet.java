@@ -56,7 +56,7 @@ public class ControllerResultSet extends AbstractResult implements Serializable
   private static final long                 serialVersionUID  = 4109773059200535129L;
 
   /** The results */
-  private ArrayList                         data              = null;
+  private ArrayList<Object[]>                         data              = null;
   /** The fields */
   private Field[]                           fields            = null;
   /** Cursor name for this ResultSet (not used yet) */
@@ -143,7 +143,7 @@ public class ControllerResultSet extends AbstractResult implements Serializable
       }
 
       // Build the ResultSet data
-      data = new ArrayList();
+      data = new ArrayList<Object[]>();
       if (rs.next()) // not empty RS
       {
         cursorName = request.getCursorName();
@@ -196,7 +196,7 @@ public class ControllerResultSet extends AbstractResult implements Serializable
    * @param data ResultSet data (an ArrayList of Object[] representing row
    *          content)
    */
-  public ControllerResultSet(Field[] fields, ArrayList data)
+  public ControllerResultSet(Field[] fields, ArrayList<Object[]> data)
   {
     if (data == null)
       throw new IllegalArgumentException(
@@ -373,7 +373,7 @@ public class ControllerResultSet extends AbstractResult implements Serializable
    * 
    * @return Returns the data.
    */
-  public ArrayList getData()
+  public ArrayList<Object[]> getData()
   {
     return data;
   }
@@ -633,7 +633,7 @@ public class ControllerResultSet extends AbstractResult implements Serializable
 
     boolean[] nulls = new boolean[fields.length];
 
-    Iterator rowsIter = this.data.iterator();
+    Iterator<Object[]> rowsIter = this.data.iterator();
     while (rowsIter.hasNext())
     {
       Object[] row = (Object[]) rowsIter.next();

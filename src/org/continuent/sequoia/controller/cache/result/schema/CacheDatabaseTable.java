@@ -48,9 +48,9 @@ import org.continuent.sequoia.controller.requests.RequestType;
 public class CacheDatabaseTable
 {
   private String    name;
-  private ArrayList columns;
-  private ArrayList cacheEntries;  // Cache entries depending on this table
-  private HashMap   pkCacheEntries; // Cache entries corresponding to a pk value
+  private ArrayList<CacheDatabaseColumn> columns;
+  private ArrayList<AbstractResultCacheEntry> cacheEntries;  // Cache entries depending on this table
+  private HashMap<String, AbstractResultCacheEntry>   pkCacheEntries; // Cache entries corresponding to a pk value
 
   /**
    * Creates a new <code>CacheDatabaseTable</code> instance.
@@ -61,16 +61,16 @@ public class CacheDatabaseTable
   {
     // Clone the name and the columns
     name = databaseTable.getName();
-    ArrayList origColumns = databaseTable.getColumns();
+    ArrayList<?> origColumns = databaseTable.getColumns();
     int size = origColumns.size();
-    columns = new ArrayList(size);
+    columns = new ArrayList<CacheDatabaseColumn>(size);
     for (int i = 0; i < size; i++)
       columns.add(new CacheDatabaseColumn(((DatabaseColumn) origColumns.get(i))
           .getName()));
 
     // Create an empty cache
-    cacheEntries = new ArrayList();
-    pkCacheEntries = new HashMap();
+    cacheEntries = new ArrayList<AbstractResultCacheEntry>();
+    pkCacheEntries = new HashMap<String, AbstractResultCacheEntry>();
   }
 
   /**
@@ -108,7 +108,7 @@ public class CacheDatabaseTable
     if (t == null)
       return;
 
-    ArrayList otherColumns = t.getColumns();
+    ArrayList<CacheDatabaseColumn> otherColumns = t.getColumns();
     if (otherColumns == null)
       return;
 
@@ -136,7 +136,7 @@ public class CacheDatabaseTable
    * 
    * @return an <code>ArrayList</code> of <code>CacheDatabaseColumn</code>
    */
-  public ArrayList getColumns()
+  public ArrayList<CacheDatabaseColumn> getColumns()
   {
     return columns;
   }
@@ -150,7 +150,7 @@ public class CacheDatabaseTable
    */
   public CacheDatabaseColumn getColumn(String columnName)
   {
-    for (Iterator i = columns.iterator(); i.hasNext();)
+    for (Iterator<CacheDatabaseColumn> i = columns.iterator(); i.hasNext();)
     {
       CacheDatabaseColumn c = (CacheDatabaseColumn) i.next();
       if (columnName.compareToIgnoreCase(c.getName()) == 0)
@@ -240,7 +240,7 @@ public class CacheDatabaseTable
   {
     synchronized (this)
     {
-      for (Iterator i = cacheEntries.iterator(); i.hasNext();)
+      for (Iterator<AbstractResultCacheEntry> i = cacheEntries.iterator(); i.hasNext();)
         ((AbstractResultCacheEntry) i.next()).invalidate();
       cacheEntries.clear();
 
@@ -260,7 +260,7 @@ public class CacheDatabaseTable
    */
   public synchronized void invalidateAllExceptPk()
   {
-    for (Iterator i = cacheEntries.iterator(); i.hasNext();)
+    for (Iterator<AbstractResultCacheEntry> i = cacheEntries.iterator(); i.hasNext();)
     {
       AbstractResultCacheEntry qce = (AbstractResultCacheEntry) i.next();
       if (qce.getRequest().getCacheAbility() != RequestType.UNIQUE_CACHEABLE)

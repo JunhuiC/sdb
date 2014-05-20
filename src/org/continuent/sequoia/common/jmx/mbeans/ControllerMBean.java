@@ -82,7 +82,7 @@ public interface ControllerMBean
    * 
    * @return List of <code>String</code> objects.
    */
-  List getVirtualDatabaseNames();
+  List<?> getVirtualDatabaseNames();
 
   //
   // Controller operations

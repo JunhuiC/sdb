@@ -167,7 +167,7 @@ public class RAIDb1_LPRF extends RAIDb1
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       // Choose the backend that has the least pending requests

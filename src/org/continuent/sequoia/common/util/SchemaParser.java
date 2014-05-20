@@ -81,7 +81,7 @@ public class SchemaParser
     if (args.length == 6)
       fileLocation = args[5];
 
-    ArrayList schema = tools.getSchemaAsXML(dbType, url, user, password,
+    ArrayList<DatabaseTable> schema = tools.getSchemaAsXML(dbType, url, user, password,
         gatherSystemTables);
 
     if (schema != null)
@@ -105,13 +105,13 @@ public class SchemaParser
    * @param gatherSystemTables Boolean flag to gather system tables
    * @return ArrayList of DatabaseTable objects.
    */
-  private ArrayList getSchemaAsXML(String dbType, String url, String user,
+  private ArrayList<DatabaseTable> getSchemaAsXML(String dbType, String url, String user,
       String password, boolean gatherSystemTables)
   {
     ResultSet tableRs = null;
     ResultSet colRs = null;
     ResultSet idxRs = null;
-    ArrayList tables = new ArrayList();
+    ArrayList<DatabaseTable> tables = new ArrayList<DatabaseTable>();
 
     Connection conn = getConnection(dbType, url, user, password);
 
@@ -188,9 +188,9 @@ public class SchemaParser
    * 
    * @param schema ArrayList of DatabaseTable objects
    */
-  private void displayXML(ArrayList schema)
+  private void displayXML(ArrayList<DatabaseTable> schema)
   {
-    Iterator it = schema.iterator();
+    Iterator<DatabaseTable> it = schema.iterator();
     while (it.hasNext())
       System.out.println(((DatabaseTable) it.next()).getXml());
   }
@@ -203,13 +203,13 @@ public class SchemaParser
    * @param schema ArrayList of DatabaseTable objects
    * @param fileLocation Location to write file to
    */
-  private void writeXMLToFile(ArrayList schema, String fileLocation)
+  private void writeXMLToFile(ArrayList<DatabaseTable> schema, String fileLocation)
   {
     BufferedWriter out = null;
     try
     {
       out = new BufferedWriter(new FileWriter(fileLocation));
-      Iterator it = schema.iterator();
+      Iterator<DatabaseTable> it = schema.iterator();
       while (it.hasNext())
       {
         out.write(((DatabaseTable) it.next()).getXml());

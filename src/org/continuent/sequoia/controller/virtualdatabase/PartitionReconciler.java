@@ -148,7 +148,7 @@ class PartitionReconciler implements MessageListener, MulticastRequestListener
     PartitionReconciliationMessage msg = new PartitionReconciliationMessage(
         activity, other);
 
-    List members = reconciliationChannel.getGroup().getMembers();
+    List<?> members = reconciliationChannel.getGroup().getMembers();
 
     if (logger.isDebugEnabled())
     {
@@ -156,7 +156,7 @@ class PartitionReconciler implements MessageListener, MulticastRequestListener
     }
     MulticastResponse response = reconciliationMulticastRequestAdapter
         .multicastMessage(members, msg, MulticastRequestAdapter.WAIT_ALL, 30 * 1000);
-    Map results = response.getResults();
+    Map<?, ?> results = response.getResults();
 
     if (logger.isDebugEnabled())
     {
@@ -169,17 +169,17 @@ class PartitionReconciler implements MessageListener, MulticastRequestListener
   }
 
   private PartitionReconciliationStatus decide(
-      Map/* <Member, Boolean> */results)
+      Map/* <Member, Boolean> */<?, ?> results)
   {
     if (results.size() == 0)
     {
       // no other members
       return PartitionReconciliationStatus.OTHER_ALONE_IN_THE_WORLD;
     }
-    Iterator iter = results.entrySet().iterator();
+    Iterator<?> iter = results.entrySet().iterator();
     while (iter.hasNext())
     {
-      Map.Entry entry = (Map.Entry) iter.next();
+      Map.Entry<?,?> entry = (Map.Entry<?,?>) iter.next();
       Member m = (Member) entry.getKey();
       if (entry.getValue() == null)
       {

@@ -37,7 +37,11 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabase;
 public abstract class AbstractBackendDataCollector
     extends AbstractDataCollector
 {
-  private String backendName;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3195927271202435544L;
+private String backendName;
   private String virtualDatabaseName;
 
   /**

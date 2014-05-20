@@ -59,7 +59,7 @@ public class DataSourceFactory implements ObjectFactory
    * @throws Exception if an error occurs when creating the object instance.
    */
   public Object getObjectInstance(Object objRef, Name name, Context nameCtx,
-      Hashtable env) throws Exception
+      Hashtable<?, ?> env) throws Exception
   {
     // Check the requested object class
     Reference ref = (Reference) objRef;

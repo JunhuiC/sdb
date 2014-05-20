@@ -66,22 +66,22 @@ public class StoredProcedure extends AbstractRequest
   /**
    * Map of named parameter values <String(name),String(type)>
    */
-  private HashMap                               namedParameterValues            = null;
+  private HashMap<String, Object>                               namedParameterValues            = null;
 
   /**
    * List of named parameters names
    */
-  private List                                  namedParameterNames             = null;
+  private List<String>                                  namedParameterNames             = null;
 
   /**
    * Map of out parameter values (parameter index corresponds to index in list)
    */
-  private SortedMap                             outParameterValues              = null;
+  private SortedMap<Object, Object>                             outParameterValues              = null;
 
   /**
    * List of out parameter types (parameter index corresponds to index in list)
    */
-  private List                                  outParameterIndexes             = null;
+  private List<Integer>                                  outParameterIndexes             = null;
 
   protected transient DatabaseProcedureSemantic semantic                        = null;
 
@@ -228,7 +228,7 @@ public class StoredProcedure extends AbstractRequest
    * 
    * @return Returns the namedParameterNames.
    */
-  public List getNamedParameterNames()
+  public List<String> getNamedParameterNames()
   {
     return namedParameterNames;
   }
@@ -259,7 +259,7 @@ public class StoredProcedure extends AbstractRequest
    * 
    * @return Returns the outParameterIndexes.
    */
-  public List getOutParameterIndexes()
+  public List<Integer> getOutParameterIndexes()
   {
     return outParameterIndexes;
   }
@@ -333,7 +333,7 @@ public class StoredProcedure extends AbstractRequest
   public synchronized void setNamedParameterValue(String paramName, Object val)
   {
     if (namedParameterValues == null)
-      namedParameterValues = new HashMap();
+      namedParameterValues = new HashMap<String, Object>();
     namedParameterValues.put(paramName, val);
   }
 
@@ -345,7 +345,7 @@ public class StoredProcedure extends AbstractRequest
   public synchronized void setNamedParameterName(String paramName)
   {
     if (namedParameterNames == null)
-      namedParameterNames = new ArrayList();
+      namedParameterNames = new ArrayList<String>();
     namedParameterNames.add(paramName);
   }
 
@@ -358,7 +358,7 @@ public class StoredProcedure extends AbstractRequest
   public synchronized void setOutParameterValue(Object paramIdx, Object val)
   {
     if (outParameterValues == null)
-      outParameterValues = new TreeMap();
+      outParameterValues = new TreeMap<Object, Object>();
     outParameterValues.put(paramIdx, val);
   }
 
@@ -370,7 +370,7 @@ public class StoredProcedure extends AbstractRequest
   public synchronized void setOutParameterIndex(int paramIdx)
   {
     if (outParameterIndexes == null)
-      outParameterIndexes = new ArrayList();
+      outParameterIndexes = new ArrayList<Integer>();
     outParameterIndexes.add(new Integer(paramIdx));
   }
 

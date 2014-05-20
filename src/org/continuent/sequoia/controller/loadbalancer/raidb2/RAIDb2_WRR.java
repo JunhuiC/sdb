@@ -63,7 +63,7 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabase;
  */
 public class RAIDb2_WRR extends RAIDb2
 {
-  private HashMap weights;
+  private HashMap<?, ?> weights;
   private int     currentWeight;
 
   /*
@@ -166,7 +166,7 @@ public class RAIDb2_WRR extends RAIDb2
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)

@@ -26,6 +26,8 @@ package org.continuent.sequoia.controller.loadbalancer.policies.createtable;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.continuent.sequoia.controller.backend.DatabaseBackend;
+
 /**
  * Implements a random strategy for <code>CREATE TABLE</code> statements.
  * 
@@ -51,7 +53,7 @@ public class CreateTableRandom extends CreateTableRule
    * 
    * @param backendList <code>ArrayList</code> of <code>DatabaseBackend</code>
    */
-  public CreateTableRandom(ArrayList backendList)
+  public CreateTableRandom(ArrayList<String> backendList)
   {
     super(CreateTablePolicy.RANDOM, backendList);
   }
@@ -59,17 +61,17 @@ public class CreateTableRandom extends CreateTableRule
   /**
    * @see org.continuent.sequoia.controller.loadbalancer.policies.createtable.CreateTableRule#getBackends(ArrayList)
    */
-  public ArrayList getBackends(ArrayList backends) throws CreateTableException
+  public ArrayList<DatabaseBackend> getBackends(ArrayList<?> backends) throws CreateTableException
   {
     if (nbOfNodes == 0)
       return null;
     
-    ArrayList clonedList = super.getBackends(backends);
+    ArrayList<DatabaseBackend> clonedList = super.getBackends(backends);
 
     int clonedSize = clonedList.size();
 
     if (nbOfNodes == clonedSize)
-      return clonedList;
+      return (ArrayList<DatabaseBackend>) clonedList;
     else if (nbOfNodes > clonedSize)
       throw new CreateTableException(
         "Asking for more backends ("
@@ -78,7 +80,7 @@ public class CreateTableRandom extends CreateTableRule
           + clonedSize
           + ")");
 
-    ArrayList result = new ArrayList(nbOfNodes);
+    ArrayList<DatabaseBackend> result = new ArrayList<DatabaseBackend>(nbOfNodes);
 
     for (int i = 0; i < nbOfNodes; i++)
       result.add(clonedList.remove(random.nextInt(clonedSize - i)));

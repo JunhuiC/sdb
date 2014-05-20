@@ -25,6 +25,8 @@ package org.continuent.sequoia.controller.loadbalancer.policies.createtable;
 
 import java.util.ArrayList;
 
+import org.continuent.sequoia.controller.backend.DatabaseBackend;
+
 /**
  * Implements a round-robin strategy for <code>CREATE TABLE</code>
  * statements.
@@ -51,7 +53,7 @@ public class CreateTableRoundRobin extends CreateTableRule
    * 
    * @param backendList <code>ArrayList</code> of <code>DatabaseBackend</code>
    */
-  public CreateTableRoundRobin(ArrayList backendList)
+  public CreateTableRoundRobin(ArrayList<String> backendList)
   {
     super(CreateTablePolicy.ROUND_ROBIN, backendList);
   }
@@ -59,12 +61,12 @@ public class CreateTableRoundRobin extends CreateTableRule
   /**
    * @see org.continuent.sequoia.controller.loadbalancer.policies.createtable.CreateTableRule#getBackends(ArrayList)
    */
-  public ArrayList getBackends(ArrayList backends) throws CreateTableException
+  public ArrayList<DatabaseBackend> getBackends(ArrayList<?> backends) throws CreateTableException
   {
     if (nbOfNodes == 0)
       return null;
     
-    ArrayList clonedList = super.getBackends(backends);
+    ArrayList<DatabaseBackend> clonedList = super.getBackends(backends);
     
     int clonedSize = clonedList.size();
 
@@ -78,7 +80,7 @@ public class CreateTableRoundRobin extends CreateTableRule
           + clonedSize
           + ")");
 
-    ArrayList result = new ArrayList(nbOfNodes);
+    ArrayList<DatabaseBackend> result = new ArrayList<DatabaseBackend>(nbOfNodes);
 
     synchronized (this)
     { // index must be modified in mutual exclusion

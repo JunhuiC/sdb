@@ -35,6 +35,7 @@ import org.continuent.sequoia.console.text.module.VirtualDatabaseAdmin;
  * 
  * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk </a>
  * @version 1.0
+ * @param <E>
  */
 public class Disable extends AbstractAdminCommand
 {
@@ -77,8 +78,8 @@ public class Disable extends AbstractAdminCommand
     {
       console.printInfo(ConsoleTranslate
           .get("admin.command.disable.backend.all.with.checkpoint")); //$NON-NLS-1$
-      List backendNames = vjdc.getAllBackendNames();
-      for (Iterator iter = backendNames.iterator(); iter.hasNext();)
+      List<?> backendNames = vjdc.getAllBackendNames();
+      for (Iterator<?> iter = backendNames.iterator(); iter.hasNext();)
       {
         String backend = (String) iter.next();
         vjdc.disableBackendWithCheckpoint(backend);

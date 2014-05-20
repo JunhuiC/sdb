@@ -466,7 +466,7 @@ public class MacrosHandler implements XmlComponent
    */
   private int[] getQuoteIndexes(String sql)
   {
-    ArrayList list = new ArrayList();
+    ArrayList<Integer> list = new ArrayList<Integer>();
     for (int i = 0; i < sql.length(); i++)
     {
       switch (sql.charAt(i))
@@ -495,7 +495,7 @@ public class MacrosHandler implements XmlComponent
    */
   private int[] getDoubleQuoteIndexes(String sql)
   {
-    ArrayList list = new ArrayList();
+    ArrayList<Integer> list = new ArrayList<Integer>();
     for (int i = 0; i < sql.length(); i++)
     {
       switch (sql.charAt(i))

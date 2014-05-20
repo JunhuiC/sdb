@@ -24,7 +24,6 @@ package org.continuent.sequoia.controller.interceptors.impl;
 import org.continuent.sequoia.controller.backend.DatabaseBackend;
 import org.continuent.sequoia.controller.interceptors.SessionFacade;
 import org.continuent.sequoia.controller.requests.AbstractRequest;
-import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabaseWorkerThread;
 
 /**
  * Implements a session facade for Sequoia based on data available to 

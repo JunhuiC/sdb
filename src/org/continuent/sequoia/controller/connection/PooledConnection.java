@@ -43,7 +43,7 @@ public class PooledConnection
   /*
    * List of temporary tables that were defined in this connection.
    */
-  private List       temporaryTables;
+  private List<String>       temporaryTables;
 
   /**
    * Creates a new <code>PooledConnection</code> object
@@ -53,7 +53,7 @@ public class PooledConnection
   public PooledConnection(Connection c)
   {
     this.connection = c;
-    temporaryTables = new LinkedList();
+    temporaryTables = new LinkedList<String>();
   }
 
   /**

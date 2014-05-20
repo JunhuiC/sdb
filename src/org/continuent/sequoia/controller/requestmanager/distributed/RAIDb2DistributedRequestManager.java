@@ -130,12 +130,12 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
       // successfully executes our request.
       // TODO: We could improve by jumping the controller we know in advance
       // that they don't have the necessary tables.
-      Iterator i = dvdb.getAllMemberButUs().iterator();
+      Iterator<?> i = dvdb.getAllMemberButUs().iterator();
       SQLException error = null;
       while (i.hasNext())
       {
         Member controller = (Member) i.next();
-        List groupMembers = new ArrayList();
+        List<Member> groupMembers = new ArrayList<Member>();
         groupMembers.add(controller);
 
         if (logger.isDebugEnabled())
@@ -273,18 +273,18 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
     {
       ExecuteResult requestResult = null;
 
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       MulticastResponse responses = multicastRequest(request, requestMsg,
           messageTimeout, groupMembers);
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
       int size = groupMembers.size();
-      List successfulControllers = null;
+      List<Member> successfulControllers = null;
       // Get the result of each controller
       for (int i = 0; i < size; i++)
       {
@@ -307,14 +307,14 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
           if (requestResult == null)
           {
             if (successfulControllers == null)
-              successfulControllers = new ArrayList();
+              successfulControllers = new ArrayList<Member>();
             successfulControllers.add(member);
           }
         }
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -323,7 +323,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof Exception)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Request " + request.getId() + " failed on controller "
               + member + " (" + r + ")";
@@ -339,7 +339,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isWarnEnabled())
             logger.warn("Unexpected answer from controller " + member + " ("
@@ -443,19 +443,19 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
     {
       GeneratedKeysResult requestResult = null;
 
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       MulticastResponse responses = multicastRequest(request, requestMsg,
           messageTimeout, groupMembers);
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that gave an inconsistent result
-      ArrayList inconsistentControllers = null;
+      ArrayList<Member> inconsistentControllers = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
-      List successfulControllers = null;
+      List<Member> successfulControllers = null;
       int size = groupMembers.size();
       // Get the result of each controller
       for (int i = 0; i < size; i++)
@@ -480,7 +480,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
                 .getUpdateCount())
             {
               if (inconsistentControllers == null)
-                inconsistentControllers = new ArrayList();
+                inconsistentControllers = new ArrayList<Member>();
               inconsistentControllers.add(member);
               logger
                   .error("Controller " + member
@@ -496,14 +496,14 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
           if (requestResult == null)
           {
             if (successfulControllers == null)
-              successfulControllers = new ArrayList();
+              successfulControllers = new ArrayList<Member>();
             successfulControllers.add(member);
           }
         }
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -512,7 +512,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof Exception)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Request " + request.getId() + " failed on controller "
               + member + " (" + r + ")";
@@ -528,7 +528,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isWarnEnabled())
             logger.warn("Unexpected answer from controller " + member + " ("
@@ -622,17 +622,17 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
     {
       ExecuteUpdateResult requestResult = null;
 
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       MulticastResponse responses = multicastRequest(request, requestMsg,
           messageTimeout, groupMembers);
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that gave an inconsistent result
-      ArrayList inconsistentControllers = null;
+      ArrayList<Member> inconsistentControllers = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
       int size = groupMembers.size();
       // Get the result of each controller
@@ -656,7 +656,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
                 .getUpdateCount())
             {
               if (inconsistentControllers == null)
-                inconsistentControllers = new ArrayList();
+                inconsistentControllers = new ArrayList<Member>();
               inconsistentControllers.add(member);
               logger.error("Controller " + member
                   + " returned an inconsistent results ("
@@ -669,7 +669,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -678,7 +678,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof Exception)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Request " + request.getId() + " failed on controller "
               + member + " (" + r + ")";
@@ -694,7 +694,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isWarnEnabled())
             logger.warn("Unexpected answer from controller " + member + " ("
@@ -766,18 +766,18 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
     {
       ControllerResultSet requestResult = null;
 
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       MulticastResponse responses = multicastRequest(request, requestMsg,
           messageTimeout, groupMembers);
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
       int size = groupMembers.size();
-      List successfulControllers = null;
+      List<Member> successfulControllers = null;
       // Get the result of each controller
       for (int i = 0; i < size; i++)
       {
@@ -800,14 +800,14 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
           if (requestResult == null)
           {
             if (successfulControllers == null)
-              successfulControllers = new ArrayList();
+              successfulControllers = new ArrayList<Member>();
             successfulControllers.add(member);
           }
         }
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -816,7 +816,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof Exception)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Request " + request.getId() + " failed on controller "
               + member + " (" + r + ")";
@@ -832,7 +832,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isWarnEnabled())
             logger.warn("Unexpected answer from controller " + member + " ("
@@ -922,18 +922,18 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
     {
       StoredProcedureCallResult result = null;
 
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       MulticastResponse responses = multicastRequest(proc, requestMsg,
           messageTimeout, groupMembers);
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
       int size = groupMembers.size();
-      List successfulControllers = null;
+      List<Member> successfulControllers = null;
       // Get the result of each controller
       for (int i = 0; i < size; i++)
       {
@@ -956,14 +956,14 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
           if (result == null)
           {
             if (successfulControllers == null)
-              successfulControllers = new ArrayList();
+              successfulControllers = new ArrayList<Member>();
             successfulControllers.add(member);
           }
         }
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -972,7 +972,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof Exception)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Request " + proc.getId() + " failed on controller "
               + member + " (" + r + ")";
@@ -988,7 +988,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isWarnEnabled())
             logger.warn("Unexpected answer from controller " + member + " ("
@@ -1066,7 +1066,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
    * @throws SQLException if an error occurs
    */
   private MulticastResponse multicastRequest(AbstractRequest request,
-      Serializable requestMsg, long messageTimeout, List groupMembers)
+      Serializable requestMsg, long messageTimeout, List<Member> groupMembers)
       throws SQLException
   {
     if (logger.isDebugEnabled())
@@ -1120,7 +1120,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       AbstractRequest abortRequest = new UnknownWriteRequest("abort", false, 0,
           "\n");
@@ -1134,8 +1134,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         logger.debug("Abort of transaction " + transactionId + " completed.");
 
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
-      SQLException exception = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       int size = groupMembers.size();
       boolean success = false;
       // Get the result of each controller
@@ -1159,7 +1158,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -1175,8 +1174,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
       if (success)
         return; // This is a success if at least one controller has succeeded
 
-      if (exception != null)
-        throw exception;
+      
 
       // At this point, all controllers failed
 
@@ -1202,7 +1200,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
       AbstractRequest commitRequest = new UnknownWriteRequest("commit", false,
           0, "\n");
       commitRequest.setTransactionId(transactionId);
@@ -1217,9 +1215,9 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         logger.debug("Commit of transaction " + transactionId + " completed.");
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
       // get a list that won't change while we go through it
       groupMembers = dvdb.getAllMembers();
@@ -1246,7 +1244,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -1256,7 +1254,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof AllBackendsFailedException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Commit failed on all backends of controller "
@@ -1265,7 +1263,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof SQLException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Commit of transaction " + transactionId
               + " failed on controller " + member + " (" + r + ")";
@@ -1315,7 +1313,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       AbstractRequest rollbackRequest = new UnknownWriteRequest("rollback",
           false, 0, "\n");
@@ -1332,9 +1330,9 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
             .debug("Rollback of transaction " + transactionId + " completed.");
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
 
       // get a list that won't change while we go through it
@@ -1362,7 +1360,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member
@@ -1372,7 +1370,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof AllBackendsFailedException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Rollback failed on all backends of controller "
@@ -1381,7 +1379,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof SQLException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "Rollback of transaction " + transactionId
               + " failed on controller " + member + " (" + r + ")";
@@ -1430,7 +1428,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       AbstractRequest rollbackRequest = new UnknownWriteRequest("rollback "
           + savepointName, false, 0, "\n");
@@ -1448,9 +1446,9 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
             + "transaction " + transactionId + " completed.");
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
 
       // get a list that won't change while we go through it
@@ -1478,7 +1476,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member + " has no more backends to "
@@ -1488,7 +1486,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof AllBackendsFailedException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("rollback to savepoint failed on all backends of "
@@ -1497,7 +1495,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof SQLException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "rollback to savepoint " + savepointName + " for "
               + "transaction " + transactionId + " failed on controller "
@@ -1524,15 +1522,10 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
 
       // At this point, all controllers failed
 
-      if (exception != null)
-        throw exception;
-      else
-      {
-        String msg = "Rollback to savepoint " + savepointName + " for "
-            + "transaction " + transactionId + " failed on all controllers";
-        logger.warn(msg);
-        throw new SQLException(msg);
-      }
+      String msg = "Rollback to savepoint " + savepointName + " for "
+	    + "transaction " + transactionId + " failed on all controllers";
+	logger.warn(msg);
+	throw new SQLException(msg);
     }
     catch (SQLException e)
     {
@@ -1552,7 +1545,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       AbstractRequest setSavepointRequest = new UnknownWriteRequest(
           "savepoint " + name, false, 0, "\n");
@@ -1569,9 +1562,9 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
             + transactionId + " completed.");
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
 
       // get a list that won't change while we go through it
@@ -1599,7 +1592,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member + " has no more backends to "
@@ -1609,7 +1602,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof AllBackendsFailedException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("set savepoint failed on all backends of controller "
@@ -1618,7 +1611,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof SQLException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "set savepoint " + name + " to transaction "
               + transactionId + " failed on controller " + member + " (" + r
@@ -1645,15 +1638,10 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
 
       // At this point, all controllers failed
 
-      if (exception != null)
-        throw exception;
-      else
-      {
-        String msg = "Set savepoint " + name + " to transaction "
-            + transactionId + " failed on all controllers";
-        logger.warn(msg);
-        throw new SQLException(msg);
-      }
+      String msg = "Set savepoint " + name + " to transaction "
+	    + transactionId + " failed on all controllers";
+	logger.warn(msg);
+	throw new SQLException(msg);
     }
     catch (SQLException e)
     {
@@ -1673,7 +1661,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
   {
     try
     {
-      List groupMembers = dvdb.getAllMembers();
+      List<Member> groupMembers = dvdb.getAllMembers();
 
       AbstractRequest releaseSavepointRequest = new UnknownWriteRequest(
           "release " + name, false, 0, "\n");
@@ -1690,9 +1678,9 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
             + transactionId + " completed.");
 
       // List of controllers that gave a AllBackendsFailedException
-      ArrayList failedOnAllBackends = null;
+      ArrayList<Member> failedOnAllBackends = null;
       // List of controllers that have no more backends to execute queries
-      ArrayList controllersWithoutBackends = null;
+      ArrayList<Member> controllersWithoutBackends = null;
       SQLException exception = null;
 
       // get a list that won't change while we go through it
@@ -1720,7 +1708,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof NoMoreBackendException)
         {
           if (controllersWithoutBackends == null)
-            controllersWithoutBackends = new ArrayList();
+            controllersWithoutBackends = new ArrayList<Member>();
           controllersWithoutBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("Controller " + member + " has no more backends to "
@@ -1730,7 +1718,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof AllBackendsFailedException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           if (logger.isDebugEnabled())
             logger.debug("release savepoint failed on all backends of "
@@ -1739,7 +1727,7 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
         else if (r instanceof SQLException)
         {
           if (failedOnAllBackends == null)
-            failedOnAllBackends = new ArrayList();
+            failedOnAllBackends = new ArrayList<Member>();
           failedOnAllBackends.add(member);
           String msg = "release savepoint " + name + " from transaction "
               + transactionId + " failed on controller " + member + " (" + r
@@ -1766,15 +1754,10 @@ public class RAIDb2DistributedRequestManager extends DistributedRequestManager
 
       // At this point, all controllers failed
 
-      if (exception != null)
-        throw exception;
-      else
-      {
-        String msg = "Release savepoint " + name + " from transaction "
-            + transactionId + " failed on all controllers";
-        logger.warn(msg);
-        throw new SQLException(msg);
-      }
+      String msg = "Release savepoint " + name + " from transaction "
+	    + transactionId + " failed on all controllers";
+	logger.warn(msg);
+	throw new SQLException(msg);
     }
     catch (SQLException e)
     {

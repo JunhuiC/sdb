@@ -68,21 +68,21 @@ public class ResultCacheColumn extends ResultCache
   public void processAddToCache(AbstractResultCacheEntry qe)
   {
     SelectRequest request = qe.getRequest();
-    ArrayList selectedColumns = request.getSelect();
+    ArrayList<?> selectedColumns = request.getSelect();
     // Update the tables columns dependencies
     if (selectedColumns == null || selectedColumns.isEmpty())
     {
       logger
           .warn("No parsing of select clause found - Fallback to table granularity");
-      Collection from = request.getFrom();
+      Collection<?> from = request.getFrom();
       if (from == null)
         return;
-      for (Iterator i = from.iterator(); i.hasNext();)
+      for (Iterator<?> i = from.iterator(); i.hasNext();)
       {
         CacheDatabaseTable table = cdbs.getTable((String) i.next());
         table.addCacheEntry(qe);
         // Add all columns, entries will be added below.
-        ArrayList columns = table.getColumns();
+        ArrayList<?> columns = table.getColumns();
         for (int j = 0; j < columns.size(); j++)
         {
           ((CacheDatabaseColumn) columns.get(j)).addCacheEntry(qe);
@@ -90,14 +90,14 @@ public class ResultCacheColumn extends ResultCache
         return;
       }
     }
-    for (Iterator i = selectedColumns.iterator(); i.hasNext();)
+    for (Iterator<?> i = selectedColumns.iterator(); i.hasNext();)
     {
       TableColumn tc = (TableColumn) i.next();
       cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())
           .addCacheEntry(qe);
     }
     if (request.getWhere() != null)
-      for (Iterator i = request.getWhere().iterator(); i.hasNext();)
+      for (Iterator<?> i = request.getWhere().iterator(); i.hasNext();)
       {
         TableColumn tc = (TableColumn) i.next();
         cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())
@@ -131,7 +131,7 @@ public class ResultCacheColumn extends ResultCache
       cdbs.getTable(request.getTableName()).invalidateAll();
       return;
     }
-    for (Iterator i = request.getColumns().iterator(); i.hasNext();)
+    for (Iterator<?> i = request.getColumns().iterator(); i.hasNext();)
     {
       TableColumn tc = (TableColumn) i.next();
       cdbs.getTable(tc.getTableName()).getColumn(tc.getColumnName())

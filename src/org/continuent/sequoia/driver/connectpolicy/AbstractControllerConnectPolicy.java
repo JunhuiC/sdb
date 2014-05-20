@@ -31,6 +31,8 @@ import org.continuent.sequoia.driver.ControllerInfo;
 import org.continuent.sequoia.driver.ControllerWatcher;
 import org.continuent.sequoia.driver.SequoiaUrl;
 import org.continuent.sequoia.driver.SocketKillerCallBack;
+//import org.continuent.sequoia.driver.connectpolicy.AbstractControllerConnectPolicy.ControllerAndVdbState;
+//import org.continuent.sequoia.driver.connectpolicy.AbstractControllerConnectPolicy.ControllerAndVdbState;
 
 /**
  * This class defines an AbstractControllerConnectPolicy used by the driver to
@@ -88,7 +90,7 @@ public abstract class AbstractControllerConnectPolicy
    * Up-to-date list of controllers that respond to pings with associated
    * lastVdbFailure time stamp
    */
-  protected ArrayList            aliveControllers;
+  protected ArrayList<ControllerAndVdbState>            aliveControllers;
   /** Controller watcher thread */
   protected ControllerWatcher    watcher;
   /** Callback for controller failures and come backs */
@@ -116,7 +118,7 @@ public abstract class AbstractControllerConnectPolicy
     if (controllerList.length == 0)
       throw new RuntimeException(
           "Invalid empty controller list in connect policy constructor");
-    this.aliveControllers = new ArrayList(controllerList.length);
+    this.aliveControllers = new ArrayList<ControllerAndVdbState>(controllerList.length);
     for (int i = 0; i < controllerList.length; i++)
     {
       // vdbLastFailure will be initialized at 0, ie. no vdb failure
@@ -194,7 +196,7 @@ public abstract class AbstractControllerConnectPolicy
    */
   public synchronized void controllerDown(ControllerInfo controller)
   {
-    for (Iterator iter = aliveControllers.iterator(); iter.hasNext();)
+    for (Iterator<ControllerAndVdbState> iter = aliveControllers.iterator(); iter.hasNext();)
     {
       ControllerAndVdbState ctrl = (ControllerAndVdbState) iter.next();
       if (ctrl.controller.equals(controller))
@@ -232,7 +234,7 @@ public abstract class AbstractControllerConnectPolicy
    */
   public synchronized void setVdbDownOnController(ControllerInfo controller)
   {
-    for (Iterator iter = aliveControllers.iterator(); iter.hasNext();)
+    for (Iterator<ControllerAndVdbState> iter = aliveControllers.iterator(); iter.hasNext();)
     {
       ControllerAndVdbState ctrl = (ControllerAndVdbState) iter.next();
       if (ctrl.controller.equals(controller))
@@ -261,7 +263,7 @@ public abstract class AbstractControllerConnectPolicy
   {
     if (controller == null)
       return false;
-    for (Iterator iter = aliveControllers.iterator(); iter.hasNext();)
+    for (Iterator<ControllerAndVdbState> iter = aliveControllers.iterator(); iter.hasNext();)
     {
       ControllerAndVdbState ctrl = (ControllerAndVdbState) iter.next();
       if (ctrl.controller.equals(controller))

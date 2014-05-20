@@ -42,12 +42,12 @@ public class ReadWrite
    * @param prefix prefix some values with tabs
    * @return <code>String</code> conversion for the table content
    */
-  public static String write(Hashtable table, boolean prefix)
+  public static String write(Hashtable<?, ?> table, boolean prefix)
   {
     if (table == null)
       return "";
     StringBuffer buffer = new StringBuffer();
-    Enumeration e = table.keys();
+    Enumeration<?> e = table.keys();
     Object o;
     while (e.hasMoreElements())
     {
@@ -90,7 +90,7 @@ public class ReadWrite
    * @param writeCountKey should we write the count keys
    * @return <code>String</code> conversion for the list content
    */
-  public static String write(ArrayList list, String listName,
+  public static String write(ArrayList<?> list, String listName,
       boolean writeCountKey)
   {
     if (list == null)

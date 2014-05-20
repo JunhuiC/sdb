@@ -39,7 +39,7 @@ import org.continuent.sequoia.common.sql.schema.DatabaseTable;
 public class SchedulerDatabaseSchema
 {
   /** <code>ArrayList</code> of <code>SchedulerDatabaseTable</code>. */
-  private ArrayList                tables;
+  private ArrayList<SchedulerDatabaseTable>                tables;
 
   private TransactionExclusiveLock lock = new TransactionExclusiveLock();
 
@@ -53,15 +53,15 @@ public class SchedulerDatabaseSchema
   {
     if (schema == null)
     {
-      tables = new ArrayList();
+      tables = new ArrayList<SchedulerDatabaseTable>();
       return;
     }
 
     // Clone the tables
-    Collection origTables = schema.getTables().values();
+    Collection<?> origTables = schema.getTables().values();
     int size = origTables.size();
-    tables = new ArrayList(size);
-    for (Iterator iter = origTables.iterator(); iter.hasNext();)
+    tables = new ArrayList<SchedulerDatabaseTable>(size);
+    for (Iterator<?> iter = origTables.iterator(); iter.hasNext();)
       tables.add(new SchedulerDatabaseTable((DatabaseTable) iter.next()));
   }
 
@@ -99,7 +99,7 @@ public class SchedulerDatabaseSchema
     if (databaseSchema == null)
       return;
 
-    ArrayList otherTables = databaseSchema.getTables();
+    ArrayList<SchedulerDatabaseTable> otherTables = databaseSchema.getTables();
     if (otherTables == null)
       return;
 
@@ -119,7 +119,7 @@ public class SchedulerDatabaseSchema
    * 
    * @return an <code>ArrayList</code> of <code>SchedulerDatabaseTable</code>
    */
-  public ArrayList getTables()
+  public ArrayList<SchedulerDatabaseTable> getTables()
   {
     return tables;
   }

@@ -38,7 +38,7 @@ public class ConnectionClosingThread extends Thread
   private static final int WAIT_TIME = 5000;
 
   private Driver           driver;
-  private ArrayList        pendingConnectionClosing;
+  private ArrayList<Connection>        pendingConnectionClosing;
 
   /**
    * Builds a new ConnectionClosingThread
@@ -65,7 +65,7 @@ public class ConnectionClosingThread extends Thread
       Connection firstConnectionToClose = null;
       Connection lastConnectionToClose = null;
       int pendingConnectionSize;
-      ArrayList closingList = new ArrayList();
+      ArrayList<Connection> closingList = new ArrayList<Connection>();
       boolean killed = false;
 
       while (!killed)

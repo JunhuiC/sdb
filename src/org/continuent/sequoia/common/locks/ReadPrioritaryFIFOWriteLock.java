@@ -54,7 +54,7 @@ public class ReadPrioritaryFIFOWriteLock
   private int       waitingWriters;
 
   private Object    readSync;
-  private ArrayList writeWaitingQueue;
+  private ArrayList<Thread> writeWaitingQueue;
 
   /**
    * Creates a new <code>ReadPrioritaryFIFOWriteLock</code> instance.
@@ -66,7 +66,7 @@ public class ReadPrioritaryFIFOWriteLock
     waitingReaders = 0;
     waitingWriters = 0;
     readSync = new Object();
-    writeWaitingQueue = new ArrayList();
+    writeWaitingQueue = new ArrayList<Thread>();
   }
 
   /**

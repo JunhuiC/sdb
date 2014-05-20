@@ -36,6 +36,11 @@ public abstract class DistributedVirtualDatabaseMessage implements Serializable
 {
 
   /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4099206791718904508L;
+
+/**
    * Single threaded part of the handler that will execute in mutual execution
    * in the total order delivery thread of the group communication.
    * <p>

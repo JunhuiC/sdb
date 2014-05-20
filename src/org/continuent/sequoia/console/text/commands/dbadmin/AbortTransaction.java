@@ -29,6 +29,7 @@ import org.continuent.sequoia.console.text.module.VirtualDatabaseAdmin;
  * 
  * @author <a href="mailto:damian.arregui@continuent.com">Damian Arregui </a>
  * @version 1.0
+ * @param <E>
  */
 public class AbortTransaction extends AbstractAdminCommand
 {

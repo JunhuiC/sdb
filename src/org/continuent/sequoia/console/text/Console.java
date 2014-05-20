@@ -162,7 +162,7 @@ public class Console
    * 
    * @return a List including the command history
    */
-  public List getHistory()
+  public List<?> getHistory()
   {
     return consoleReader.getHistory().getHistoryList();
   }
@@ -172,7 +172,7 @@ public class Console
    */
   public void storeHistory()
   {
-    List history = consoleReader.getHistory().getHistoryList();
+    List<?> history = consoleReader.getHistory().getHistoryList();
     try
     {
       Preferences prefs = Preferences.userRoot()
@@ -309,7 +309,7 @@ public class Console
   }
 
   boolean lastWasCR   = false;
-  List    currentLine = new ArrayList();
+  List<Byte>    currentLine = new ArrayList<Byte>();
 
   /**
    * Implements SEQUOIA-887. We would like to create a BufferedReader to use its
@@ -366,7 +366,7 @@ public class Console
 
     // "cast" byte List into a primitive byte array
     byte[] encoded = new byte[currentLine.size()];
-    Iterator it = currentLine.iterator();
+    Iterator<Byte> it = currentLine.iterator();
     for (int i = 0; it.hasNext(); i++)
       encoded[i] = ((Byte) it.next()).byteValue();
 

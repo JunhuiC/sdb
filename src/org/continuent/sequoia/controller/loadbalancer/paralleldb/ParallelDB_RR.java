@@ -85,7 +85,7 @@ public class ParallelDB_RR extends ParallelDB
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)
@@ -153,7 +153,7 @@ public class ParallelDB_RR extends ParallelDB
     // block
     try
     {
-      ArrayList backends = vdb.getBackends();
+      ArrayList<?> backends = vdb.getBackends();
       int size = backends.size();
 
       if (size == 0)

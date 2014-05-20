@@ -47,7 +47,7 @@ public abstract class RAIDb1ec extends RAIDb1
    * Request handling 4. Transaction handling 5. Backend management
    */
 
-  protected ArrayList           backendReadThreads;
+  protected ArrayList<?>           backendReadThreads;
   protected int                 nbOfConcurrentReads;
   protected ErrorCheckingPolicy errorCheckingPolicy;
 
@@ -75,7 +75,7 @@ public abstract class RAIDb1ec extends RAIDb1
       throws Exception
   {
     super(vdb, waitForCompletionPolicy);
-    backendReadThreads = new ArrayList();
+    backendReadThreads = new ArrayList<Object>();
     this.errorCheckingPolicy = errorCheckingPolicy;
     this.nbOfConcurrentReads = nbOfConcurrentReads;
   }

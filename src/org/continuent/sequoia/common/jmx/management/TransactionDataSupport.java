@@ -42,7 +42,7 @@ public class TransactionDataSupport
   private final static TabularType   TRANSACTION_TABULAR_TYPE;
 
   public static final String[]       NAMES  = new String[]{"tid", "time"};
-  private static final OpenType[]    TYPES  = new OpenType[]{SimpleType.LONG, SimpleType.LONG};
+  private static final OpenType<?>[]    TYPES  = new OpenType[]{SimpleType.LONG, SimpleType.LONG};
 
   static
   {

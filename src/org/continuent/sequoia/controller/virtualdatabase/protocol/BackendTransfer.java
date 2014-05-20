@@ -52,7 +52,7 @@ public class BackendTransfer extends DistributedVirtualDatabaseMessage
   private String               controllerDest;
   private String               checkpointName;
 
-  private transient LinkedList totalOrderQueue;
+  private transient LinkedList<Object> totalOrderQueue;
 
   /**
    * Creates a new <code>BackendTransfer</code> object
@@ -106,7 +106,7 @@ public class BackendTransfer extends DistributedVirtualDatabaseMessage
   public Object handleMessageSingleThreaded(DistributedVirtualDatabase dvdb,
       Member sender)
   {
-    totalOrderQueue = dvdb.getTotalOrderQueue();
+    totalOrderQueue = (LinkedList<Object>) dvdb.getTotalOrderQueue();
     if (totalOrderQueue == null)
       return new VirtualDatabaseException(Translate
           .get("virtualdatabase.no.total.order.queue", dvdb.getVirtualDatabaseName()));

@@ -150,13 +150,13 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * Hashtable&lt;Member,String&gt;, the String being the controller JMX name
    * corresponding to the Member
    */
-  private Hashtable                                controllerJmxAddress;
+  private Hashtable<Member, String>                                controllerJmxAddress;
 
   /** Hashtable&lt;Member, Long&lt;DatabaseBackend&gt;&gt; */
-  private Hashtable                                controllerIds;
+  private Hashtable<Member, Long>                                controllerIds;
 
   /** Hashtable&lt;Member, List&lt;DatabaseBackend&gt;&gt; */
-  private Hashtable                                backendsPerController;
+  private Hashtable<Member, List<DatabaseBackend>>                                backendsPerController;
 
   /** Hedera channel */
   private AbstractReliableGroupChannel             channel                                  = null;
@@ -168,7 +168,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
   private Group                                    currentGroup                             = null;
 
-  private ArrayList                                allMemberButUs                           = null;
+  private ArrayList<Member>                                allMemberButUs                           = null;
 
   /**
    * Used by VirtualDatabaseConfiguration if a remote controller config is not
@@ -190,14 +190,14 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * List of threads that are cleaning up resources allocated by a dead remote
    * controller
    */
-  private Hashtable                                cleanupThreads;
+  private Hashtable<Long, ControllerFailureCleanupThread>                                cleanupThreads;
 
   /**
    * Stores the "flushed writes" status for each failed controller: true if
    * writes have been flushed by the controller failure clean-up thread or a vdb
    * worker thread clean-up thread, false otherwise.
    */
-  private HashMap                                  groupCommunicationMessagesLocallyFlushed;
+  private HashMap<Long, Boolean>                                  groupCommunicationMessagesLocallyFlushed;
 
   /**
    * Maximum time in ms allowed for clients to failover in case of a controller
@@ -224,12 +224,12 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
   private boolean                                  isResynchingFlag;
 
-  private Hashtable                                controllerPersistentConnectionsRecovered = new Hashtable();
+  private Hashtable<Long, LinkedList<Long>>                                controllerPersistentConnectionsRecovered = new Hashtable<Long, LinkedList<Long>>();
 
-  private Hashtable                                controllerTransactionsRecovered          = new Hashtable();
+  private Hashtable<Long, LinkedList<Long>>                                controllerTransactionsRecovered          = new Hashtable<Long, LinkedList<Long>>();
   private PartitionReconciler                      partitionReconciler;
 
-  private List                                     ongoingActivitySuspensions               = new ArrayList();
+  private List<Member>                                     ongoingActivitySuspensions               = new ArrayList<Member>();
 
   /** JVM-wide group communication factory */
   private static AbstractGroupCommunicationFactory groupCommunicationFactory                = null;
@@ -275,17 +275,17 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     this.failoverTimeoutInMs = clientFailoverTimeoutInMs;
     requestResultFailoverCache = new RequestResultFailoverCache(logger,
         failoverTimeoutInMs);
-    backendsPerController = new Hashtable();
-    controllerJmxAddress = new Hashtable();
-    controllerIds = new Hashtable();
-    cleanupThreads = new Hashtable();
-    groupCommunicationMessagesLocallyFlushed = new HashMap();
+    backendsPerController = new Hashtable<Member, List<DatabaseBackend>>();
+    controllerJmxAddress = new Hashtable<Member, String>();
+    controllerIds = new Hashtable<Member, Long>();
+    cleanupThreads = new Hashtable<Long, ControllerFailureCleanupThread>();
+    groupCommunicationMessagesLocallyFlushed = new HashMap<Long, Boolean>();
     isVirtualDatabaseStarted = false;
     distributedRequestLogger = Trace
         .getLogger("org.continuent.sequoia.controller.distributedvirtualdatabase.request."
             + name);
     this.hederaPropertiesFile = hederaPropertiesFile;
-    this.totalOrderQueue = new LinkedList();
+    this.totalOrderQueue = new LinkedList<Object>();
   }
 
   /**
@@ -462,7 +462,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
     try
     {
-      List dest = new ArrayList();
+      List<Member> dest = new ArrayList<Member>();
 
       if ((multicastRequestAdapter != null)
           && (multicastRequestAdapter.getChannel() != null))
@@ -560,7 +560,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    *      java.util.List)
    */
   public void networkPartition(GroupIdentifier gid,
-      final List mergedGroupCompositions)
+      @SuppressWarnings("rawtypes") final List mergedGroupCompositions)
   {
     // We already left the group. Late notification. Ignore.
     if ((channel == null) || channelShuttingDown)
@@ -688,7 +688,8 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       long controllerId;
 
       // Check if we are alone or not
-      List currentGroupMembers = currentGroup.getMembers();
+      @SuppressWarnings("unchecked")
+	List<Member> currentGroupMembers = currentGroup.getMembers();
       int groupSize = currentGroupMembers.size();
       if (groupSize == 1)
       {
@@ -701,7 +702,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
           throw new VirtualDatabaseException(
               "NOT STARTING VDB (not the last man down).");
 
-        allMemberButUs = new ArrayList();
+        allMemberButUs = new ArrayList<Member>();
         controllerId = 0;
         distributedRequestManager.setControllerId(controllerId);
         if (resyncRecoveryLog)
@@ -718,7 +719,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
         if (logger.isDebugEnabled())
         {
           logger.debug("Current list of controllers is as follows:");
-          for (Iterator iter = currentGroupMembers.iterator(); iter.hasNext();)
+          for (Iterator<Member> iter = currentGroupMembers.iterator(); iter.hasNext();)
             logger.debug("Controller " + iter.next());
         }
 
@@ -796,7 +797,8 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
   }
 
-  private void reconcile(List suspectedMembers)
+  @SuppressWarnings("unchecked")
+private void reconcile(@SuppressWarnings("rawtypes") List suspectedMembers)
   {
     try
     {
@@ -809,7 +811,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
     boolean shutdownLocally = false;
 
-    Iterator iter = suspectedMembers.iterator();
+    Iterator<?> iter = suspectedMembers.iterator();
     while (iter.hasNext())
     {
       Member other = (Member) iter.next();
@@ -893,7 +895,8 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * Shutdown local member unless it is the first in the members list (sorted
    * alphabetically).
    */
-  private boolean shutdownUnlessFirstMember(List members)
+  @SuppressWarnings("unchecked")
+private boolean shutdownUnlessFirstMember(@SuppressWarnings("rawtypes") List members)
   {
     Collections.sort(members);
     Member firstMember = (Member) members.get(0);
@@ -1044,12 +1047,13 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @throws VirtualDatabaseException in case getting the cp names list from the
    *           recovery log failed
    */
-  private String getLastShutdownCheckpointName()
+  @SuppressWarnings("deprecation")
+private String getLastShutdownCheckpointName()
       throws VirtualDatabaseException
   {
     // get checkpoint names and see which is the last shutdown checkpoint. This
     // list is expected to be ordered, newest first.
-    ArrayList checkpointNames;
+    ArrayList<?> checkpointNames;
     try
     {
       checkpointNames = getRecoveryLog().getCheckpointNames();
@@ -1060,7 +1064,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       throw new VirtualDatabaseException(e);
     }
 
-    Iterator iter = checkpointNames.iterator();
+    Iterator<?> iter = checkpointNames.iterator();
     while (iter.hasNext())
     {
       String cpName = (String) iter.next();
@@ -1246,14 +1250,15 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * Refresh the current group membership when someone has joined or left the
    * group.
    */
-  private void refreshGroupMembership()
+  @SuppressWarnings("unchecked")
+private void refreshGroupMembership()
   {
     if (logger.isDebugEnabled())
       logger.debug("Refreshing members list:" + currentGroup.getMembers());
 
     synchronized (controllerJmxAddress)
     {
-      allMemberButUs = (ArrayList) (((ArrayList) currentGroup.getMembers())
+      allMemberButUs = (ArrayList<Member>) (((ArrayList<Member>) currentGroup.getMembers())
           .clone());
       allMemberButUs.remove(channel.getLocalMembership());
     }
@@ -1288,17 +1293,18 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * 
    * @return a clone of the list of all members (never null).
    */
-  public ArrayList getAllMembers()
+  @SuppressWarnings("unchecked")
+public ArrayList<Member> getAllMembers()
   {
     // FIXME Should not return ArrayList but rather List
     synchronized (controllerJmxAddress)
     {
       if (currentGroup == null) // this happens if we did not #joinGroup()
-        return new ArrayList();
-      ArrayList members = (ArrayList) currentGroup.getMembers();
+        return new ArrayList<Member>();
+      ArrayList<Member> members = (ArrayList<Member>) currentGroup.getMembers();
       if (members == null) // SEQUOIA-745 fix
-        return new ArrayList();
-      return (ArrayList) members.clone();
+        return new ArrayList<Member>();
+      return (ArrayList<Member>) members.clone();
     }
   }
 
@@ -1308,12 +1314,12 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * 
    * @return the allMembersButUs field (never null).
    */
-  public ArrayList getAllMemberButUs()
+  public ArrayList<Member> getAllMemberButUs()
   {
     synchronized (controllerJmxAddress)
     {
       if (allMemberButUs == null) // this happens if we did not #joinGroup()
-        return new ArrayList();
+        return new ArrayList<Member>();
 
       /**
        * This synchronized block might seem loussy, but actually it's enough, as
@@ -1343,7 +1349,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * 
    * @return Returns the cleanupThreads.
    */
-  public Hashtable getCleanupThreads()
+  public Hashtable<Long, ControllerFailureCleanupThread> getCleanupThreads()
   {
     return cleanupThreads;
   }
@@ -1357,9 +1363,9 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @return List of recovered transactions for the given controller id (null if
    *         none)
    */
-  public List getTransactionsRecovered(Long controllerId)
+  public List<?> getTransactionsRecovered(Long controllerId)
   {
-    return (List) controllerTransactionsRecovered.remove(controllerId);
+    return (List<?>) controllerTransactionsRecovered.remove(controllerId);
   }
 
   /**
@@ -1371,9 +1377,9 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @return List of recovered persistent connections for the given controller
    *         id (null if none)
    */
-  public List getControllerPersistentConnectionsRecovered(Long controllerId)
+  public List<?> getControllerPersistentConnectionsRecovered(Long controllerId)
   {
-    return (List) controllerPersistentConnectionsRecovered.remove(controllerId);
+    return (List<?>) controllerPersistentConnectionsRecovered.remove(controllerId);
   }
 
   /**
@@ -1388,11 +1394,11 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   {
     synchronized (controllerPersistentConnectionsRecovered)
     {
-      LinkedList persistentConnectionsRecovered = (LinkedList) controllerPersistentConnectionsRecovered
+      LinkedList<Long> persistentConnectionsRecovered = (LinkedList<Long>) controllerPersistentConnectionsRecovered
           .get(controllerId);
       if (persistentConnectionsRecovered == null)
       {
-        persistentConnectionsRecovered = new LinkedList();
+        persistentConnectionsRecovered = new LinkedList<Long>();
         controllerPersistentConnectionsRecovered.put(controllerId,
             persistentConnectionsRecovered);
       }
@@ -1415,11 +1421,11 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   {
     synchronized (controllerTransactionsRecovered)
     {
-      LinkedList transactionsRecovered = (LinkedList) controllerTransactionsRecovered
+      LinkedList<Long> transactionsRecovered = (LinkedList<Long>) controllerTransactionsRecovered
           .get(controllerId);
       if (transactionsRecovered == null)
       {
-        transactionsRecovered = new LinkedList();
+        transactionsRecovered = new LinkedList<Long>();
         controllerTransactionsRecovered
             .put(controllerId, transactionsRecovered);
       }
@@ -1442,11 +1448,11 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       throws VirtualDatabaseException
   {
     // Get the target controller
-    Iterator iter = controllerJmxAddress.entrySet().iterator();
+    Iterator<?> iter = controllerJmxAddress.entrySet().iterator();
     Member targetMember = null;
     while (iter.hasNext())
     {
-      Entry entry = (Entry) iter.next();
+      Entry<?, ?> entry = (Entry<?, ?>) iter.next();
       if (entry.getValue().equals(controllerName))
       {
         targetMember = (Member) entry.getKey();
@@ -1601,12 +1607,12 @@ public class DistributedVirtualDatabase extends VirtualDatabase
 
     // TODO: synchronize this access to backendsPerController (and others)
     DatabaseBackend b;
-    Iterator iter = backendsPerController.keySet().iterator();
+    Iterator<Member> iter = backendsPerController.keySet().iterator();
     while (iter.hasNext())
     {
       Member member = (Member) iter.next();
 
-      List remoteBackends = (List) backendsPerController.get(member);
+      List<?> remoteBackends = (List<?>) backendsPerController.get(member);
       int size = remoteBackends.size();
       b = null;
       for (int i = 0; i < size; i++)
@@ -1641,14 +1647,14 @@ public class DistributedVirtualDatabase extends VirtualDatabase
               MulticastRequestAdapter.WAIT_ALL,
               getMessageTimeouts().getVirtualDatabaseConfigurationTimeout());
 
-      Map results = rspList.getResults();
+      Map<?, ?> results = rspList.getResults();
       if (results.size() == 0)
       {
         throw new SQLException(
             Translate
                 .get("virtualdatabase.distributed.prepared.statement.metadata.remote.no.response"));
       }
-      for (Iterator iter = results.values().iterator(); iter.hasNext();)
+      for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
       {
         Object response = iter.next();
         // Any SQLException will be wrapped into a ControllerException
@@ -1795,12 +1801,12 @@ public class DistributedVirtualDatabase extends VirtualDatabase
                 MulticastRequestAdapter.WAIT_ALL,
                 getMessageTimeouts().getVirtualDatabaseConfigurationTimeout());
 
-        Map results = rspList.getResults();
+        Map<?, ?> results = rspList.getResults();
         if (results.size() == 0)
           if (logger.isWarnEnabled())
             logger
                 .warn("No response while getting static metadata from remote controller");
-        for (Iterator iter = results.values().iterator(); iter.hasNext();)
+        for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
         {
           Object response = iter.next();
           if (response instanceof ControllerException)
@@ -1977,7 +1983,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
           + currentGroup.getMembers() + " and has mapping:"
           + controllerJmxAddress);
     }
-    Collection controllerJmxNames = controllerJmxAddress.values();
+    Collection<String> controllerJmxNames = controllerJmxAddress.values();
     return (String[]) controllerJmxNames.toArray(new String[controllerJmxNames
         .size()]);
   }
@@ -1985,19 +1991,20 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.VirtualDatabaseMBean#viewGroupBackends()
    */
-  public Hashtable viewGroupBackends() throws VirtualDatabaseException
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+public Hashtable viewGroupBackends() throws VirtualDatabaseException
   {
     Hashtable map = super.viewGroupBackends();
     synchronized (backendsPerController)
     {
-      Iterator iter = backendsPerController.keySet().iterator();
+      Iterator<Member> iter = backendsPerController.keySet().iterator();
       while (iter.hasNext())
       {
         Member member = (Member) iter.next();
 
         // Create an List<BackendInfo> from the member backend list
-        List backends = (List) backendsPerController.get(member);
-        List backendInfos = DatabaseBackend.toBackendInfos(backends);
+        List<?> backends = (List<?>) backendsPerController.get(member);
+        List<?> backendInfos = DatabaseBackend.toBackendInfos(backends);
         map.put(controllerJmxAddress.get(member), backendInfos);
       }
     }
@@ -2052,7 +2059,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @param sender the membership identifying the remote controller
    * @param remoteBackends remote controller backends
    */
-  public void addBackendPerController(Member sender, List remoteBackends)
+  public void addBackendPerController(Member sender, List<DatabaseBackend> remoteBackends)
   {
     backendsPerController.put(sender, remoteBackends);
 
@@ -2068,7 +2075,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * 
    * @return a Hashtable&lt;Member, List&lt;DatabaseBackend&gt;&gt;
    */
-  public Hashtable getBackendsPerController()
+  public Hashtable<Member, List<DatabaseBackend>> getBackendsPerController()
   {
     return backendsPerController;
   }
@@ -2103,7 +2110,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @param dest List of <code>Address</code> to send the message to
    * @throws NotConnectedException if the channel is not connected
    */
-  private void broadcastBackendInformation(ArrayList dest)
+  private void broadcastBackendInformation(ArrayList<Member> dest)
       throws NotConnectedException
   {
     logger
@@ -2111,7 +2118,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
             .get("virtualdatabase.distributed.configuration.querying.remote.status"));
 
     // Send our backend status using serializable BackendInfo
-    List backendInfos = DatabaseBackend.toBackendInfos(backends);
+    List<BackendInfo> backendInfos = DatabaseBackend.toBackendInfos(backends);
     MulticastResponse rspList = multicastRequestAdapter.multicastMessage(dest,
         new BackendStatus(backendInfos, distributedRequestManager
             .getControllerId()), MulticastRequestAdapter.WAIT_ALL,
@@ -2126,9 +2133,9 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       {
         BackendStatus bs = (BackendStatus) rspList.getResult(m);
         // Update backend list from sender
-        List remoteBackendInfos = bs.getBackendInfos();
+        List<BackendInfo> remoteBackendInfos = bs.getBackendInfos();
         // convert the BackendInfos to DatabaseBackends
-        List remoteBackends = BackendInfo
+        List<DatabaseBackend> remoteBackends = BackendInfo
             .toDatabaseBackends(remoteBackendInfos);
         backendsPerController.put(m, remoteBackends);
         if (logger.isDebugEnabled())
@@ -2156,7 +2163,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    *         with other controllers or the controller id to use otherwise.
    */
   private long checkConfigurationCompatibilityAndReturnControllerId(
-      ArrayList dest)
+      ArrayList<Member> dest)
   {
     if (logger.isInfoEnabled())
       logger.info(Translate
@@ -2179,14 +2186,14 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     }
 
     // Check that everybody agreed
-    Map results = rspList.getResults();
+    Map<?, ?> results = rspList.getResults();
     int size = results.size();
     if (size == 0)
       logger.warn(Translate
           .get("virtualdatabase.distributed.configuration.checking.noanswer"));
 
     long highestRemoteControllerId = 0;
-    for (Iterator iter = results.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
     {
       Object response = iter.next();
       if (response instanceof VirtualDatabaseConfigurationResponse)
@@ -2210,7 +2217,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
           if (logger.isWarnEnabled())
             logger
                 .warn("Some virtual database users are missing from this configuration, trying to create them transparently...");
-          for (Iterator iter2 = vdbcr.getAdditionalVdbUsers().iterator(); iter2
+          for (Iterator<?> iter2 = vdbcr.getAdditionalVdbUsers().iterator(); iter2
               .hasNext();)
           {
             VirtualDatabaseUser vdbUser = (VirtualDatabaseUser) iter2.next();
@@ -2268,12 +2275,12 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     }
 
     // Check that everybody agreed
-    Map results = rspList.getResults();
+    Map<?, ?> results = rspList.getResults();
     int size = results.size();
     if (size == 0)
       logger.warn("No response while checking validity of vdb user "
           + vdbUser.getLogin());
-    for (Iterator iter = results.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
     {
       Object response = iter.next();
       if (response instanceof Boolean)
@@ -2316,7 +2323,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     size = results.size();
     if (size == 0)
       logger.warn("No response while adding vdb user " + vdbUser.getLogin());
-    for (Iterator iter = results.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = results.values().iterator(); iter.hasNext();)
     {
       Object response = iter.next();
       if (response instanceof ControllerException)
@@ -2457,7 +2464,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       // potentially be huge (e.g. if it contains a blob)
       try
       {
-        ArrayList dest = new ArrayList();
+        ArrayList<Member> dest = new ArrayList<Member>();
         dest.add(controllerByName);
         long copyLogEntryTimeout = getMessageTimeouts()
             .getCopyLogEntryTimeout();
@@ -2586,14 +2593,14 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   {
     synchronized (backendsPerController)
     {
-      List remoteBackends = (List) backendsPerController.get(sender);
+      List<DatabaseBackend> remoteBackends = (List<DatabaseBackend>) backendsPerController.get(sender);
       if (remoteBackends == null)
       { // This case was reported by Alessandro Gamboz on April 1, 2005.
         // It looks like the EnableBackend message arrives before membership
         // has been properly updated.
         logger.warn("No information has been found for remote controller "
             + sender);
-        remoteBackends = new ArrayList();
+        remoteBackends = new ArrayList<DatabaseBackend>();
         backendsPerController.put(sender, remoteBackends);
       }
       int size = remoteBackends.size();
@@ -2627,21 +2634,21 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @param sender the message sender
    */
   public void handleRemoteDisableBackendsNotification(
-      ArrayList disabledBackendInfos, Member sender)
+      ArrayList<?> disabledBackendInfos, Member sender)
   {
     synchronized (backendsPerController)
     {
-      List remoteBackends = (List) backendsPerController.get(sender);
+      List<DatabaseBackend> remoteBackends = (List<DatabaseBackend>) backendsPerController.get(sender);
       if (remoteBackends == null)
       { // This case was reported by Alessandro Gamboz on April 1, 2005.
         // It looks like the EnableBackend message arrives before membership
         // has been properly updated.
         logger.warn("No information has been found for remote controller "
             + sender);
-        remoteBackends = new ArrayList();
+        remoteBackends = new ArrayList<DatabaseBackend>();
         backendsPerController.put(sender, remoteBackends);
       }
-      Iterator iter = disabledBackendInfos.iterator();
+      Iterator<?> iter = disabledBackendInfos.iterator();
       while (iter.hasNext())
       {
         BackendInfo backendInfo = (BackendInfo) iter.next();
@@ -2677,7 +2684,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       logger.debug("Sending local controller name to joining controller ("
           + dest + ")");
 
-    List target = new ArrayList();
+    List<Member> target = new ArrayList<Member>();
     target.add(dest);
     multicastRequestAdapter.multicastMessage(target, new ControllerInformation(
         controller.getControllerName(), controller.getJmxName(),
@@ -2691,7 +2698,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       logger.debug("Sending backend status name to joining controller (" + dest
           + ")");
     }
-    List backendInfos = DatabaseBackend.toBackendInfos(backends);
+    List<BackendInfo> backendInfos = DatabaseBackend.toBackendInfos(backends);
     multicastRequestAdapter.multicastMessage(target, new BackendStatus(
         backendInfos, distributedRequestManager.getControllerId()),
         MulticastRequestAdapter.WAIT_ALL, messageTimeouts
@@ -2816,7 +2823,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    *           exceptions
    * @see SetCheckpointAndResumeTransactions
    */
-  public void setGroupCheckpoint(String checkpointName, ArrayList groupMembers)
+  public void setGroupCheckpoint(String checkpointName, ArrayList<Member> groupMembers)
       throws VirtualDatabaseException
   {
     try
@@ -2824,7 +2831,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
       // First suspend transactions
       distributedRequestManager.suspendActivity();
       getMulticastRequestAdapter().multicastMessage(groupMembers,
-          new DisableBackendsAndSetCheckpoint(new ArrayList(), checkpointName),
+          new DisableBackendsAndSetCheckpoint(new ArrayList<Object>(), checkpointName),
           MulticastRequestAdapter.WAIT_ALL,
           messageTimeouts.getSetCheckpointTimeout());
     }
@@ -2871,7 +2878,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     String checkpointName = buildCheckpointName("now");
 
     // Apply checkpoint to remote controllers
-    ArrayList dest = new ArrayList();
+    ArrayList<Member> dest = new ArrayList<Member>();
     dest.add(controller);
     dest.add(channel.getLocalMembership());
     setGroupCheckpoint(checkpointName, dest);
@@ -2936,7 +2943,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   {
     try
     {
-      ArrayList dest = new ArrayList();
+      ArrayList<Member> dest = new ArrayList<Member>();
       dest.add(controllerMember);
       MulticastResponse resp = getMulticastRequestAdapter().multicastMessage(
           dest, message, MulticastRequestAdapter.WAIT_ALL, timeout);
@@ -2966,14 +2973,14 @@ public class DistributedVirtualDatabase extends VirtualDatabase
    * @throws VirtualDatabaseException (wrapping error) in case of communication
    *           failure
    */
-  public MulticastResponse sendMessageToControllers(ArrayList members,
+  public MulticastResponse sendMessageToControllers(ArrayList<Member> members,
       Serializable message, long timeout) throws VirtualDatabaseException
   {
     try
     {
       MulticastResponse resp = getMulticastRequestAdapter().multicastMessage(
           members, message, MulticastRequestAdapter.WAIT_ALL, timeout);
-      Iterator it = resp.getResults().keySet().iterator();
+      Iterator<?> it = resp.getResults().keySet().iterator();
       while (it.hasNext())
       {
         Object o = resp.getResults().get(it.next());
@@ -3002,7 +3009,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     }
 
     // Shutdown cleanup threads
-    for (Iterator iter = cleanupThreads.values().iterator(); iter.hasNext();)
+    for (Iterator<ControllerFailureCleanupThread> iter = cleanupThreads.values().iterator(); iter.hasNext();)
     {
       ControllerFailureCleanupThread thread = (ControllerFailureCleanupThread) iter
           .next();
@@ -3059,7 +3066,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
         if (logger.isDebugEnabled())
           logger.debug("**** Sending transfer message to:" + targetMember);
 
-        ArrayList dest = new ArrayList(1);
+        ArrayList<Member> dest = new ArrayList<Member>(1);
         dest.add(targetMember);
 
         sendMessageToController(targetMember,
@@ -3293,10 +3300,10 @@ public class DistributedVirtualDatabase extends VirtualDatabase
   // Resume ongoing activity suspensions originated from the failed controller
   private void resumeOngoingActivitySuspensions(Member controllerMember)
   {
-    List dest = new ArrayList();
+    List<Member> dest = new ArrayList<Member>();
     dest.add(multicastRequestAdapter.getChannel().getLocalMembership());
 
-    for (Iterator iter = ongoingActivitySuspensions.iterator(); iter.hasNext();)
+    for (Iterator<Member> iter = ongoingActivitySuspensions.iterator(); iter.hasNext();)
     {
       Member m = (Member) iter.next();
       if (m.equals(controllerMember))
@@ -3329,7 +3336,7 @@ public class DistributedVirtualDatabase extends VirtualDatabase
     {
       if (!recoverThreads.isEmpty())
       {
-        for (Iterator iterator = recoverThreads.iterator(); iterator.hasNext();)
+        for (Iterator<?> iterator = recoverThreads.iterator(); iterator.hasNext();)
         {
           RecoverThread thread = (RecoverThread) iterator.next();
           if (thread != null)

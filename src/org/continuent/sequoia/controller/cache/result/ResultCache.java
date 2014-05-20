@@ -91,13 +91,13 @@ public abstract class ResultCache extends AbstractResultCache
   /** Pending query timeout in ms. Default is: 0 (wait forever). */
   private long                     pendingQueryTimeout = 0;
   // queries: SQL -> AbstractResultCacheEntry
-  private HashMap                  queries;
+  private HashMap<String, AbstractResultCacheEntry>                  queries;
   // Pending SQL requests (String)
-  private HashSet                  pendingQueries;
+  private HashSet<String>                  pendingQueries;
   // The rules to apply for this cache
-  private HashSet                  cachingRules;
+  private HashSet<ResultCacheRule>                  cachingRules;
   private ResultCacheRule          defaultRule;
-  private ArrayList                relaxedCache;
+  private ArrayList<ResultCacheEntryRelaxed>                relaxedCache;
 
   // LRU (head) of cache entries for replacement
   private AbstractResultCacheEntry lruHead;
@@ -114,7 +114,7 @@ public abstract class ResultCache extends AbstractResultCache
       true                                             };
   private boolean                  flushingCache;
   private EagerCacheThread         eagerThread;
-  private ArrayList                eagerCache;
+  private ArrayList<ResultCacheEntryEager>                eagerCache;
 
   /*
    * Constructor
@@ -132,11 +132,11 @@ public abstract class ResultCache extends AbstractResultCache
     this.pendingQueryTimeout = pendingTimeout;
     cdbs = null;
     stats = new CacheStatistics();
-    queries = new HashMap(1000, (float) 0.75);
-    pendingQueries = new HashSet();
-    cachingRules = new HashSet();
-    relaxedCache = new ArrayList();
-    eagerCache = new ArrayList();
+    queries = new HashMap<String, AbstractResultCacheEntry>(1000, (float) 0.75);
+    pendingQueries = new HashSet<String>();
+    cachingRules = new HashSet<ResultCacheRule>();
+    relaxedCache = new ArrayList<ResultCacheEntryRelaxed>();
+    eagerCache = new ArrayList<ResultCacheEntryEager>();
     lruHead = null;
     lruTail = null;
     defaultRule = null;
@@ -184,7 +184,7 @@ public abstract class ResultCache extends AbstractResultCache
    * 
    * @return the <code>HashMap</code> of queries (not synchronized)
    */
-  public HashMap getQueries()
+  public HashMap<String, AbstractResultCacheEntry> getQueries()
   {
     return this.queries;
   }
@@ -205,8 +205,8 @@ public abstract class ResultCache extends AbstractResultCache
     else
     { // Schema is updated, compute the diff !
       CacheDatabaseSchema newSchema = new CacheDatabaseSchema(dbs);
-      ArrayList tables = cdbs.getTables();
-      ArrayList newTables = newSchema.getTables();
+      ArrayList<?> tables = cdbs.getTables();
+      ArrayList<?> newTables = newSchema.getTables();
       if (newTables == null)
       { // New schema is empty (no backend is active anymore)
         logger.info(Translate.get("resultcache.flusing.whole.cache"));
@@ -301,7 +301,7 @@ public abstract class ResultCache extends AbstractResultCache
   private CacheBehavior getCacheBehavior(SelectRequest request)
   {
     CacheBehavior behavior = null;
-    for (Iterator iter = cachingRules.iterator(); iter.hasNext();)
+    for (Iterator<ResultCacheRule> iter = cachingRules.iterator(); iter.hasNext();)
     {
       behavior = ((ResultCacheRule) iter.next()).matches(request);
       if (behavior != null)
@@ -346,7 +346,7 @@ public abstract class ResultCache extends AbstractResultCache
   public boolean[] needInvalidate(ControllerResultSet result,
       UpdateRequest request)
   {
-    HashMap updatedValues = request.getUpdatedValues();
+    HashMap<?, ?> updatedValues = request.getUpdatedValues();
     boolean needInvalidate = false;
     boolean needToSendQuery = false;
     String value;
@@ -363,9 +363,9 @@ public abstract class ResultCache extends AbstractResultCache
       return TRUE_TRUE;
     }
     Field[] fields = result.getFields();
-    ArrayList data = result.getData();
+    ArrayList<?> data = result.getData();
     int size = fields.length;
-    for (Iterator iter = updatedValues.keySet().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = updatedValues.keySet().iterator(); iter.hasNext();)
     {
       columnName = (String) iter.next();
       value = (String) updatedValues.get(columnName);
@@ -855,7 +855,7 @@ public abstract class ResultCache extends AbstractResultCache
       { // Invalidate the whole cache until it is empty
         while (!queries.isEmpty())
         {
-          Iterator iter = queries.values().iterator();
+          Iterator<AbstractResultCacheEntry> iter = queries.values().iterator();
           ((AbstractResultCacheEntry) iter.next()).invalidate();
         }
       }
@@ -988,7 +988,7 @@ public abstract class ResultCache extends AbstractResultCache
       {
         String[][] data = new String[queries.size()][];
         int count = 0;
-        for (Iterator iter = queries.values().iterator(); iter.hasNext(); count++)
+        for (Iterator<AbstractResultCacheEntry> iter = queries.values().iterator(); iter.hasNext(); count++)
         {
           AbstractResultCacheEntry qe = (AbstractResultCacheEntry) iter.next();
           if (qe != null)
@@ -1033,7 +1033,7 @@ public abstract class ResultCache extends AbstractResultCache
    * 
    * @return Returns the eagerCache.
    */
-  public ArrayList getEagerCache()
+  public ArrayList<ResultCacheEntryEager> getEagerCache()
   {
     return eagerCache;
   }
@@ -1043,7 +1043,7 @@ public abstract class ResultCache extends AbstractResultCache
    * 
    * @return Returns the relaxedCache.
    */
-  public ArrayList getRelaxedCache()
+  public ArrayList<ResultCacheEntryRelaxed> getRelaxedCache()
   {
     return relaxedCache;
   }
@@ -1065,7 +1065,7 @@ public abstract class ResultCache extends AbstractResultCache
         + defaultRule.getTimestampResolution() / 1000 + "\">");
     info.append(defaultRule.getCacheBehavior().getXml());
     info.append("</" + DatabasesXmlTags.ELT_DefaultResultCacheRule + ">");
-    for (Iterator iter = cachingRules.iterator(); iter.hasNext();)
+    for (Iterator<ResultCacheRule> iter = cachingRules.iterator(); iter.hasNext();)
       info.append(((ResultCacheRule) iter.next()).getXml());
     info.append("</" + DatabasesXmlTags.ELT_ResultCache + ">");
     return info.toString();

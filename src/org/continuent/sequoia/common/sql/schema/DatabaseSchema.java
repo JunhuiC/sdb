@@ -54,9 +54,9 @@ public class DatabaseSchema implements Serializable
    */
   private String                           vdbNameWithDot;
   /** <code>HashMap</code> of <code>DatabaseTables</code>. */
-  private HashMap                          tables;
+  private HashMap<String, DatabaseTable>                          tables;
   /** <code>HashMap</code> of <code>DatabaseProcedures</code>. */
-  private HashMap                          procedures;
+  private HashMap<String, DatabaseProcedure>                          procedures;
 
   /** Lock for this schema */
   private transient TransactionLogicalLock lock             = new TransactionLogicalLock();
@@ -69,8 +69,8 @@ public class DatabaseSchema implements Serializable
   public DatabaseSchema(String vdbName)
   {
     this.vdbNameWithDot = vdbName + ".";
-    tables = new HashMap();
-    procedures = new HashMap();
+    tables = new HashMap<String, DatabaseTable>();
+    procedures = new HashMap<String, DatabaseProcedure>();
   }
 
   /**
@@ -83,8 +83,8 @@ public class DatabaseSchema implements Serializable
   public DatabaseSchema(String vdbName, int nbOfTables)
   {
     this.vdbNameWithDot = vdbName + ".";
-    tables = new HashMap(nbOfTables);
-    procedures = new HashMap();
+    tables = new HashMap<String, DatabaseTable>(nbOfTables);
+    procedures = new HashMap<String, DatabaseProcedure>();
   }
 
   /**
@@ -100,8 +100,8 @@ public class DatabaseSchema implements Serializable
           "Illegal null database schema in DatabaseSchema(DatabaseSchema) constructor");
 
     vdbNameWithDot = schema.getVirtualDatabaseName();
-    tables = new HashMap(schema.getTables());
-    procedures = new HashMap(schema.getProcedures());
+    tables = new HashMap<String, DatabaseTable>(schema.getTables());
+    procedures = new HashMap<String, DatabaseProcedure>(schema.getProcedures());
   }
 
   /**
@@ -161,7 +161,7 @@ public class DatabaseSchema implements Serializable
       retry = false;
       try
       {
-        for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
         {
           TransactionLogicalLock l = ((DatabaseTable) iter.next()).getLock();
           if (l.isLocked())
@@ -190,19 +190,19 @@ public class DatabaseSchema implements Serializable
    * @return list of locks acquired (excluding locks already acquired before
    *         this method was called)
    */
-  public List lockAllTables(AbstractRequest request)
+  public List<TransactionLogicalLock> lockAllTables(AbstractRequest request)
   {
     // Optimistic approach where we use an iterator and if the tables are
     // modified concurrently, iter.next() will fail and we will restart the
     // search.
     boolean retry;
-    List acquiredLocks = new ArrayList();
+    List<TransactionLogicalLock> acquiredLocks = new ArrayList<TransactionLogicalLock>();
     do
     {
       retry = false;
       try
       {
-        for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
         {
           TransactionLogicalLock l = ((DatabaseTable) iter.next()).getLock();
           if (!l.isLocked())
@@ -240,7 +240,7 @@ public class DatabaseSchema implements Serializable
   public void setLocks(DatabaseSchema oldSchema)
   {
     lock = oldSchema.lock;
-    for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
     {
       DatabaseTable table = (DatabaseTable) iter.next();
       DatabaseTable oldTable = oldSchema.getTable(table.getName(), true);
@@ -294,7 +294,7 @@ public class DatabaseSchema implements Serializable
       retry = false;
       try
       {
-        for (Iterator iter = procedures.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseProcedure> iter = procedures.values().iterator(); iter.hasNext();)
         {
           DatabaseProcedure p = (DatabaseProcedure) iter.next();
           if (procedure.equals(p))
@@ -317,7 +317,7 @@ public class DatabaseSchema implements Serializable
    * 
    * @return an <code>HashMap</code> of <code>DatabaseProcedure</code>
    */
-  public HashMap getProcedures()
+  public HashMap<String, DatabaseProcedure> getProcedures()
   {
     return procedures;
   }
@@ -407,7 +407,7 @@ public class DatabaseSchema implements Serializable
       retry = false;
       try
       {
-        for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
         {
           t = (DatabaseTable) iter.next();
           if (tableName.equalsIgnoreCase(t.getName()))
@@ -429,9 +429,9 @@ public class DatabaseSchema implements Serializable
    * 
    * @return an <code>HashMap</code> of <code>DatabaseTable</code>
    */
-  public synchronized HashMap getTables()
+  public synchronized HashMap<String, DatabaseTable> getTables()
   {
-    return new HashMap(tables);
+    return new HashMap<String, DatabaseTable>(tables);
   }
 
   /**
@@ -477,7 +477,7 @@ public class DatabaseSchema implements Serializable
       retry = false;
       try
       {
-        for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
         {
           TransactionLogicalLock l = ((DatabaseTable) iter.next()).getLock();
           if (l.isLocked()
@@ -533,7 +533,7 @@ public class DatabaseSchema implements Serializable
       return false;
 
     DatabaseTable table, otherTable;
-    for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
     { // Parse all tables
       table = (DatabaseTable) iter.next();
       otherTable = other.getTable(table);
@@ -543,7 +543,7 @@ public class DatabaseSchema implements Serializable
         return false; // Not compatible
     }
     DatabaseProcedure procedure, otherProcedure;
-    for (Iterator iter = procedures.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseProcedure> iter = procedures.values().iterator(); iter.hasNext();)
     { // Parse all procedures
       procedure = (DatabaseProcedure) iter.next();
       otherProcedure = other.getProcedure(procedure.getName());
@@ -566,7 +566,7 @@ public class DatabaseSchema implements Serializable
   public boolean isCompatibleWith(DatabaseSchema other)
   {
     DatabaseTable table, otherTable;
-    for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
     { // Parse all tables
       table = (DatabaseTable) iter.next();
       otherTable = other.getTable(table);
@@ -576,7 +576,7 @@ public class DatabaseSchema implements Serializable
         return false; // Not compatible
     }
     DatabaseProcedure procedure, otherProcedure;
-    for (Iterator iter = procedures.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseProcedure> iter = procedures.values().iterator(); iter.hasNext();)
     { // Parse all procedures
       procedure = (DatabaseProcedure) iter.next();
       otherProcedure = other.getProcedure(procedure.getName());
@@ -602,12 +602,12 @@ public class DatabaseSchema implements Serializable
       throw new IllegalArgumentException(
           "Illegal null database schema in mergeSchema(DatabaseSchema) method");
 
-    HashMap otherTables = databaseSchema.getTables();
+    HashMap<?, ?> otherTables = databaseSchema.getTables();
     if ((otherTables == null) || (otherTables.size() == 0))
       return;
 
     DatabaseTable table, originalTable;
-    for (Iterator iter = otherTables.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = otherTables.values().iterator(); iter.hasNext();)
     { // Parse all tables
       table = (DatabaseTable) iter.next();
       originalTable = getTable(table);
@@ -617,12 +617,12 @@ public class DatabaseSchema implements Serializable
         originalTable.merge(table);
     }
 
-    HashMap otherProcedures = databaseSchema.getProcedures();
+    HashMap<?, ?> otherProcedures = databaseSchema.getProcedures();
     if ((otherProcedures == null) || (otherProcedures.size() == 0))
       return;
 
     DatabaseProcedure procedure, originalProcedure;
-    for (Iterator iter = otherProcedures.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = otherProcedures.values().iterator(); iter.hasNext();)
     { // Parse all procedures
       procedure = (DatabaseProcedure) iter.next();
       originalProcedure = getProcedure(procedure);
@@ -661,7 +661,7 @@ public class DatabaseSchema implements Serializable
       retry = false;
       try
       {
-        for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+        for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
         {
           TransactionLogicalLock l = ((DatabaseTable) iter.next()).getLock();
           l.release(transactionId);
@@ -717,7 +717,7 @@ public class DatabaseSchema implements Serializable
    */
   public synchronized void removeTableFromDependingTables(DatabaseTable table)
   {
-    Iterator keys = getTables().keySet().iterator();
+    Iterator<?> keys = getTables().keySet().iterator();
     while (keys.hasNext())
     {
       String dependingTableName = (String) keys.next();
@@ -743,10 +743,10 @@ public class DatabaseSchema implements Serializable
       throw new IllegalArgumentException(
           "Illegal null database schema in mergeSchema(DatabaseSchema) method");
 
-    HashMap otherTables = databaseSchema.getTables();
+    HashMap<?, ?> otherTables = databaseSchema.getTables();
 
     // Remove tables that do not exist anymore in new schema
-    for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
     {
       DatabaseTable t = (DatabaseTable) iter.next();
       if (!databaseSchema.hasTable(t.getSchema() + "." + t.getName()))
@@ -755,7 +755,7 @@ public class DatabaseSchema implements Serializable
 
     // Add missing tables
     DatabaseTable table, originalTable;
-    for (Iterator iter = otherTables.values().iterator(); iter.hasNext();)
+    for (Iterator<?> iter = otherTables.values().iterator(); iter.hasNext();)
     {
       table = (DatabaseTable) iter.next();
       originalTable = getTable(table);
@@ -801,9 +801,9 @@ public class DatabaseSchema implements Serializable
   {
     StringBuffer info = new StringBuffer();
     info.append("<" + DatabasesXmlTags.ELT_DatabaseStaticSchema + ">");
-    for (Iterator iter = tables.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseTable> iter = tables.values().iterator(); iter.hasNext();)
       info.append(((DatabaseTable) iter.next()).getXml());
-    for (Iterator iter = procedures.values().iterator(); iter.hasNext();)
+    for (Iterator<DatabaseProcedure> iter = procedures.values().iterator(); iter.hasNext();)
       info.append(((DatabaseProcedure) iter.next()).getXml());
     info.append("</" + DatabasesXmlTags.ELT_DatabaseStaticSchema + ">");
     return info.toString();

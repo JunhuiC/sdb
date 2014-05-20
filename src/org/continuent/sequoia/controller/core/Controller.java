@@ -120,10 +120,10 @@ public final class Controller implements XmlComponent
                                                                     .getLogger("org.continuent.sequoia.enduser");
 
   /** Hashtable of <code>VirtualDatabase</code> objects. */
-  private Hashtable                        virtualDatabases;
+  private Hashtable<Object, VirtualDatabase>                        virtualDatabases;
 
   /** Hashtable of options */
-  private Hashtable                        configuration;
+  private Hashtable<Object, Object>                        configuration;
 
   /** Security Manager */
   private ControllerSecurityManager        security;
@@ -148,7 +148,7 @@ public final class Controller implements XmlComponent
    */
   public Controller(String ipAddress, int port, int backlog)
   {
-    virtualDatabases = new Hashtable();
+    virtualDatabases = new Hashtable<Object, VirtualDatabase>();
     this.ipAddress = ipAddress;
     this.portNumber = port;
     this.backlogSize = backlog;
@@ -347,10 +347,10 @@ public final class Controller implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.ControllerMBean#getVirtualDatabaseNames()
    */
-  public ArrayList getVirtualDatabaseNames()
+  public ArrayList<String> getVirtualDatabaseNames()
   {
-    ArrayList result = new ArrayList();
-    for (Iterator iter = virtualDatabases.values().iterator(); iter.hasNext();)
+    ArrayList<String> result = new ArrayList<String>();
+    for (Iterator<VirtualDatabase> iter = virtualDatabases.values().iterator(); iter.hasNext();)
       result.add(((VirtualDatabase) iter.next()).getVirtualDatabaseName());
     return result;
   }
@@ -360,9 +360,9 @@ public final class Controller implements XmlComponent
    * 
    * @return ArrayList of information about virtual databases.
    */
-  public ArrayList getVirtualDatabases()
+  public ArrayList<VirtualDatabase> getVirtualDatabases()
   {
-    return new ArrayList(virtualDatabases.values());
+    return new ArrayList<VirtualDatabase>(virtualDatabases.values());
   }
 
   /**
@@ -410,7 +410,8 @@ public final class Controller implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.ControllerMBean#addDriver(byte[])
    */
-  public void addDriver(byte[] bytes) throws Exception
+  @SuppressWarnings("deprecation")
+public void addDriver(byte[] bytes) throws Exception
   {
     // Try to find drivers directory in the classpath
     File driversDirectory = null;
@@ -455,7 +456,7 @@ public final class Controller implements XmlComponent
     // Unzip the file content
     try
     {
-      Enumeration entries;
+      Enumeration<?> entries;
       ZipFile zipFile = new ZipFile(temp);
 
       // Read the file
@@ -658,7 +659,7 @@ public final class Controller implements XmlComponent
     if (virtualDatabases.size() != 0)
     {
       String listOfActiveVdbs = "";
-      for (Enumeration e = virtualDatabases.keys(); e.hasMoreElements();)
+      for (Enumeration<Object> e = virtualDatabases.keys(); e.hasMoreElements();)
       {
         if (listOfActiveVdbs.length() != 0)
           listOfActiveVdbs = listOfActiveVdbs + ",";
@@ -888,7 +889,7 @@ public final class Controller implements XmlComponent
   {
     if (getJmxEnable())
     {
-      List rmiConnectors = RmiConnector.getRmiConnectors();
+      List<?> rmiConnectors = RmiConnector.getRmiConnectors();
       if ((rmiConnectors != null) && (rmiConnectors.size() > 0))
       {
         RmiConnector connector = ((RmiConnector) rmiConnectors.get(0));
@@ -924,7 +925,7 @@ public final class Controller implements XmlComponent
    * 
    * @return configure a <code>Hashtable</code> with controller options
    */
-  public Hashtable getConfiguration()
+  public Hashtable<Object, ?> getConfiguration()
   {
     return configuration;
   }
@@ -968,7 +969,7 @@ public final class Controller implements XmlComponent
    * 
    * @param configuration The configuration to set.
    */
-  public void setConfiguration(Hashtable configuration)
+  public void setConfiguration(Hashtable<Object, Object> configuration)
   {
     this.configuration = configuration;
   }
@@ -1072,7 +1073,7 @@ public final class Controller implements XmlComponent
       info.append("\n");
       info.append("<" + ControllerConstants.VIRTUAL_DATABASE_XML_ROOT_ELEMENT
           + ">");
-      List vdbs = this.getVirtualDatabases();
+      List<VirtualDatabase> vdbs = this.getVirtualDatabases();
       for (int i = 0; i < vdbs.size(); i++)
       {
         info.append(((XmlComponent) vdbs.get(i)).getXml());
@@ -1095,7 +1096,8 @@ public final class Controller implements XmlComponent
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.ControllerMBean#refreshLogConfiguration()
    */
-  public void refreshLogConfiguration() throws ControllerException
+  @SuppressWarnings("deprecation")
+public void refreshLogConfiguration() throws ControllerException
   {
     try
     {
@@ -1117,7 +1119,8 @@ public final class Controller implements XmlComponent
   public void updateLogConfigurationFile(String newConfiguration)
       throws IOException, ControllerException
   {
-    File logFile = new File(URLDecoder.decode(getClass().getResource(
+    @SuppressWarnings("deprecation")
+	File logFile = new File(URLDecoder.decode(getClass().getResource(
         ControllerConstants.LOG4J_RESOURCE).getFile()));
     BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
     writer.write(newConfiguration);
@@ -1131,7 +1134,8 @@ public final class Controller implements XmlComponent
    */
   public String viewLogConfigurationFile() throws IOException
   {
-    File logFile = new File(URLDecoder.decode(getClass().getResource(
+    @SuppressWarnings("deprecation")
+	File logFile = new File(URLDecoder.decode(getClass().getResource(
         ControllerConstants.LOG4J_RESOURCE).getFile()));
     BufferedReader reader = new BufferedReader(new FileReader(logFile));
     StringBuffer buffer = new StringBuffer();

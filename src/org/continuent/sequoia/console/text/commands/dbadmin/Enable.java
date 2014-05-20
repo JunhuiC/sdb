@@ -72,8 +72,8 @@ public class Enable extends AbstractAdminCommand
     {
       console.printInfo(ConsoleTranslate
           .get("admin.command.enable.all.with.checkpoint")); //$NON-NLS-1$
-      List backendNames = vdjc.getAllBackendNames();
-      for (Iterator iter = backendNames.iterator(); iter.hasNext();)
+      List<?> backendNames = vdjc.getAllBackendNames();
+      for (Iterator<?> iter = backendNames.iterator(); iter.hasNext();)
       {
         String backend = (String) iter.next();
         vdjc.enableBackendFromCheckpoint(backend, true);

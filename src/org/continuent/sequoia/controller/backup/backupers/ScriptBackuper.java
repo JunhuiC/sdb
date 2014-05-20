@@ -129,7 +129,7 @@ public class ScriptBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public Date backup(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     // Generate and execute the command.
     String cmd = getBackupRestoreCommand("backup", backend, login, password,
@@ -151,7 +151,7 @@ public class ScriptBackuper extends AbstractBackuper
    *      java.lang.String, java.util.ArrayList)
    */
   public void restore(DatabaseBackend backend, String login, String password,
-      String dumpName, String path, ArrayList tables) throws BackupException
+      String dumpName, String path, ArrayList<?> tables) throws BackupException
   {
     // Generate and execute the command.
     String cmd = getBackupRestoreCommand("restore", backend, login, password,
@@ -227,7 +227,7 @@ public class ScriptBackuper extends AbstractBackuper
   // options.
   private String getBackupRestoreCommand(String operation,
       DatabaseBackend backend, String login, String password, String dumpName,
-      String path, ArrayList tables) throws BackupException
+      String path, ArrayList<?> tables) throws BackupException
   {
     // Parse the backend URL.
     JdbcUrlParser urlParser = getJdbcParser();
@@ -237,7 +237,7 @@ public class ScriptBackuper extends AbstractBackuper
     String tableList = null;
     if (tables != null)
     {
-      Iterator iter = tables.iterator();
+      Iterator<?> iter = tables.iterator();
       while (iter.hasNext())
       {
         String tableName = (String) iter.next();

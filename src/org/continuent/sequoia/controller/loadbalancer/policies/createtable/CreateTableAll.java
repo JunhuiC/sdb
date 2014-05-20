@@ -25,6 +25,8 @@ package org.continuent.sequoia.controller.loadbalancer.policies.createtable;
 
 import java.util.ArrayList;
 
+import org.continuent.sequoia.controller.backend.DatabaseBackend;
+
 /**
  * Use all backends for <code>CREATE TABLE</code> statements.
  * 
@@ -49,7 +51,7 @@ public class CreateTableAll extends CreateTableRule
    * 
    * @param backendList <code>ArryList</code> of backend
    */
-  public CreateTableAll(ArrayList backendList)
+  public CreateTableAll(ArrayList<String> backendList)
   {
     super(CreateTablePolicy.ALL, backendList);
   }
@@ -57,7 +59,7 @@ public class CreateTableAll extends CreateTableRule
   /**
    * @see org.continuent.sequoia.controller.loadbalancer.policies.createtable.CreateTableRule#getBackends(ArrayList)
    */
-  public ArrayList getBackends(ArrayList backends) throws CreateTableException
+  public ArrayList<DatabaseBackend> getBackends(ArrayList<?> backends) throws CreateTableException
   {
     return super.getBackends(backends);
   }

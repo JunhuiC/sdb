@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import org.continuent.sequoia.common.stream.DriverBufferedInputStream;
 import org.continuent.sequoia.common.stream.DriverBufferedOutputStream;
-import org.continuent.sequoia.driver.Connection;
+//import org.continuent.sequoia.driver.Connection;
 
 /**
  * This class defines a Request object. This basically carries the SQL statement

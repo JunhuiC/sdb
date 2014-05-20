@@ -260,7 +260,7 @@ public class AlterRequest extends AbstractWriteRequest
 
     tableName = sql.substring(0, index).trim();
     table = new DatabaseTable(tableName);
-    writeLockedTables = new TreeSet();
+    writeLockedTables = new TreeSet<String>();
     writeLockedTables.add(tableName);
     addDependingTables(schema, writeLockedTables);
 
@@ -275,7 +275,7 @@ public class AlterRequest extends AbstractWriteRequest
         // Drop
         subsIndex += 4;
 
-      columns = new ArrayList();
+      columns = new ArrayList<TableColumn>();
       sql = sql.substring(subsIndex).trim();
 
       if (isAdd)

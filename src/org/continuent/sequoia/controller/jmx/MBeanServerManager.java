@@ -106,7 +106,7 @@ public class MBeanServerManager
    */
   private static void createJava5PlatformMBeanServer()
   {
-    Class clazz;
+    Class<?> clazz;
     try
     {
       clazz = Class.forName("java.lang.management.ManagementFactory"); //$NON-NLS-1$
@@ -119,7 +119,7 @@ public class MBeanServerManager
     try
     {
       mbs = (MBeanServer) clazz
-          .getMethod("getPlatformMBeanServer", null).invoke(null, null); //$NON-NLS-1$
+          .getMethod("getPlatformMBeanServer", ( Class<?>[] )null).invoke(( Object[] )null, ( Object[] )null); //$NON-NLS-1$
       logger.debug(Translate.get("jmx.server.from.java5")); //$NON-NLS-1$
     }
     catch (Exception e)
@@ -149,8 +149,8 @@ public class MBeanServerManager
     if (MBeanServerManager.isJmxEnabled != isJmxEnabled && !isJmxEnabled && mbs!=null)
     {
       // stop rmi connectors
-      List list = RmiConnector.getRmiConnectors();
-      for (Iterator it = list.iterator(); it.hasNext();)
+      List<?> list = RmiConnector.getRmiConnectors();
+      for (Iterator<?> it = list.iterator(); it.hasNext();)
       {
         RmiConnector rmi = (RmiConnector) it.next();
         rmi.stop();
@@ -158,7 +158,7 @@ public class MBeanServerManager
 
       // stop http adaptors
       list = HttpAdaptor.getHttpAdaptors();
-      for (Iterator it = list.iterator(); it.hasNext();)
+      for (Iterator<?> it = list.iterator(); it.hasNext();)
       {
         HttpAdaptor http = (HttpAdaptor) it.next();
         http.stop();

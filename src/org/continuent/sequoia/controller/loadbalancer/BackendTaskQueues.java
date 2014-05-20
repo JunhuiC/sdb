@@ -66,22 +66,22 @@ import org.continuent.sequoia.controller.virtualdatabase.VirtualDatabase;
 public class BackendTaskQueues
 {
   /** Queue in which queries arrive in total order */
-  private LinkedList              totalOrderQueue;
+  private LinkedList<AbstractTask>              totalOrderQueue;
   /**
    * Queue for stored procedures without semantic information (locking the whole
    * database)
    */
-  private LinkedList              storedProcedureQueue;
+  private LinkedList<BackendTaskQueueEntry>              storedProcedureQueue;
   /**
    * Queue for conflicting requests (only first request of the queue can be
    * executed)
    */
-  private LinkedList              conflictingRequestsQueue;
+  private LinkedList<BackendTaskQueueEntry>              conflictingRequestsQueue;
   /**
    * Queue for non-conflicting requests that can be executed in parallel, in any
    * order.
    */
-  private LinkedList              nonConflictingRequestsQueue;
+  private LinkedList<BackendTaskQueueEntry>              nonConflictingRequestsQueue;
   /** Backend these queues are attached to */
   private DatabaseBackend         backend;
   private WaitForCompletionPolicy waitForCompletionPolicy;
@@ -113,10 +113,10 @@ public class BackendTaskQueues
     this.logger = backend.getLogger();
     this.waitForCompletionPolicy = waitForCompletionPolicy;
     this.requestManager = requestManager;
-    totalOrderQueue = new LinkedList();
-    storedProcedureQueue = new LinkedList();
-    conflictingRequestsQueue = new LinkedList();
-    nonConflictingRequestsQueue = new LinkedList();
+    totalOrderQueue = new LinkedList<AbstractTask>();
+    storedProcedureQueue = new LinkedList<BackendTaskQueueEntry>();
+    conflictingRequestsQueue = new LinkedList<BackendTaskQueueEntry>();
+    nonConflictingRequestsQueue = new LinkedList<BackendTaskQueueEntry>();
     allowTasksToBePosted = false;
   }
 
@@ -150,12 +150,12 @@ public class BackendTaskQueues
    * @return true if a rollback is already in progress
    */
   private boolean abortAllQueriesEvenRunningInTransaction(long tid,
-      LinkedList queue)
+      LinkedList<BackendTaskQueueEntry> queue)
   {
     boolean rollbackInProgress = false;
     synchronized (queue)
     {
-      for (Iterator iter = queue.iterator(); iter.hasNext();)
+      for (Iterator<BackendTaskQueueEntry> iter = queue.iterator(); iter.hasNext();)
       {
         BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
         boolean isProcessing = false;
@@ -253,13 +253,13 @@ public class BackendTaskQueues
    * 
    * @param queue the queue to purge
    */
-  private void abortRemainingRequests(LinkedList queue)
+  private void abortRemainingRequests(LinkedList<BackendTaskQueueEntry> queue)
   {
     synchronized (this)
     {
       synchronized (queue)
       {
-        for (Iterator iter = queue.iterator(); iter.hasNext();)
+        for (Iterator<BackendTaskQueueEntry> iter = queue.iterator(); iter.hasNext();)
         {
           BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
           AbstractTask task = entry.getTask();
@@ -419,7 +419,7 @@ public class BackendTaskQueues
    * @param task the task to add
    * @param isACommitOrRollback true if the task is a commit or a rollback
    */
-  private void addTaskToQueue(LinkedList queue, AbstractTask task,
+  private void addTaskToQueue(LinkedList<BackendTaskQueueEntry> queue, AbstractTask task,
       boolean isACommitOrRollback)
   {
     if (!allowTasksToBePosted())
@@ -462,7 +462,7 @@ public class BackendTaskQueues
     // Let's check the conflicting queue for priority inversion
     synchronized (conflictingRequestsQueue)
     {
-      for (Iterator iter = conflictingRequestsQueue.iterator(); iter.hasNext();)
+      for (Iterator<BackendTaskQueueEntry> iter = conflictingRequestsQueue.iterator(); iter.hasNext();)
       {
         BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
 
@@ -473,11 +473,11 @@ public class BackendTaskQueues
 
         AbstractTask task = entry.getTask();
         AbstractRequest request = task.getRequest();
-        SortedSet lockedTables = request.getWriteLockedDatabaseTables();
+        SortedSet<?> lockedTables = request.getWriteLockedDatabaseTables();
         if (lockedTables != null)
         {
           boolean queryIsConflicting = false;
-          for (Iterator iterator = lockedTables.iterator(); iterator.hasNext()
+          for (Iterator<?> iterator = lockedTables.iterator(); iterator.hasNext()
               && !queryIsConflicting;)
           {
             String tableName = (String) iterator.next();
@@ -533,7 +533,7 @@ public class BackendTaskQueues
     // Look at the stored procedure queue
     synchronized (storedProcedureQueue)
     {
-      for (Iterator iter = storedProcedureQueue.iterator(); iter.hasNext();)
+      for (Iterator<BackendTaskQueueEntry> iter = storedProcedureQueue.iterator(); iter.hasNext();)
       {
         BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
 
@@ -566,7 +566,7 @@ public class BackendTaskQueues
             // somewhere in the stored procedure queue.
 
             boolean currentStoredProcedureInQueue = false;
-            for (Iterator iter2 = storedProcedureQueue.iterator(); iter2
+            for (Iterator<BackendTaskQueueEntry> iter2 = storedProcedureQueue.iterator(); iter2
                 .hasNext();)
             {
               BackendTaskQueueEntry entry2 = (BackendTaskQueueEntry) iter2
@@ -590,7 +590,7 @@ public class BackendTaskQueues
         if ((request instanceof SelectRequest)
             || (request instanceof AbstractWriteRequest))
         {
-          SortedSet writeLockedTables = request.getWriteLockedDatabaseTables();
+          SortedSet<?> writeLockedTables = request.getWriteLockedDatabaseTables();
 
           if (writeLockedTables == null || writeLockedTables.isEmpty())
           { // This request does not lock anything
@@ -626,7 +626,7 @@ public class BackendTaskQueues
           globalLock.acquire(request);
           if (tm != null)
           {
-            List acquiredLocks = tm.getAcquiredLocks(backend);
+            List<?> acquiredLocks = tm.getAcquiredLocks(backend);
             if ((acquiredLocks == null) || !acquiredLocks.contains(globalLock))
               tm.addAcquiredLock(backend, globalLock);
           }
@@ -650,7 +650,7 @@ public class BackendTaskQueues
   }
 
   private void moveMultipleWriteLocksQuery(DatabaseSchema schema,
-      Iterator iter, BackendTaskQueueEntry entry, AbstractTask task,
+      Iterator<BackendTaskQueueEntry> iter, BackendTaskQueueEntry entry, AbstractTask task,
       AbstractRequest request, TransactionMetaData tm)
   {
     /*
@@ -659,7 +659,7 @@ public class BackendTaskQueues
      * conflicting queue.
      */
     boolean allLocksAcquired = true;
-    for (Iterator lockIter = request.getWriteLockedDatabaseTables().iterator(); lockIter
+    for (Iterator<?> lockIter = request.getWriteLockedDatabaseTables().iterator(); lockIter
         .hasNext();)
     {
       String tableName = (String) lockIter.next();
@@ -689,7 +689,7 @@ public class BackendTaskQueues
          */
         if (tm != null)
         {
-          List acquiredLocks = tm.getAcquiredLocks(backend);
+          List<?> acquiredLocks = tm.getAcquiredLocks(backend);
           if ((acquiredLocks == null) || !acquiredLocks.contains(tableLock))
             tm.addAcquiredLock(backend, tableLock);
         }
@@ -706,7 +706,7 @@ public class BackendTaskQueues
       moveToConflictingQueue(iter, entry);
   }
 
-  private void moveToConflictingQueue(Iterator iter, BackendTaskQueueEntry entry)
+  private void moveToConflictingQueue(Iterator<BackendTaskQueueEntry> iter, BackendTaskQueueEntry entry)
   {
     iter.remove();
     if (logger.isDebugEnabled())
@@ -718,7 +718,7 @@ public class BackendTaskQueues
     }
   }
 
-  private void moveToNonConflictingQueue(Iterator iter,
+  private void moveToNonConflictingQueue(Iterator<BackendTaskQueueEntry> iter,
       BackendTaskQueueEntry entry)
   {
     iter.remove();
@@ -742,7 +742,7 @@ public class BackendTaskQueues
    * atomicTaskPostInQueueAndReleaseLock. This is safe since this happens in the
    * synchronized (ATOMIC_POST_SYNC_OBJECT) block.
    */
-  private ArrayList        lockList               = null;
+  private ArrayList<TransactionLogicalLock>        lockList               = null;
 
   /**
    * Fetch the next task from the backend total order queue and post it to one
@@ -884,7 +884,7 @@ public class BackendTaskQueues
         if (requestIsAStoredProcedure)
           storedProcedureInQueue++;
 
-        SortedSet writeLockedTables = request.getWriteLockedDatabaseTables();
+        SortedSet<?> writeLockedTables = request.getWriteLockedDatabaseTables();
         if ((writeLockedTables != null) && (writeLockedTables.size() > 1))
           writesWithMultipleLocks++;
 
@@ -1031,7 +1031,7 @@ public class BackendTaskQueues
                 else
                 {
                   if (lockList == null)
-                    lockList = new ArrayList();
+                    lockList = new ArrayList<TransactionLogicalLock>();
                   lockList.add(globalLock);
                 }
                 if (schema.allTablesAreUnlockedOrLockedByTransaction(request))
@@ -1050,13 +1050,13 @@ public class BackendTaskQueues
                 if (schema.allTablesAreUnlockedOrLockedByTransaction(request))
                 {
                   queueToUse = NON_CONFLICTING_QUEUE;
-                  List locks = schema.lockAllTables(request);
+                  List<TransactionLogicalLock> locks = schema.lockAllTables(request);
                   if (tm != null)
                     tm.addAcquiredLocks(backend, locks);
                   else
                   {
                     if (lockList == null)
-                      lockList = new ArrayList();
+                      lockList = new ArrayList<TransactionLogicalLock>();
                     lockList.addAll(locks);
                   }
                 }
@@ -1118,7 +1118,7 @@ public class BackendTaskQueues
   private int getQueueAndWriteLockTables(AbstractRequest request,
       DatabaseSchema schema, TransactionMetaData tm) throws SQLException
   {
-    SortedSet writeLockedTables = request.getWriteLockedDatabaseTables();
+    SortedSet<?> writeLockedTables = request.getWriteLockedDatabaseTables();
 
     if (writeLockedTables == null || writeLockedTables.isEmpty())
     { // This request does not lock anything
@@ -1138,7 +1138,7 @@ public class BackendTaskQueues
      * conflicting queue.
      */
     int queueToUse = NON_CONFLICTING_QUEUE;
-    for (Iterator iter = writeLockedTables.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = writeLockedTables.iterator(); iter.hasNext();)
     {
       String tableName = (String) iter.next();
       DatabaseTable table = schema.getTable(tableName, false);
@@ -1225,7 +1225,7 @@ public class BackendTaskQueues
         else
         {
           if (lockList == null)
-            lockList = new ArrayList();
+            lockList = new ArrayList<TransactionLogicalLock>();
           lockList.add(table.getLock());
         }
       }
@@ -1240,11 +1240,11 @@ public class BackendTaskQueues
    * @param transactionId the "fake" transaction id assign to the autocommit
    *          request releasing the locks
    */
-  private void releaseLocksForAutoCommitRequest(List locks, long transactionId)
+  private void releaseLocksForAutoCommitRequest(List<?> locks, long transactionId)
   {
     if (locks == null)
       return; // No locks acquired
-    for (Iterator iter = locks.iterator(); iter.hasNext();)
+    for (Iterator<?> iter = locks.iterator(); iter.hasNext();)
     {
       TransactionLogicalLock lock = (TransactionLogicalLock) iter.next();
       if (lock == null)
@@ -1344,7 +1344,7 @@ public class BackendTaskQueues
       {
         releaseLocksForAutoCommitRequest(task.getLocks(backend), transactionId);
         checkForPriorityInversion();
-        SortedSet writeLockedTables = request.getWriteLockedDatabaseTables();
+        SortedSet<?> writeLockedTables = request.getWriteLockedDatabaseTables();
         if ((writeLockedTables != null) && (writeLockedTables.size() > 1))
           writesWithMultipleLocks--;
       }
@@ -1361,7 +1361,7 @@ public class BackendTaskQueues
   public void completeWriteRequestExecution(AbstractTask task)
   {
     AbstractRequest request = task.getRequest();
-    SortedSet writeLockedTables = request.getWriteLockedDatabaseTables();
+    SortedSet<?> writeLockedTables = request.getWriteLockedDatabaseTables();
     if ((writeLockedTables != null) && (writeLockedTables.size() > 1))
       synchronized (atomicPostSyncObject)
       {
@@ -1412,7 +1412,7 @@ public class BackendTaskQueues
    *          applicable.
    */
   private void completedEntryExecution(BackendTaskQueueEntry entry,
-      Iterator iter)
+      Iterator<BackendTaskQueueEntry> iter)
   {
     if (entry == null)
       return;
@@ -1426,7 +1426,7 @@ public class BackendTaskQueues
     synchronized (this)
     {
       // Remove the entry from its queue
-      LinkedList queue = entry.getQueue();
+      LinkedList<?> queue = entry.getQueue();
       synchronized (queue)
       {
         if (iter != null)
@@ -1474,7 +1474,7 @@ public class BackendTaskQueues
    * 
    * @return the stored procedure queue.
    */
-  public List getStoredProcedureQueue()
+  public List<BackendTaskQueueEntry> getStoredProcedureQueue()
   {
     return storedProcedureQueue;
   }
@@ -1515,7 +1515,7 @@ public class BackendTaskQueues
         {
           firstNonConflictingTask = nonConflictingRequestsQueue.getFirst();
           lastNonConflictingTask = nonConflictingRequestsQueue.getLast();
-          for (Iterator iter = nonConflictingRequestsQueue.iterator(); iter
+          for (Iterator<BackendTaskQueueEntry> iter = nonConflictingRequestsQueue.iterator(); iter
               .hasNext();)
           {
             entry = (BackendTaskQueueEntry) iter.next();
@@ -1544,7 +1544,7 @@ public class BackendTaskQueues
           if (entry.getProcessingThread() == null)
           { // The task is not currently processed.
             AbstractRequest request = entry.getTask().getRequest();
-            SortedSet lockedTables = request.getWriteLockedDatabaseTables();
+            SortedSet<?> lockedTables = request.getWriteLockedDatabaseTables();
             if ((lockedTables != null) && (lockedTables.size() > 0))
             {
               /**
@@ -1576,7 +1576,7 @@ public class BackendTaskQueues
                   int locksNotOwnedByMe = 0;
                   long transactionId = entry.getTask().getTransactionId();
 
-                  for (Iterator iterator = lockedTables.iterator(); iterator
+                  for (Iterator<?> iterator = lockedTables.iterator(); iterator
                       .hasNext()
                       && !conflictingQueryDetected;)
                   {
@@ -1609,7 +1609,7 @@ public class BackendTaskQueues
                          * Check if we find a query in the conflicting queue
                          * that owns the lock or waits for the lock we need
                          */
-                        for (Iterator iter = nonConflictingRequestsQueue
+                        for (Iterator<BackendTaskQueueEntry> iter = nonConflictingRequestsQueue
                             .iterator(); iter.hasNext();)
                         {
                           BackendTaskQueueEntry nonConflictingEntry = (BackendTaskQueueEntry) iter
@@ -1756,7 +1756,7 @@ public class BackendTaskQueues
         {
           firstNonConflictingTask = nonConflictingRequestsQueue.getFirst();
           lastNonConflictingTask = nonConflictingRequestsQueue.getLast();
-          for (Iterator iter = nonConflictingRequestsQueue.iterator(); iter
+          for (Iterator<BackendTaskQueueEntry> iter = nonConflictingRequestsQueue.iterator(); iter
               .hasNext();)
           {
             entry = (BackendTaskQueueEntry) iter.next();
@@ -1896,9 +1896,9 @@ public class BackendTaskQueues
    * @param queue the queue to parse
    * @return true if there is a DDL task in the queue
    */
-  private boolean hasDDLTaskInQueue(List queue)
+  private boolean hasDDLTaskInQueue(List<BackendTaskQueueEntry> queue)
   {
-    for (Iterator iter = queue.iterator(); iter.hasNext();)
+    for (Iterator<BackendTaskQueueEntry> iter = queue.iterator(); iter.hasNext();)
     {
       BackendTaskQueueEntry otherEntry = (BackendTaskQueueEntry) iter.next();
       AbstractTask otherTask = otherEntry.getTask();
@@ -1929,9 +1929,9 @@ public class BackendTaskQueues
    * @return true if there is a task belonging to the persistent connection in
    *         the queue
    */
-  private boolean hasTaskForPersistentConnectionInQueue(List queue, long cid)
+  private boolean hasTaskForPersistentConnectionInQueue(List<BackendTaskQueueEntry> queue, long cid)
   {
-    for (Iterator iter = queue.iterator(); iter.hasNext();)
+    for (Iterator<BackendTaskQueueEntry> iter = queue.iterator(); iter.hasNext();)
     {
       BackendTaskQueueEntry otherEntry = (BackendTaskQueueEntry) iter.next();
 
@@ -1947,12 +1947,12 @@ public class BackendTaskQueues
     return false;
   }
 
-  private boolean hasAbstractTaskForTransactionInQueue(List totalOrderQueue,
+  private boolean hasAbstractTaskForTransactionInQueue(List<AbstractTask> totalOrderQueue,
       long tid)
   {
     synchronized (totalOrderQueue)
     {
-      for (Iterator iter = totalOrderQueue.iterator(); iter.hasNext();)
+      for (Iterator<AbstractTask> iter = totalOrderQueue.iterator(); iter.hasNext();)
       {
         AbstractTask task = (AbstractTask) iter.next();
 
@@ -2043,28 +2043,28 @@ public class BackendTaskQueues
   {
     StringBuffer buff = new StringBuffer();
     buff.append("Total order Queue (" + totalOrderQueue.size() + ")\n");
-    for (Iterator iter = totalOrderQueue.iterator(); iter.hasNext();)
+    for (Iterator<AbstractTask> iter = totalOrderQueue.iterator(); iter.hasNext();)
     {
       AbstractTask task = (AbstractTask) iter.next();
       buff.append("\t" + task + "\n");
     }
     buff.append("Non Conflicting Requests Queue ("
         + nonConflictingRequestsQueue.size() + ")\n");
-    for (Iterator iter = nonConflictingRequestsQueue.iterator(); iter.hasNext();)
+    for (Iterator<BackendTaskQueueEntry> iter = nonConflictingRequestsQueue.iterator(); iter.hasNext();)
     {
       BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
       buff.append("\t" + entry + "\n");
     }
     buff.append("Conflicting Requests Queue ("
         + conflictingRequestsQueue.size() + ")\n");
-    for (Iterator iter = conflictingRequestsQueue.iterator(); iter.hasNext();)
+    for (Iterator<BackendTaskQueueEntry> iter = conflictingRequestsQueue.iterator(); iter.hasNext();)
     {
       BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
       buff.append("\t" + entry + "\n");
     }
     buff.append("Stored Procedures Queue (" + storedProcedureQueue.size()
         + ")\n");
-    for (Iterator iter = storedProcedureQueue.iterator(); iter.hasNext();)
+    for (Iterator<BackendTaskQueueEntry> iter = storedProcedureQueue.iterator(); iter.hasNext();)
     {
       BackendTaskQueueEntry entry = (BackendTaskQueueEntry) iter.next();
       buff.append("\t" + entry + "\n");

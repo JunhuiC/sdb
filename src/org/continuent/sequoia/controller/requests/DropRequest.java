@@ -63,7 +63,7 @@ public class DropRequest extends AbstractWriteRequest implements Serializable
    * Sorted list of table names that are being dropped. This will be used to
    * remove these tables from the schema.
    */
-  protected SortedSet       tablesToDrop              = null;
+  protected SortedSet<String>       tablesToDrop              = null;
 
   /**
    * Creates a new <code>DropRequest</code> instance. The caller must give an
@@ -269,8 +269,8 @@ public class DropRequest extends AbstractWriteRequest implements Serializable
       else
         tableName = t.getName();
     }
-    writeLockedTables = new TreeSet();
-    tablesToDrop = new TreeSet();
+    writeLockedTables = new TreeSet<String>();
+    tablesToDrop = new TreeSet<String>();
     writeLockedTables.add(tableName);
     tablesToDrop.add(tableName);
     addDependingTables(schema, writeLockedTables);
@@ -327,7 +327,7 @@ public class DropRequest extends AbstractWriteRequest implements Serializable
    * 
    * @return set of tables that are being dropped by this request
    */
-  public SortedSet getTablesToDrop()
+  public SortedSet<String> getTablesToDrop()
   {
     return tablesToDrop;
   }

@@ -54,7 +54,7 @@ public class DatabaseTable implements Serializable
   private String                           name;
 
   /** <code>ArrayList</code> of <code>DatabaseColumn</code>. */
-  private ArrayList                        columns;
+  private ArrayList<DatabaseColumn>                        columns;
 
   /** Lock for this table */
   private transient TransactionLogicalLock lock             = new TransactionLogicalLock();
@@ -64,7 +64,7 @@ public class DatabaseTable implements Serializable
    * usually the list of tables that have a foreign key referencing this table.<br>
    * <code>ArrayList</code> of <code>String</code> (table names)
    */
-  private ArrayList                        dependingTables;
+  private ArrayList<String>                        dependingTables;
 
   /**
    * containsAutoIncrementedKey indicates whether the table contains an
@@ -80,7 +80,7 @@ public class DatabaseTable implements Serializable
    */
   public DatabaseTable(String name)
   {
-    this(name, new ArrayList());
+    this(name, new ArrayList<DatabaseColumn>());
   }
 
   /**
@@ -91,7 +91,7 @@ public class DatabaseTable implements Serializable
    */
   public DatabaseTable(String name, int nbOfColumns)
   {
-    this(name, new ArrayList(nbOfColumns));
+    this(name, new ArrayList<DatabaseColumn>(nbOfColumns));
   }
 
   /**
@@ -104,7 +104,7 @@ public class DatabaseTable implements Serializable
   {
     this(dt.getName(), dt.getColumns());
     if (dt.getDependingTables() != null)
-      for (Iterator i = dt.getDependingTables().iterator(); i.hasNext();)
+      for (Iterator<?> i = dt.getDependingTables().iterator(); i.hasNext();)
         addDependingTable((String) i.next());
   }
 
@@ -114,7 +114,7 @@ public class DatabaseTable implements Serializable
    * @param name table name
    * @param columns columns list
    */
-  private DatabaseTable(String name, ArrayList columns)
+  private DatabaseTable(String name, ArrayList<DatabaseColumn> columns)
   {
     if (name == null)
       throw new IllegalArgumentException(
@@ -137,7 +137,7 @@ public class DatabaseTable implements Serializable
   public synchronized void addDependingTable(String tableName)
   {
     if (dependingTables == null)
-      dependingTables = new ArrayList();
+      dependingTables = new ArrayList<String>();
     if (!dependingTables.contains(tableName))
       dependingTables.add(tableName);
   }
@@ -162,7 +162,7 @@ public class DatabaseTable implements Serializable
    * 
    * @return an <code>ArrayList</code> of <code>DatabaseColumn</code>
    */
-  public ArrayList getColumns()
+  public ArrayList<DatabaseColumn> getColumns()
   {
     return columns;
   }
@@ -177,7 +177,7 @@ public class DatabaseTable implements Serializable
   public DatabaseColumn getColumn(String columnName)
   {
     DatabaseColumn c;
-    for (Iterator i = columns.iterator(); i.hasNext();)
+    for (Iterator<DatabaseColumn> i = columns.iterator(); i.hasNext();)
     {
       c = (DatabaseColumn) i.next();
       if (columnName.equalsIgnoreCase(c.getName()))
@@ -201,7 +201,7 @@ public class DatabaseTable implements Serializable
       return getColumn(columnName);
 
     DatabaseColumn c;
-    for (Iterator i = columns.iterator(); i.hasNext();)
+    for (Iterator<DatabaseColumn> i = columns.iterator(); i.hasNext();)
     {
       c = (DatabaseColumn) i.next();
       if (columnName.equals(c.getName()))
@@ -216,7 +216,7 @@ public class DatabaseTable implements Serializable
    * 
    * @return Returns the dependingTables.
    */
-  public ArrayList getDependingTables()
+  public ArrayList<String> getDependingTables()
   {
     return dependingTables;
   }
@@ -280,10 +280,10 @@ public class DatabaseTable implements Serializable
    * @return an <code>ArrayList</code> of <code>DatabaseColumn</code>
    *         objects
    */
-  public ArrayList getUniqueColumns()
+  public ArrayList<DatabaseColumn> getUniqueColumns()
   {
-    ArrayList cols = new ArrayList();
-    Iterator i;
+    ArrayList<DatabaseColumn> cols = new ArrayList<DatabaseColumn>();
+    Iterator<DatabaseColumn> i;
     DatabaseColumn c;
 
     for (i = columns.iterator(); i.hasNext();)
@@ -314,13 +314,13 @@ public class DatabaseTable implements Serializable
       dependingTables = table.getDependingTables();
     else
     {
-      ArrayList otherDependingTables = table.getDependingTables();
+      ArrayList<?> otherDependingTables = table.getDependingTables();
       if (otherDependingTables != null)
-        for (Iterator iter = otherDependingTables.iterator(); iter.hasNext();)
+        for (Iterator<?> iter = otherDependingTables.iterator(); iter.hasNext();)
           addDependingTable((String) iter.next());
     }
 
-    ArrayList otherColumns = table.getColumns();
+    ArrayList<?> otherColumns = table.getColumns();
     if (otherColumns == null)
       return;
 
@@ -381,10 +381,10 @@ public class DatabaseTable implements Serializable
     if (table == null)
       return;
 
-    ArrayList otherColumns = table.getColumns();
+    ArrayList<?> otherColumns = table.getColumns();
 
     // Remove columns that do not exist anymore in new schema
-    for (Iterator iter = columns.iterator(); iter.hasNext();)
+    for (Iterator<DatabaseColumn> iter = columns.iterator(); iter.hasNext();)
     {
       DatabaseColumn c = (DatabaseColumn) iter.next();
       if (!otherColumns.contains(c))
@@ -474,7 +474,7 @@ public class DatabaseTable implements Serializable
     }
 
     DatabaseColumn c1, c2;
-    Iterator iter = columns.iterator();
+    Iterator<DatabaseColumn> iter = columns.iterator();
     while (iter.hasNext())
     {
       c1 = (DatabaseColumn) iter.next();

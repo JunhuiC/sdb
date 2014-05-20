@@ -81,7 +81,7 @@ public class ResultCacheFactory
    * @return an instance of a cache behavior
    */
   public static CacheBehavior getCacheBehaviorInstance(String behaviorString,
-      Hashtable options)
+      Hashtable<?, ?> options)
   {
     if (behaviorString.equalsIgnoreCase(DatabasesXmlTags.ELT_NoCaching))
       return new NoCaching();

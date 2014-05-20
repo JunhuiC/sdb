@@ -70,8 +70,6 @@ public class BeginTask extends AbstractTask
   {
     super(nbToComplete, totalNb, tm.isPersistentConnection(), tm
         .getPersistentConnectionId());
-    if (tm == null)
-      throw new NullPointerException("Unexpected null metadata in BeginTask");
     this.tm = tm;
     this.request = new UnknownReadRequest("begin", false, 0, "");
     request.setLogin(tm.getLogin());

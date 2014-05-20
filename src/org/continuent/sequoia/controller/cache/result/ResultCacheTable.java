@@ -64,10 +64,10 @@ public class ResultCacheTable extends ResultCache
   protected void processAddToCache(AbstractResultCacheEntry qe)
   {
     SelectRequest request = qe.getRequest();
-    Collection from = request.getFrom();
+    Collection<?> from = request.getFrom();
     if (from == null)
       return;
-    for (Iterator i = from.iterator(); i.hasNext();)
+    for (Iterator<?> i = from.iterator(); i.hasNext();)
       cdbs.getTable((String) i.next()).addCacheEntry(qe);
   }
 

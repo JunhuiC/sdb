@@ -103,10 +103,10 @@ public class RecoveryLogControl extends AbstractStandardMBean
     }
   }
 
-  private OpenType[] getEntryTypes(int length)
+  private OpenType<?>[] getEntryTypes(int length)
   {
     // all column are returned as String
-    OpenType[] types = new OpenType[length];
+    OpenType<?>[] types = new OpenType[length];
     for (int i = 0; i < types.length; i++)
     {
       types[i] = SimpleType.STRING;
@@ -255,7 +255,7 @@ public class RecoveryLogControl extends AbstractStandardMBean
   /**
    * @see org.continuent.sequoia.common.jmx.mbeans.RecoveryLogControlMBean#getCheckpoints()
    */
-  public Map getCheckpoints()
+  public Map<?, ?> getCheckpoints()
   {
     try
     {
@@ -267,7 +267,7 @@ public class RecoveryLogControl extends AbstractStandardMBean
       {
         logger.warn(e.getMessage(), e);
       }
-      return new HashMap();
+      return new HashMap<Object,Object>();
     }
   }
 }
